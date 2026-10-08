@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use std::path::Path;
-use tauri::{State, Manager, Emitter, Listener};
+use tauri::{State, Emitter, Listener};
 use serde_json::Value;
 use aster_core::{
     registry::CommandRegistry,
@@ -92,10 +92,10 @@ pub async fn editor_get_selection(
 ) -> Result<Value, Value> {
     // Emit the request; the frontend emits "aster://editor/selectionResult"
     // back. We use a one-shot tokio channel with a 2s timeout.
-    let (tx, mut rx) = tokio::sync::oneshot::channel::<Value>();
+    let (tx, rx) = tokio::sync::oneshot::channel::<Value>();
     let tx = std::sync::Arc::new(std::sync::Mutex::new(Some(tx)));
 
-    let _listener = app.listen("aster://editor/selectionResult", {
+    let listener_id = app.listen("aster://editor/selectionResult", {
         let tx = std::sync::Arc::clone(&tx);
         move |evt| {
             if let Some(sender) = tx.lock().unwrap().take() {
@@ -106,13 +106,19 @@ pub async fn editor_get_selection(
     });
 
     app.emit("aster://editor/getSelection", serde_json::json!({}))
-        .map_err(|e| serde_json::json!({"code":"E_IO","message":e.to_string()}))?;
+        .map_err(|e| {
+            app.unlisten(listener_id);
+            serde_json::json!({"code":"E_IO","message":e.to_string()})
+        })?;
 
-    tokio::time::timeout(std::time::Duration::from_secs(2), async move {
-        rx.try_recv().ok().unwrap_or(Value::Null)
+    let result = tokio::time::timeout(std::time::Duration::from_secs(2), async move {
+        rx.await.unwrap_or(Value::Null)
     })
     .await
-    .map_err(|_| serde_json::json!({"code":"E_IO","message":"timeout waiting for editor selection"}))
+    .map_err(|_| serde_json::json!({"code":"E_IO","message":"timeout waiting for editor selection"}));
+
+    app.unlisten(listener_id);
+    result
 }
 
 /// editor.insert — insert text at the current cursor position (or at a specified offset).

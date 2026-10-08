@@ -13,14 +13,22 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install macOS WebKit deps
         run: brew install pkg-config
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
       - name: Install tauri-cli
         run: cargo install tauri-cli --version "^2" --locked
       - name: Run Rust tests
         run: cargo test --workspace
       - name: Build CLI release
         run: cargo build -p aster-cli --release
-      - name: Build Tauri app (debug)
+      - name: Install JS deps and build Tauri app (debug)
         run: |
+          pnpm install
           cd crates/aster-app
           cargo tauri build --debug
       - name: Bench CLI latency (doc.read < 50ms user time)

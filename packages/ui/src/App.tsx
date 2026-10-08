@@ -1,9 +1,11 @@
-import { createSignal, onMount, onCleanup, createEffect } from 'solid-js';
+import { createSignal, onMount, createEffect } from 'solid-js';
 import { TabBar } from './TabBar';
 import { EditorPane } from './EditorPane';
 import { StatusBar } from './StatusBar';
 import './theme.css';
 import type { EditorMode } from '@aster/editor';
+import { initPluginLoader } from './plugin-loader';
+import { invoke } from '@tauri-apps/api/core';
 
 export default function App() {
   const [content, setContent] = createSignal('# Welcome to Aster\n\nStart writing...\n');
@@ -13,6 +15,16 @@ export default function App() {
   createEffect(() => {
     const words = content().trim().split(/\s+/).filter(Boolean).length;
     setWordCount(words);
+  });
+
+  onMount(async () => {
+    try {
+      const plugins = await invoke<unknown[]>('dispatch', { id: 'plugin.list', params: {} }).catch(() => []);
+      // resolvePluginUrl is a stub for M3; real asset-protocol URLs come in M4
+      await initPluginLoader(plugins as any, (_id, path) => path);
+    } catch (e) {
+      console.error('[aster] plugin loader init failed:', e);
+    }
   });
 
   return (

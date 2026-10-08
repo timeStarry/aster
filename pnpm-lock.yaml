@@ -39,6 +39,15 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(jsdom@26.1.0)
 
+  packages/plugin-api:
+    devDependencies:
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(jsdom@26.1.0)
+
   packages/renderer:
     dependencies:
       highlight.js:
@@ -63,6 +72,9 @@ importers:
       '@aster/editor':
         specifier: workspace:*
         version: link:../editor
+      '@aster/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
       '@aster/renderer':
         specifier: workspace:*
         version: link:../renderer

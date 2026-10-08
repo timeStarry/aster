@@ -1,0 +1,18 @@
+{
+  "id": "aster.theme-dark",
+  "name": "Dark Theme",
+  "version": "1.0.0",
+  "apiVersion": "1",
+  "description": "Dark color theme for Aster",
+  "permissions": [],
+  "activation": ["onStartup"],
+  "frontend": "frontend/index.js",
+  "backend": null,
+  "contributes": {
+    "themes": [{
+      "id": "aster.theme-dark",
+      "name": "Dark",
+      "cssFile": "frontend/theme.css"
+    }]
+  }
+}

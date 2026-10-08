@@ -18,5 +18,9 @@ serde_json = { workspace = true }
 tokio = { workspace = true }
 dirs = { workspace = true }
 
+[features]
+default = []
+bundled-plugins = []
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

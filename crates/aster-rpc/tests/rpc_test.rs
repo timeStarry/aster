@@ -1,22 +1,24 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::path::PathBuf;
 use tempfile::TempDir;
-use tokio::sync::Mutex;
+use tokio::sync::Mutex as TokioMutex;
 use serde_json::json;
 use aster_core::{
     document::DocumentService,
     workspace::WorkspaceService,
+    plugin::PluginHost,
     registry::CommandRegistry,
     commands::register_core_commands,
 };
 use aster_rpc::{RpcServer, RpcClient};
 
-fn make_registry() -> Arc<Mutex<CommandRegistry>> {
+fn make_registry() -> Arc<TokioMutex<CommandRegistry>> {
     let mut reg = CommandRegistry::new();
     let doc = Arc::new(DocumentService::new());
     let ws = Arc::new(WorkspaceService::new());
-    register_core_commands(&mut reg, doc, ws);
-    Arc::new(Mutex::new(reg))
+    let host = Arc::new(Mutex::new(PluginHost::new()));
+    register_core_commands(&mut reg, doc, ws, host);
+    Arc::new(TokioMutex::new(reg))
 }
 
 fn sock_path(dir: &TempDir) -> PathBuf {

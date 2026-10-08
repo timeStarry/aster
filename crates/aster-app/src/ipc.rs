@@ -6,6 +6,7 @@ use aster_core::{
     registry::CommandRegistry,
     document::DocumentService,
     workspace::WorkspaceService,
+    plugin::PluginHost,
     commands::register_core_commands,
 };
 use crate::recovery;
@@ -15,11 +16,11 @@ pub struct CoreState {
 }
 
 impl CoreState {
-    pub fn new() -> Self {
+    pub fn new(host: Arc<std::sync::Mutex<PluginHost>>) -> Self {
         let mut reg = CommandRegistry::new();
         let doc = Arc::new(DocumentService::new());
         let ws = Arc::new(WorkspaceService::new());
-        register_core_commands(&mut reg, doc, ws);
+        register_core_commands(&mut reg, doc, ws, host);
         Self { registry: std::sync::Mutex::new(reg) }
     }
 }

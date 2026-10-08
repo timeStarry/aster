@@ -1,9 +1,10 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use anyhow::Result;
 use serde_json::Value;
 use aster_core::{
     document::DocumentService,
     workspace::WorkspaceService,
+    plugin::PluginHost,
     registry::CommandRegistry,
     commands::register_core_commands,
     error::AsterResult,
@@ -15,7 +16,13 @@ pub fn build_registry() -> CommandRegistry {
     let mut reg = CommandRegistry::new();
     let doc = Arc::new(DocumentService::new());
     let ws = Arc::new(WorkspaceService::new());
-    register_core_commands(&mut reg, doc, ws);
+    let mut host = PluginHost::new();
+    let user_dir = dirs::home_dir()
+        .unwrap_or_default()
+        .join(".aster/plugins");
+    let _ = host.load_dir(&user_dir, aster_core::plugin::PluginSource::User);
+    let host = Arc::new(Mutex::new(host));
+    register_core_commands(&mut reg, doc, ws, host);
     reg
 }
 

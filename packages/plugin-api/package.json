@@ -1,0 +1,12 @@
+{
+  "name": "@aster/plugin-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/manifest.ts",
+  "scripts": { "test": "vitest run" },
+  "devDependencies": {
+    "vitest": "^3.2.4",
+    "typescript": "^5.8.3"
+  }
+}

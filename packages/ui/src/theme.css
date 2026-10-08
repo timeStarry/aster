@@ -1,0 +1,46 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --border: #e0e0e0;
+  --accent: #5b6af0;
+  --tab-bg: #f5f5f5;
+  --tab-active: #ffffff;
+  --status-bg: #f0f0f0;
+  --font-editor: 'JetBrains Mono', 'Menlo', monospace;
+  --font-prose: -apple-system, 'Segoe UI', sans-serif;
+  --prose-width: 720px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1e1e1e;
+    --fg: #d4d4d4;
+    --border: #3a3a3a;
+    --accent: #7c8cf8;
+    --tab-bg: #2d2d2d;
+    --tab-active: #1e1e1e;
+    --status-bg: #2d2d2d;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #1e1e1e;
+  --fg: #d4d4d4;
+  --border: #3a3a3a;
+  --accent: #7c8cf8;
+  --tab-bg: #2d2d2d;
+  --tab-active: #1e1e1e;
+  --status-bg: #2d2d2d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-prose); height: 100vh; overflow: hidden; }
+
+.aster-heading { font-family: var(--font-prose); }
+.aster-h1 { font-size: 2em; font-weight: 700; }
+.aster-h2 { font-size: 1.5em; font-weight: 600; }
+.aster-h3 { font-size: 1.25em; font-weight: 600; }
+.aster-h4, .aster-h5, .aster-h6 { font-weight: 600; }
+
+.cm-editor { height: 100%; }
+.cm-editor.aster-immersive .cm-gutters { display: none; }

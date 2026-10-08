@@ -72,7 +72,7 @@ jobs:
         with:
           name: aster-${{ matrix.target }}
           path: |
-            crates/aster-app/target/${{ matrix.target }}/release/bundle/**/${{ matrix.artifact }}
+            target/${{ matrix.target }}/release/bundle/**/${{ matrix.artifact }}
 
   release:
     needs: build

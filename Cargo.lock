@@ -102,6 +102,7 @@ name = "aster-app"
 version = "0.1.0"
 dependencies = [
  "aster-core",
+ "aster-rpc",
  "dirs 5.0.1",
  "serde",
  "serde_json",
@@ -116,7 +117,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "aster-core",
+ "aster-rpc",
  "clap",
+ "dirs 5.0.1",
  "serde",
  "serde_json",
  "tempfile",
@@ -136,6 +139,17 @@ dependencies = [
  "sha2",
  "tempfile",
  "thiserror 2.0.21",
+ "tokio",
+]
+
+[[package]]
+name = "aster-rpc"
+version = "0.1.0"
+dependencies = [
+ "aster-core",
+ "serde",
+ "serde_json",
+ "tempfile",
  "tokio",
 ]
 

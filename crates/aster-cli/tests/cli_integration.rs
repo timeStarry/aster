@@ -1,5 +1,6 @@
 use std::process::Command;
 use std::fs;
+use std::io::Write;
 use tempfile::TempDir;
 
 fn aster() -> Command {
@@ -61,4 +62,54 @@ fn test_workspace_list() {
     let out_str = String::from_utf8_lossy(&out.stdout);
     assert!(out_str.contains("a.md"));
     assert!(!out_str.contains("b.txt"));
+}
+
+#[test]
+fn test_patch_headless() {
+    let dir = TempDir::new().unwrap();
+    let path = dir.path().join("p.md");
+    fs::write(&path, "# Title\n## TODO\nsome text\n").unwrap();
+    let patch_json = serde_json::json!({
+        "path": path.to_str().unwrap(),
+        "edits": [{
+            "type": "anchor",
+            "anchor": { "find": "## TODO", "occurrence": 1, "position": "after" },
+            "text": "- new item\n"
+        }]
+    }).to_string();
+    let out = aster()
+        .args(["run", "doc.patch", "--json", &patch_json])
+        .output()
+        .unwrap();
+    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    let result: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert!(result["hash"].as_str().is_some(), "expected hash in result");
+    let content = fs::read_to_string(&path).unwrap();
+    assert!(content.contains("- new item\n"), "content: {content}");
+}
+
+#[test]
+fn test_mcp_tools_list() {
+    // Start `aster mcp`, send initialize + tools/list, expect tool names back
+    let mut child = aster()
+        .arg("mcp")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+
+    let stdin = child.stdin.as_mut().unwrap();
+    // MCP initialize
+    let init = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0"}}}"#;
+    writeln!(stdin, "{init}").unwrap();
+    // tools/list
+    let list = r#"{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}"#;
+    writeln!(stdin, "{list}").unwrap();
+    let _ = stdin; // close stdin so mcp exits
+
+    let output = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("doc_read"), "tools/list must include doc_read; got: {stdout}");
+    assert!(stdout.contains("doc_patch"), "tools/list must include doc_patch; got: {stdout}");
 }

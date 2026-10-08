@@ -1,4 +1,5 @@
 mod commands;
+mod mcp;
 
 use clap::{Parser, Subcommand};
 use anyhow::Result;
@@ -37,6 +38,8 @@ pub(crate) enum Cmd {
     /// Plugin operations
     #[command(subcommand)]
     Plugin(PluginCmd),
+    /// Start an MCP stdio server (for AI agents)
+    Mcp,
 }
 
 #[derive(Subcommand)]

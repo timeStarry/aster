@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::path::Path;
 use serde_json::{json, Value};
 use crate::{
-    document::DocumentService,
+    document::{DocumentService, PatchEdit},
     registry::{CommandRegistry, CommandSpec},
     error::{AsterError, AsterResult},
 };
@@ -73,15 +73,34 @@ pub fn register(registry: &mut CommandRegistry, doc: Arc<DocumentService>) {
         );
     }
 
-    // doc.patch — spec-only in M1; handler implemented in M2
-    registry.register(CommandSpec {
-        id: "doc.patch".into(),
-        description: "Apply one or more targeted edits to a document atomically".into(),
-        params_schema: json!({"type":"object","properties":{"path":{"type":"string"},"expectedHash":{"type":"string"},"edits":{"type":"array"}},"required":["path","edits"]}),
-        returns_schema: json!({"type":"object","properties":{"hash":{"type":"string"}}}),
-        headless: true,
-        source: "core".into(),
-    });
+    // doc.patch
+    {
+        let d = Arc::clone(&doc);
+        registry.register_with_handler(
+            CommandSpec {
+                id: "doc.patch".into(),
+                description: "Apply one or more targeted edits to a document atomically".into(),
+                params_schema: json!({"type":"object","properties":{"path":{"type":"string"},"expectedHash":{"type":"string"},"edits":{"type":"array"}},"required":["path","edits"]}),
+                returns_schema: json!({"type":"object","properties":{"hash":{"type":"string"}}}),
+                headless: true,
+                source: "core".into(),
+            },
+            move |params| {
+                let path = get_str(&params, "path")?;
+                let expected = params.get("expectedHash")
+                    .and_then(|v| v.as_str())
+                    .filter(|s| !s.is_empty())
+                    .map(|s| s.to_owned());
+                let edits_val = params.get("edits")
+                    .ok_or_else(|| AsterError::InvalidParams("missing field: edits".into()))?
+                    .clone();
+                let edits: Vec<PatchEdit> = serde_json::from_value(edits_val)
+                    .map_err(|e| AsterError::InvalidParams(format!("invalid edits: {e}")))?;
+                let new_hash = d.patch(Path::new(&path), &edits, expected.as_deref())?;
+                Ok(json!({"hash": new_hash}))
+            },
+        );
+    }
 }
 
 fn get_str(params: &Value, key: &str) -> AsterResult<String> {

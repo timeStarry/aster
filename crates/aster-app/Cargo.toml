@@ -11,6 +11,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
 aster-core = { path = "../aster-core" }
+aster-rpc  = { path = "../aster-rpc" }
 tauri = { version = "2", features = [] }
 serde = { workspace = true }
 serde_json = { workspace = true }

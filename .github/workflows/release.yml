@@ -58,7 +58,7 @@ jobs:
         run: brew install pkg-config
 
       - name: Install tauri-cli
-        run: cargo install tauri-cli@2 --locked
+        run: cargo install tauri-cli --version "^2" --locked
 
       - run: pnpm install
 

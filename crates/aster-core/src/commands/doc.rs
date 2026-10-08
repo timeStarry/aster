@@ -43,7 +43,10 @@ pub fn register(registry: &mut CommandRegistry, doc: Arc<DocumentService>) {
             move |params| {
                 let path = get_str(&params, "path")?;
                 let content = get_str(&params, "content")?;
-                let expected = params.get("expectedHash").and_then(|v| v.as_str()).map(|s| s.to_owned());
+                let expected = params.get("expectedHash")
+                    .and_then(|v| v.as_str())
+                    .filter(|s| !s.is_empty())
+                    .map(|s| s.to_owned());
                 let new_hash = d.write(Path::new(&path), &content, expected.as_deref())?;
                 Ok(json!({"hash": new_hash}))
             },

@@ -30,7 +30,8 @@ pub fn dispatch(
     params: Value,
     state: State<CoreState>,
 ) -> Result<Value, String> {
-    let mut reg = state.registry.lock().unwrap();
+    let mut reg = state.registry.lock()
+        .map_err(|_| "E_IO: registry lock poisoned".to_string())?;
     reg.dispatch(&id, params).map_err(|e| format!("{}: {}", e.code(), e))
 }
 
@@ -56,7 +57,8 @@ pub async fn auto_save(
         "content": content,
         "expectedHash": expected_hash,
     });
-    let mut reg = state.registry.lock().unwrap();
+    let mut reg = state.registry.lock()
+        .map_err(|_| "E_IO: registry lock poisoned".to_string())?;
     reg.dispatch("doc.write", params)
         .map_err(|e| format!("{}: {}", e.code(), e))
 }

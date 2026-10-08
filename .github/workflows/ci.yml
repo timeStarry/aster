@@ -13,12 +13,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install macOS WebKit deps
         run: brew install pkg-config
+      - name: Install tauri-cli
+        run: cargo install tauri-cli@2 --locked
       - name: Run Rust tests
         run: cargo test --workspace
       - name: Build CLI release
         run: cargo build -p aster-cli --release
-      - name: Install tauri-cli
-        run: cargo install tauri-cli@2 --locked
       - name: Build Tauri app (debug)
         run: |
           cd crates/aster-app

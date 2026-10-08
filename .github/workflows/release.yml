@@ -53,6 +53,13 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev
 
+      - name: Install macOS system deps
+        if: runner.os == 'macOS'
+        run: brew install pkg-config
+
+      - name: Install tauri-cli
+        run: cargo install tauri-cli@2 --locked
+
       - run: pnpm install
 
       - name: Build Tauri app
@@ -67,11 +74,19 @@ jobs:
           path: |
             crates/aster-app/target/${{ matrix.target }}/release/bundle/**/${{ matrix.artifact }}
 
-      - name: Create GitHub Release (macOS arm64 only)
-        if: matrix.target == 'aarch64-apple-darwin'
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           generate_release_notes: true
-          files: |
-            crates/aster-app/target/${{ matrix.target }}/release/bundle/**/*.dmg
+          files: artifacts/**/*

@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/aster-core",
+  "crates/aster-app",
+  "crates/aster-cli",
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.80"
+authors = ["timestarry <timestarry@qq.com>"]
+license = "MIT"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+anyhow = "1"
+tokio = { version = "1", features = ["full"] }
+sha2 = "0.10"
+hex = "0.4"
+notify = "7"
+dirs = "5"
+tauri = { version = "2", features = [] }
+clap = { version = "4", features = ["derive"] }

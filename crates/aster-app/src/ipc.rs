@@ -29,10 +29,10 @@ pub fn dispatch(
     id: String,
     params: Value,
     state: State<CoreState>,
-) -> Result<Value, String> {
+) -> Result<Value, Value> {
     let mut reg = state.registry.lock()
-        .map_err(|_| "E_IO: registry lock poisoned".to_string())?;
-    reg.dispatch(&id, params).map_err(|e| format!("{}: {}", e.code(), e))
+        .map_err(|_| serde_json::json!({"code":"E_IO","message":"registry lock poisoned"}))?;
+    reg.dispatch(&id, params).map_err(|e| e.to_json())
 }
 
 /// Auto-save: write content to disk + keep a recovery copy.
@@ -43,7 +43,7 @@ pub async fn auto_save(
     content: String,
     expected_hash: Option<String>,
     state: State<'_, CoreState>,
-) -> Result<Value, String> {
+) -> Result<Value, Value> {
     // Write recovery copy in background (best-effort, don't block save)
     let path_clone = path.clone();
     let content_clone = content.clone();
@@ -53,12 +53,19 @@ pub async fn auto_save(
 
     // Actual atomic save via registry
     let params = serde_json::json!({
-        "path": path,
+        "path": path.clone(),
         "content": content,
         "expectedHash": expected_hash,
     });
-    let mut reg = state.registry.lock()
-        .map_err(|_| "E_IO: registry lock poisoned".to_string())?;
-    reg.dispatch("doc.write", params)
-        .map_err(|e| format!("{}: {}", e.code(), e))
+    let result = {
+        let mut reg = state.registry.lock()
+            .map_err(|_| serde_json::json!({"code":"E_IO","message":"registry lock poisoned"}))?;
+        reg.dispatch("doc.write", params).map_err(|e| e.to_json())?
+    };
+
+    // Clean save succeeded — remove stale recovery file so crash-recovery
+    // doesn't restore an outdated version.
+    recovery::remove_recovery(Path::new(&path)).await;
+
+    Ok(result)
 }

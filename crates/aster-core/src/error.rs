@@ -41,6 +41,20 @@ impl AsterError {
             Self::Io(_)                 => "E_IO",
         }
     }
+
+    /// Serialize to the spec-mandated `{code, message, data?}` JSON object.
+    /// Used by the IPC layer so the frontend can switch on `code` programmatically.
+    pub fn to_json(&self) -> serde_json::Value {
+        let mut obj = serde_json::json!({
+            "code": self.code(),
+            "message": self.to_string(),
+        });
+        // Attach structured data for errors that carry it
+        if let AsterError::Conflict { expected, actual } = self {
+            obj["data"] = serde_json::json!({ "expected": expected, "actual": actual });
+        }
+        obj
+    }
 }
 
 impl From<std::io::Error> for AsterError {

@@ -17,6 +17,8 @@ jobs:
         run: cargo test --workspace
       - name: Build CLI release
         run: cargo build -p aster-cli --release
+      - name: Install tauri-cli
+        run: cargo install tauri-cli@2 --locked
       - name: Build Tauri app (debug)
         run: |
           cd crates/aster-app

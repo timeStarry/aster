@@ -58,6 +58,29 @@ fn test_conflict_detection() {
 }
 
 #[test]
+fn test_bom_and_crlf_combined() {
+    let dir = TempDir::new().unwrap();
+    let path = dir.path().join("bom_crlf.md");
+    // UTF-8 BOM + CRLF line endings
+    let mut bytes = vec![0xEF, 0xBB, 0xBF];
+    bytes.extend_from_slice(b"line1\r\nline2\r\n");
+    fs::write(&path, &bytes).unwrap();
+
+    let doc = svc().read(&path).unwrap();
+    assert!(!doc.content.contains('\r'), "content must be LF-normalised");
+    assert_eq!(doc.line_ending, LineEnding::Crlf);
+
+    // Round-trip: BOM and CRLF must both be preserved
+    svc().write(&path, &doc.content, Some(&doc.hash)).unwrap();
+    let raw = fs::read(&path).unwrap();
+    assert_eq!(&raw[..3], &[0xEF, 0xBB, 0xBF], "BOM must survive round-trip");
+    let s = String::from_utf8(raw[3..].to_vec()).unwrap();
+    assert!(s.contains("\r\n"), "CRLF must survive round-trip");
+    assert!(!s.contains("\r\n\r\n") || s == "line1\r\nline2\r\n",
+            "no double CRLF corruption");
+}
+
+#[test]
 fn test_atomic_write_no_tmp_left() {
     let dir = TempDir::new().unwrap();
     let path = dir.path().join("d.md");

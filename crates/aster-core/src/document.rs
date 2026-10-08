@@ -89,12 +89,17 @@ impl DocumentService {
         }
         bytes.extend_from_slice(body.as_bytes());
 
-        // Atomic write: tmp → rename
+        // Atomic write: tmp → fsync → rename
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
         let tmp = path.with_extension("tmp");
-        std::fs::write(&tmp, &bytes)?;
+        {
+            use std::io::Write;
+            let mut f = std::fs::File::create(&tmp)?;
+            f.write_all(&bytes)?;
+            f.sync_all()?; // fsync: flush tmp to disk before rename
+        }
         std::fs::rename(&tmp, path)?;
 
         Ok(sha256_hex(&bytes))

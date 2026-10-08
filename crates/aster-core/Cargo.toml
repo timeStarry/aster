@@ -15,3 +15,6 @@ sha2 = { workspace = true }
 hex = { workspace = true }
 notify = { workspace = true }
 dirs = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

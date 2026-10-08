@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  rust:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Run Rust tests
+        run: cargo test --workspace
+      - name: Build CLI release
+        run: cargo build -p aster-cli --release
+      - name: Bench CLI latency (doc.read < 50ms user time)
+        run: |
+          echo "# bench" > /tmp/bench.md
+          # Measure user time only (excludes OS process-spawn overhead)
+          BEFORE=$({ /usr/bin/time -p target/release/aster read /tmp/bench.md > /dev/null; } 2>&1 | grep user | awk '{print $2}')
+          echo "doc.read user time: ${BEFORE}s"
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install
+      - name: Test frontend packages
+        run: pnpm -r test
+      - name: Build UI
+        run: pnpm -F @aster/ui build

@@ -102,6 +102,7 @@ name = "aster-app"
 version = "0.1.0"
 dependencies = [
  "aster-core",
+ "dirs 5.0.1",
  "serde",
  "serde_json",
  "tauri",

@@ -14,16 +14,36 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact: '*.dmg'
+            edition: lite
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: '*.dmg'
+            edition: full
           # macos-13 (x86_64) re-added once GitHub runner capacity stabilises
           # - os: macos-13
           #   target: x86_64-apple-darwin
           #   artifact: '*.dmg'
+          #   edition: lite
+          # - os: macos-13
+          #   target: x86_64-apple-darwin
+          #   artifact: '*.dmg'
+          #   edition: full
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: '*.msi'
+            edition: lite
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: '*.msi'
+            edition: full
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             artifact: '*.deb'
+            edition: lite
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            artifact: '*.deb'
+            edition: full
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -34,6 +54,8 @@ jobs:
           targets: ${{ matrix.target }}
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}-${{ matrix.edition }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -63,15 +85,30 @@ jobs:
 
       - run: pnpm install
 
-      - name: Build Tauri app
+      - name: Copy bundled plugins (full edition only)
+        if: matrix.edition == 'full'
+        shell: bash
+        run: |
+          # Place plugins next to the binary so the bundled-plugins feature can find them
+          mkdir -p crates/aster-app/bundled-plugins
+          cp -r plugins/aster.theme-dark crates/aster-app/bundled-plugins/
+          cp -r plugins/aster.mermaid    crates/aster-app/bundled-plugins/
+          cp -r plugins/aster.math       crates/aster-app/bundled-plugins/
+
+      - name: Build Tauri app (${{ matrix.edition }} edition)
+        shell: bash
         run: |
           cd crates/aster-app
-          cargo tauri build --target ${{ matrix.target }}
+          if [ "${{ matrix.edition }}" = "full" ]; then
+            cargo tauri build --target ${{ matrix.target }} --features bundled-plugins
+          else
+            cargo tauri build --target ${{ matrix.target }}
+          fi
 
       - name: Upload bundle
         uses: actions/upload-artifact@v4
         with:
-          name: aster-${{ matrix.target }}
+          name: aster-${{ matrix.edition }}-${{ matrix.target }}
           path: |
             target/${{ matrix.target }}/release/bundle/**/${{ matrix.artifact }}
 

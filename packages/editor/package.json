@@ -1,0 +1,24 @@
+{
+  "name": "@aster/editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "bench": "vitest bench"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/language": "^6.10.9",
+    "@codemirror/language-data": "^6.5.1",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.5"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3"
+  }
+}

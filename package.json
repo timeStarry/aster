@@ -1,0 +1,9 @@
+{
+  "name": "aster",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -F @aster/ui dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  }
+}

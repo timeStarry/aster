@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Aster",
+  "version": "0.1.0",
+  "identifier": "app.aster.editor",
+  "build": {
+    "beforeDevCommand": "pnpm -F @aster/ui dev",
+    "beforeBuildCommand": "pnpm -F @aster/ui build",
+    "frontendDist": "../../packages/ui/dist",
+    "devUrl": "http://localhost:5173"
+  },
+  "app": {
+    "windows": [{
+      "title": "Aster",
+      "width": 1200,
+      "height": 800,
+      "minWidth": 600,
+      "minHeight": 400
+    }],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": []
+  }
+}

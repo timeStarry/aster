@@ -1,0 +1,20 @@
+{
+  "name": "@aster/renderer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0",
+    "highlight.js": "^11.11.1"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4",
+    "@types/markdown-it": "^14.1.2",
+    "typescript": "^5.8.3"
+  }
+}

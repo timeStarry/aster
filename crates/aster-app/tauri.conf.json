@@ -10,15 +10,28 @@
     "devUrl": "http://localhost:5173"
   },
   "app": {
-    "windows": [{
-      "title": "Aster",
-      "width": 1200,
-      "height": 800,
-      "minWidth": 600,
-      "minHeight": 400
-    }],
+    "windows": [
+      {
+        "title": "Aster",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 600,
+        "minHeight": 400,
+        "label": "main",
+        "dragDropEnabled": true
+      }
+    ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost"
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' asset: http://asset.localhost; style-src 'self' 'unsafe-inline' asset: http://asset.localhost; img-src 'self' asset: http://asset.localhost https: data: blob:; font-src 'self' asset: http://asset.localhost data:; connect-src ipc: http://ipc.localhost asset: http://asset.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$RESOURCE/**",
+          "$HOME/**",
+          "/Volumes/**",
+          "/tmp/**"
+        ]
+      }
     }
   },
   "bundle": {

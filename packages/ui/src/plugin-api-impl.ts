@@ -1,7 +1,17 @@
 export type RendererFn = (source: string) => Promise<string>;
 export type CommandFn = (params: Record<string, unknown>) => Promise<unknown>;
 
+/** Read access to the active document, provided by the host app. */
+export interface EditorAccess {
+  getContent(): string;
+  /** Active document rendered to HTML by the host's markdown pipeline. */
+  getHtml(): string;
+  getTitle(): string;
+}
+
 export interface PluginApiImpl {
+  /** Set by the host once the editor exists; null before that. */
+  editor: EditorAccess | null;
   renderers: {
     register(lang: string, fn: RendererFn): void;
     get(lang: string): RendererFn | null;
@@ -24,6 +34,7 @@ export function createPluginApi(): PluginApiImpl {
   const themes: Array<{ id: string; name: string; cssFile: string }> = [];
 
   return {
+    editor: null,
     renderers: {
       register: (lang, fn) => renderers.set(lang, fn),
       get: (lang) => renderers.get(lang) ?? null,

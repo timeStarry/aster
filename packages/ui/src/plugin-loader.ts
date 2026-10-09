@@ -1,8 +1,14 @@
 import { createPluginApi, type PluginApiImpl } from './plugin-api-impl';
-import type { PluginManifest } from '@aster/plugin-api';
+
+/** Minimal plugin description needed for frontend activation. */
+export interface LoadablePlugin {
+  id: string;
+  activation: string[];
+  /** Absolute path (or URL) to the plugin's frontend entry module. */
+  frontend?: string;
+}
 
 export let asterApi: PluginApiImpl | null = null;
-// Tracks which plugins have been activated; reset on each initPluginLoader call.
 let activated = new Set<string>();
 
 /**
@@ -10,20 +16,17 @@ let activated = new Set<string>();
  * Installs window.__aster, then activates onStartup plugins.
  */
 export async function initPluginLoader(
-  manifests: PluginManifest[],
-  resolvePluginUrl: (pluginId: string, relativePath: string) => string,
+  plugins: LoadablePlugin[],
+  resolvePluginUrl: (pluginId: string, path: string) => string,
 ): Promise<void> {
   asterApi = createPluginApi();
   activated = new Set<string>();
-  // Expose globally so plugin ES modules can call window.__aster.*
-  (window as Record<string, unknown>)['__aster'] = asterApi;
+  (window as unknown as Record<string, unknown>)['__aster'] = asterApi;
 
-  // Activate onStartup plugins immediately
-  const startupPlugins = manifests.filter(m => m.activation.includes('onStartup'));
-  for (const plugin of startupPlugins) {
+  for (const plugin of plugins.filter((p) => p.activation.includes('onStartup'))) {
+    activated.add(plugin.id);
     if (plugin.frontend) {
-      const url = resolvePluginUrl(plugin.id, plugin.frontend);
-      await asterApi._activateModule(url, plugin.id);
+      await asterApi._activateModule(resolvePluginUrl(plugin.id, plugin.frontend), plugin.id);
     }
   }
 }
@@ -34,21 +37,18 @@ export async function initPluginLoader(
  */
 export async function activateForTrigger(
   trigger: string,
-  manifests: PluginManifest[],
-  resolvePluginUrl: (pluginId: string, relativePath: string) => string,
+  plugins: LoadablePlugin[],
+  resolvePluginUrl: (pluginId: string, path: string) => string,
 ): Promise<void> {
   if (!asterApi) return;
-  const matching = manifests.filter(m => m.activation.includes(trigger) && !activated.has(m.id));
-  for (const plugin of matching) {
+  for (const plugin of plugins.filter((p) => p.activation.includes(trigger) && !activated.has(p.id))) {
     activated.add(plugin.id);
     if (plugin.frontend) {
-      const url = resolvePluginUrl(plugin.id, plugin.frontend);
-      await asterApi._activateModule(url, plugin.id);
+      await asterApi._activateModule(resolvePluginUrl(plugin.id, plugin.frontend), plugin.id);
     }
   }
 }
 
-/** Get a renderer for the given code block language, triggering lazy load if needed. */
 export function getCodeBlockRenderer(lang: string) {
   return asterApi?.renderers.get(lang) ?? null;
 }

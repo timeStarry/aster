@@ -10,6 +10,9 @@ importers:
 
   packages/editor:
     dependencies:
+      '@codemirror/autocomplete':
+        specifier: 6.20.3
+        version: 6.20.3
       '@codemirror/commands':
         specifier: ^6.8.1
         version: 6.11.1
@@ -22,12 +25,21 @@ importers:
       '@codemirror/language-data':
         specifier: ^6.5.1
         version: 6.5.2
+      '@codemirror/search':
+        specifier: 6.7.2
+        version: 6.7.2
       '@codemirror/state':
         specifier: ^6.5.2
         version: 6.7.6
       '@codemirror/view':
         specifier: ^6.36.5
         version: 6.43.14
+      '@lezer/common':
+        specifier: 1.5.3
+        version: 1.5.3
+      '@lezer/highlight':
+        specifier: 1.2.5
+        version: 1.2.5
     devDependencies:
       jsdom:
         specifier: ^26.1.0
@@ -81,10 +93,16 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.7.0
         version: 2.12.1
+      '@tauri-apps/plugin-dialog':
+        specifier: 2.8.1
+        version: 2.8.1
       solid-js:
         specifier: ^1.9.7
         version: 1.9.17
     devDependencies:
+      '@codemirror/view':
+        specifier: 6.43.14
+        version: 6.43.14
       typescript:
         specifier: ^5.8.3
         version: 5.9.3
@@ -264,6 +282,9 @@ packages:
 
   '@codemirror/lint@6.9.7':
     resolution: {integrity: sha512-28/+iWLYxKxsvGYhSYL7zaCZqLz5+FFFDq9tVsvGv9kv8RY4fFAchJ5WX9M3YrrRlTIsECjsXPqeNgnSmNP2dg==}
+
+  '@codemirror/search@6.7.2':
+    resolution: {integrity: sha512-gUYkYhT2+n/+VGZ+8EzE5WFkYZUZYm1VOKDudIsNqh42uRVQJ0a6Yss9sdKT3MeOYfuL1N6AZA57oza0Oyr0LA==}
 
   '@codemirror/state@6.7.6':
     resolution: {integrity: sha512-kAz+AncRtKuIknedxT1bq4XwXv4UowhbkHU1myPrtVb/jZtImWuV5BXzv5vK6i3kYACsdiZiQKFQQ5Mq7elW8w==}
@@ -831,6 +852,9 @@ packages:
 
   '@tauri-apps/api@2.12.1':
     resolution: {integrity: sha512-DeyFHa3wynpyoqTDikDEDGTJIq4LQ5USfolQGRmGIWT6JMADyxZBTDa5cAdT3tDg73rUXufPaCwN7aXBos4OnQ==}
+
+  '@tauri-apps/plugin-dialog@2.8.1':
+    resolution: {integrity: sha512-/DtE3B62JgpYuWFL5ATXM6KOXUq7pca7cJWOgSqULhZsgyjLk0PWKek1dbRDvhNBW6flNsOfWphsKnb+738Dmw==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -1800,6 +1824,12 @@ snapshots:
       '@codemirror/view': 6.43.14
       crelt: 1.0.7
 
+  '@codemirror/search@6.7.2':
+    dependencies:
+      '@codemirror/state': 6.7.6
+      '@codemirror/view': 6.43.14
+      crelt: 1.0.7
+
   '@codemirror/state@6.7.6':
     dependencies:
       '@marijn/find-cluster-break': 1.0.4
@@ -2182,6 +2212,10 @@ snapshots:
     optional: true
 
   '@tauri-apps/api@2.12.1': {}
+
+  '@tauri-apps/plugin-dialog@2.8.1':
+    dependencies:
+      '@tauri-apps/api': 2.12.1
 
   '@types/babel__core@7.20.5':
     dependencies:

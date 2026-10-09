@@ -60,16 +60,11 @@
   }
 
   function getDocumentHtml() {
-    // Prefer the reading-mode container if it is currently visible and populated.
-    const readingPane = document.querySelector('.aster-reading-pane, [data-aster-reading]');
-    if (readingPane && readingPane.innerHTML.trim().length > 50) {
-      return readingPane.innerHTML;
-    }
-    // Fall back: grab CodeMirror editor content.
+    // Prefer the host's renderer: it is the same pipeline the app uses.
+    const ed = window.__aster && window.__aster.editor;
+    if (ed) return ed.getHtml();
     const cmContent = document.querySelector('.cm-content');
-    if (cmContent) {
-      return markdownToHtml(cmContent.innerText || '');
-    }
+    if (cmContent) return markdownToHtml(cmContent.innerText || '');
     return '<p>No content found.</p>';
   }
 
@@ -78,7 +73,8 @@
       ? markdownToHtml(explicitContent)
       : getDocumentHtml();
 
-    const title = document.title || 'Aster Document';
+    const ed = window.__aster && window.__aster.editor;
+    const title = (ed && ed.getTitle()) || document.title || 'Aster Document';
 
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:0';
@@ -116,7 +112,7 @@
 
   // Also wire up a keyboard shortcut: Cmd/Ctrl + Shift + P
   document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'p') {
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'KeyP') {
       e.preventDefault();
       printDocument(null);
     }

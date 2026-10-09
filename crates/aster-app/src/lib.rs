@@ -1,4 +1,5 @@
 mod ipc;
+mod menu;
 mod recovery;
 mod rpc;
 use ipc::CoreState;
@@ -43,6 +44,9 @@ pub fn run() {
     let state = CoreState::new(plugin_host);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .menu(menu::build)
+        .on_menu_event(|app, event| menu::forward(app, event.id().as_ref()))
         .setup(move |_app| {
             #[cfg(feature = "bundled-plugins")]
             {

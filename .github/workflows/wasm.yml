@@ -33,10 +33,12 @@ jobs:
           for plugin_dir in plugins-wasm/*/; do
             plugin_name=$(basename "$plugin_dir")
             wasm_name=$(echo "$plugin_name" | tr '.' '_')
+            toml="${plugin_dir}Cargo.toml"
             echo "Building $plugin_name..."
-            # --crate-type cdylib overrides Cargo.toml (which uses rlib for native tests)
-            cargo rustc --manifest-path "${plugin_dir}Cargo.toml" \
-              --target wasm32-wasip2 --release -- --crate-type cdylib
+            # Temporarily add cdylib for the wasm build, then restore.
+            sed -i.bak 's/crate-type = \["rlib"\]/crate-type = ["cdylib", "rlib"]/' "$toml"
+            cargo build --manifest-path "$toml" --target wasm32-wasip2 --release
+            mv "${toml}.bak" "$toml"
           done
 
       - name: Verify WASM outputs exist

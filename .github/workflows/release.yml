@@ -107,10 +107,13 @@ jobs:
           for plugin_dir in plugins-wasm/*/; do
             plugin_name=$(basename "$plugin_dir")
             wasm_name=$(echo "$plugin_name" | tr '.' '_')
+            toml="${plugin_dir}Cargo.toml"
             echo "Building WASM: $plugin_name"
-            # --crate-type cdylib overrides Cargo.toml (which uses rlib for native tests)
-            cargo rustc --manifest-path "${plugin_dir}Cargo.toml" \
-              --target wasm32-wasip2 --release -- --crate-type cdylib
+            # Temporarily add cdylib to crate-type for the wasm build, then restore.
+            # (Cargo.toml keeps rlib-only so native `cargo test` avoids the WIT export linker error.)
+            sed -i.bak 's/crate-type = \["rlib"\]/crate-type = ["cdylib", "rlib"]/' "$toml"
+            cargo build --manifest-path "$toml" --target wasm32-wasip2 --release
+            mv "${toml}.bak" "$toml"
             wasm_src="target/wasm32-wasip2/release/${wasm_name}.wasm"
             dest="crates/aster-app/bundled-plugins/${plugin_name}"
             mkdir -p "$dest"

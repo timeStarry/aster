@@ -1,0 +1,7 @@
+{
+  "bundle": {
+    "resources": {
+      "bundled-plugins/": "bundled-plugins/"
+    }
+  }
+}

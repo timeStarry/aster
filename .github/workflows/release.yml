@@ -126,7 +126,7 @@ jobs:
         run: |
           cd crates/aster-app
           if [ "${{ matrix.edition }}" = "full" ]; then
-            cargo tauri build --target ${{ matrix.target }} --features bundled-plugins
+            cargo tauri build --target ${{ matrix.target }} --features bundled-plugins --config tauri.full.conf.json
           else
             cargo tauri build --target ${{ matrix.target }}
           fi

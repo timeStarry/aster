@@ -16,15 +16,6 @@ pub fn run() {
     // Build shared PluginHost, loading builtin and user plugins
     let plugin_host = {
         let mut h = PluginHost::new().expect("wasmtime init failed");
-        #[cfg(feature = "bundled-plugins")]
-        {
-            let bundled = std::env::current_exe()
-                .ok()
-                .and_then(|p| p.parent().map(|d| d.join("bundled-plugins")));
-            if let Some(dir) = bundled {
-                let _ = h.load_dir(&dir, aster_core::plugin::PluginSource::Builtin);
-            }
-        }
         let user_dir = dirs::home_dir()
             .unwrap_or_default()
             .join(".aster/plugins");
@@ -43,16 +34,30 @@ pub fn run() {
 
     // Start the JSON-RPC socket server in the background (best-effort)
     let reg_clone = Arc::clone(&reg);
-    let rpc_handle = {
-        let rt = tokio::runtime::Handle::current();
-        Some(rt.spawn(async move {
-            rpc::start_rpc_server(reg_clone).await
-        }))
-    };
+    let rpc_handle = tauri::async_runtime::spawn(async move {
+        rpc::start_rpc_server(reg_clone).await
+    });
 
+    #[cfg(feature = "bundled-plugins")]
+    let builtin_host = Arc::clone(&plugin_host);
     let state = CoreState::new(plugin_host);
 
     tauri::Builder::default()
+        .setup(move |_app| {
+            #[cfg(feature = "bundled-plugins")]
+            {
+                use tauri::Manager;
+                if let Ok(res) = _app.path().resource_dir() {
+                    let dir = res.join("bundled-plugins");
+                    if let Ok(mut h) = builtin_host.lock() {
+                        if let Err(e) = h.load_dir(&dir, aster_core::plugin::PluginSource::Builtin) {
+                            eprintln!("[aster-plugins] failed to load bundled plugins from {}: {e}", dir.display());
+                        }
+                    }
+                }
+            }
+            Ok(())
+        })
         .manage(state)
         .invoke_handler(tauri::generate_handler![
             ipc::dispatch,

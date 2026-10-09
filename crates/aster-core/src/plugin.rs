@@ -19,6 +19,15 @@ pub struct ContribCommand {
     pub headless: bool,
 }
 
+/// Localized display strings for one language (e.g. "zh").
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct PluginI18n {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PluginInfo {
     pub id: String,
@@ -30,6 +39,9 @@ pub struct PluginInfo {
     pub frontend_path: Option<PathBuf>,
     pub backend_path: Option<PathBuf>,
     pub contributes_commands: Vec<ContribCommand>,
+    /// Localized name/description keyed by language tag.
+    #[serde(default)]
+    pub i18n: HashMap<String, PluginI18n>,
     pub dir: PathBuf,
     pub source: PluginSource,
 }
@@ -77,6 +89,8 @@ struct RawManifest {
     backend: Option<String>,
     #[serde(default)]
     contributes: RawContributes,
+    #[serde(default)]
+    i18n: HashMap<String, PluginI18n>,
 }
 
 impl PluginHost {
@@ -161,6 +175,7 @@ impl PluginHost {
             frontend_path,
             backend_path,
             contributes_commands,
+            i18n: m.i18n,
             dir: dir.to_path_buf(),
             source,
         })

@@ -81,3 +81,22 @@ fn test_official_plugins_valid() {
     assert!(ids.contains(&"aster.mermaid"), "missing aster.mermaid");
     assert!(ids.contains(&"aster.math"), "missing aster.math");
 }
+
+#[test]
+fn manifest_i18n_is_parsed() {
+    let tmp = TempDir::new().unwrap();
+    let dir = tmp.path().join("aster.loc");
+    fs::create_dir_all(&dir).unwrap();
+    let manifest = serde_json::json!({
+        "id": "aster.loc", "name": "Math", "version": "1.0.0", "apiVersion": "1",
+        "description": "Render math", "permissions": [], "activation": ["onStartup"],
+        "frontend": "frontend/index.js", "contributes": {},
+        "i18n": { "zh": { "name": "数学公式", "description": "渲染数学公式" } }
+    });
+    fs::write(dir.join("aster.plugin.json"), manifest.to_string()).unwrap();
+    let mut host = PluginHost::new().unwrap();
+    host.load_dir(tmp.path(), PluginSource::User).unwrap();
+    let info = host.get("aster.loc").unwrap();
+    assert_eq!(info.i18n["zh"].name.as_deref(), Some("数学公式"));
+    assert_eq!(info.i18n["zh"].description.as_deref(), Some("渲染数学公式"));
+}

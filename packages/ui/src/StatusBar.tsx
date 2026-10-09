@@ -1,6 +1,7 @@
 import { Show } from 'solid-js';
 import type { EditorMode } from './model';
 import { MOD, ALT } from './model';
+import { t } from './i18n';
 
 interface Props {
   path: string | null;
@@ -36,33 +37,33 @@ export function StatusBar(props: Props) {
   return (
     <div class="aster-status" role="status">
       <span class="aster-status-path" title={props.path ?? ''}>
-        <Show when={props.notice} fallback={props.editorActive ? (props.path ?? 'Not saved yet') : 'Settings'}>
+        <Show when={props.notice} fallback={props.editorActive ? (props.path ?? t('status.notSaved')) : t('tab.settings')}>
           <span style={{ color: props.notice?.error ? 'var(--danger)' : 'var(--fg)' }}>{props.notice?.text}</span>
         </Show>
       </span>
       <Show when={props.editorActive}>
-      <span>{props.words} {props.words === 1 ? 'word' : 'words'}</span>
-      <span>Ln {props.line}, Col {props.col}</span>
-      <div class="aster-seg" role="group" aria-label="Editor mode">
+      <span>{props.words === 1 ? t('status.word') : t('status.words', { n: props.words })}</span>
+      <span>{t('status.lnCol', { line: props.line, col: props.col })}</span>
+      <div class="aster-seg" role="group" aria-label={t('status.modeGroup')}>
         <button
           classList={{ 'is-on': props.mode === 'live' }}
           aria-pressed={props.mode === 'live'}
-          title={`Live preview (${MOD}/ to toggle)`}
+          title={t('status.liveTip', { key: `${MOD}/` })}
           onClick={() => props.onModeChange('live')}
-        >Live</button>
+        >{t('status.live')}</button>
         <button
           classList={{ 'is-on': props.mode === 'source' }}
           aria-pressed={props.mode === 'source'}
-          title={`Source (${MOD}/ to toggle)`}
+          title={t('status.sourceTip', { key: `${MOD}/` })}
           onClick={() => props.onModeChange('source')}
-        >Source</button>
+        >{t('status.source')}</button>
       </div>
       <button
         class="aster-icon-btn"
         classList={{ 'is-on': props.readOnly }}
         aria-pressed={props.readOnly}
-        aria-label="Read-only"
-        title={`${props.readOnly ? 'Read-only — click to edit' : 'Lock (read-only)'} (${MOD}${ALT}L)`}
+        aria-label={t('status.readOnly')}
+        title={props.readOnly ? t('status.lockOnTip', { key: `${MOD}${ALT}L` }) : t('status.lockOffTip', { key: `${MOD}${ALT}L` })}
         onClick={() => props.onToggleLock()}
       >
         <LockIcon locked={props.readOnly} />
@@ -71,9 +72,9 @@ export function StatusBar(props: Props) {
       <button
         class="aster-icon-btn"
         classList={{ 'is-on': props.settingsActive }}
-        aria-label="Settings"
+        aria-label={t('tab.settings')}
         aria-pressed={props.settingsActive}
-        title={`Settings (${MOD},)`}
+        title={`${t('tab.settings')} (${MOD},)`}
         onClick={() => props.onSettings()}
       >
         <GearIcon />

@@ -9,6 +9,15 @@ export interface EditorAccess {
   getTitle(): string;
 }
 
+export interface PluginThemeDef {
+  id: string;
+  name: string;
+  /** Absolute URL of the theme stylesheet. */
+  cssFile: string;
+  /** Localized display names, e.g. { zh: '午夜' }. */
+  i18n?: Record<string, string>;
+}
+
 export interface PluginApiImpl {
   /** Set by the host once the editor exists; null before that. */
   editor: EditorAccess | null;
@@ -21,8 +30,8 @@ export interface PluginApiImpl {
     call(id: string, params: Record<string, unknown>): Promise<unknown>;
   };
   themes: {
-    register(theme: { id: string; name: string; cssFile: string }): void;
-    list(): Array<{ id: string; name: string; cssFile: string }>;
+    register(theme: PluginThemeDef): void;
+    list(): PluginThemeDef[];
   };
   /** Internal: load and activate an ES module URL in an isolated scope. */
   _activateModule(url: string, pluginId: string): Promise<void>;
@@ -31,7 +40,7 @@ export interface PluginApiImpl {
 export function createPluginApi(): PluginApiImpl {
   const renderers = new Map<string, RendererFn>();
   const commands = new Map<string, CommandFn>();
-  const themes: Array<{ id: string; name: string; cssFile: string }> = [];
+  const themes: PluginThemeDef[] = [];
 
   return {
     editor: null,
@@ -48,7 +57,11 @@ export function createPluginApi(): PluginApiImpl {
       },
     },
     themes: {
-      register: (t) => themes.push(t),
+      register: (t) => {
+        // Re-registering (e.g. plugin reload) replaces the earlier entry.
+        const i = themes.findIndex((x) => x.id === t.id);
+        if (i >= 0) themes[i] = t; else themes.push(t);
+      },
       list: () => [...themes],
     },
     async _activateModule(url: string, pluginId: string) {

@@ -18,13 +18,14 @@ export const asterEditorTheme = EditorView.theme({
   '&.cm-focused': { outline: 'none' },
   '.cm-scroller': {
     fontFamily: 'var(--font-prose)',
-    lineHeight: '1.75',
+    lineHeight: 'var(--editor-line-height, 1.75)',
     overflow: 'auto',
   },
   '.cm-content': {
-    maxWidth: 'var(--prose-width, 760px)',
+    // The margin is padding inside the column, so the text width stays constant.
+    maxWidth: 'calc(var(--prose-width, 760px) + 2 * var(--editor-margin, 32px))',
     margin: '0 auto',
-    padding: '40px 32px 40vh',
+    padding: '40px var(--editor-margin, 32px) 40vh',
     caretColor: 'var(--accent)',
   },
   '.cm-line': { padding: '0' },

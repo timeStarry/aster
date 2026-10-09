@@ -38,6 +38,8 @@ export interface EditorOptions {
   resolveImage?: (src: string) => string;
   /** Render fenced code blocks (math, diagrams) in live preview. */
   renderCodeBlock?: CodeBlockRenderer;
+  /** Translations for CodeMirror UI strings (search panel etc.). */
+  phrases?: Record<string, string>;
 }
 
 export interface AsterEditor {
@@ -45,6 +47,8 @@ export interface AsterEditor {
   setMode(mode: EditorMode): void;
   setReadOnly(on: boolean): void;
   setSettings(s: Partial<EditorSettings>): void;
+  /** Swap CodeMirror UI translations (e.g. after a language change). */
+  setPhrases(p: Record<string, string>): void;
   getContent(): string;
   /** Replace the document (adds an undoable change). */
   setContent(s: string): void;
@@ -60,6 +64,7 @@ const modeComp = new Compartment();
 const readOnlyComp = new Compartment();
 const lineNumbersComp = new Compartment();
 const typewriterComp = new Compartment();
+const phrasesComp = new Compartment();
 
 let resolveImage: ((src: string) => string) | undefined;
 let renderCodeBlock: CodeBlockRenderer | undefined;
@@ -76,6 +81,7 @@ export function createEditor(container: HTMLElement, opts: EditorOptions = {}): 
   let mode: EditorMode = opts.mode ?? 'live';
   let readOnly = opts.readOnly ?? false;
   const settings: EditorSettings = { lineNumbers: false, typewriter: false, ...opts.settings };
+  let phrases = opts.phrases ?? {};
   resolveImage = opts.resolveImage;
   renderCodeBlock = opts.renderCodeBlock;
 
@@ -104,6 +110,7 @@ export function createEditor(container: HTMLElement, opts: EditorOptions = {}): 
     readOnlyComp.of(readOnlyExtension(readOnly)),
     lineNumbersComp.of(settings.lineNumbers ? lineNumbers() : []),
     typewriterComp.of(settings.typewriter ? typewriterScrollExtension() : []),
+    phrasesComp.of(EditorState.phrases.of(phrases)),
     listener,
   ];
 
@@ -130,6 +137,10 @@ export function createEditor(container: HTMLElement, opts: EditorOptions = {}): 
         ],
       });
     },
+    setPhrases(p) {
+      phrases = p;
+      view.dispatch({ effects: phrasesComp.reconfigure(EditorState.phrases.of(p)) });
+    },
     getContent: () => view.state.doc.toString(),
     setContent(s) {
       view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: s } });
@@ -143,6 +154,7 @@ export function createEditor(container: HTMLElement, opts: EditorOptions = {}): 
           readOnlyComp.reconfigure(readOnlyExtension(readOnly)),
           lineNumbersComp.reconfigure(settings.lineNumbers ? lineNumbers() : []),
           typewriterComp.reconfigure(settings.typewriter ? typewriterScrollExtension() : []),
+          phrasesComp.reconfigure(EditorState.phrases.of(phrases)),
         ],
       });
     },

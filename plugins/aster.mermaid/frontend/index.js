@@ -5,8 +5,20 @@ let seq = 0;
 
 function loadMermaid() {
   if (!mermaidPromise) {
-    // The vendored build is an IIFE that assigns globalThis.mermaid.
-    mermaidPromise = import('./vendor/mermaid.min.js').then(() => globalThis.mermaid);
+    // The vendored build is a classic-script IIFE that assigns
+    // globalThis.mermaid via a top-level `var`. Evaluated as an ES module that
+    // var is module-scoped and the assignment throws, so inject a <script>.
+    mermaidPromise = new Promise((resolve, reject) => {
+      if (globalThis.mermaid) return resolve(globalThis.mermaid);
+      const el = document.createElement('script');
+      el.src = new URL('./vendor/mermaid.min.js', import.meta.url).href;
+      el.async = true;
+      el.onload = () => (globalThis.mermaid ? resolve(globalThis.mermaid) : reject(new Error('Mermaid did not initialize')));
+      el.onerror = () => reject(new Error('Could not load Mermaid'));
+      document.head.appendChild(el);
+    });
+    // Allow a retry after a failed load.
+    mermaidPromise.catch(() => { mermaidPromise = null; });
   }
   return mermaidPromise;
 }

@@ -2,5 +2,6 @@
 window.__aster.themes.register({
   id: 'aster.theme-dark',
   name: 'Midnight',
-  cssFile: new URL('theme.css', import.meta.url).href,
+  i18n: { zh: 'Midnight' },
+  cssFile: new URL('./theme.css', import.meta.url).href,
 });

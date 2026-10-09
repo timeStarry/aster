@@ -42,5 +42,11 @@
         "headless": false
       }
     ]
+  },
+  "i18n": {
+    "zh": {
+      "name": "Mermaid 图表",
+      "description": "渲染 ```mermaid 图表"
+    }
   }
 }

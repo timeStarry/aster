@@ -1,6 +1,7 @@
 import { Index, Show, createEffect } from 'solid-js';
 import type { Tab } from './model';
 import { MOD, isMac } from './model';
+import { t } from './i18n';
 
 interface Props {
   tabs: Tab[];
@@ -89,8 +90,8 @@ export function TabBar(props: Props) {
         class="aster-tab-close"
         classList={{ 'is-dirty': dirty() }}
         tabIndex={-1}
-        aria-label={`Close ${title()}${dirty() ? ' (unsaved changes)' : ''}`}
-        title={`Close (${MOD}W)`}
+        aria-label={t('tab.closeLabel', { name: title() }) + (dirty() ? t('tab.unsaved') : '')}
+        title={t('tab.close', { key: `${MOD}W` })}
         onClick={(e) => { e.stopPropagation(); props.onClose(id()); }}
       >
         <span class="dot" />
@@ -105,7 +106,7 @@ export function TabBar(props: Props) {
         class="aster-tabs-scroll"
         ref={scroller}
         role="tablist"
-        aria-label="Open documents"
+        aria-label={t('tab.list')}
         onKeyDown={onKeyDown}
         onWheel={(e) => {
           // Let a vertical mouse wheel scroll the strip horizontally.
@@ -118,10 +119,10 @@ export function TabBar(props: Props) {
           {(tab) => tabEl(() => tab().id, () => tab().title, () => tab().path ?? tab().title, () => tab().dirty)}
         </Index>
         <Show when={props.settingsId}>
-          {(id) => tabEl(id, () => 'Settings', () => `Settings (${MOD},)`, () => false, GearIcon)}
+          {(id) => tabEl(id, () => t('tab.settings'), () => `${t('tab.settings')} (${MOD},)`, () => false, GearIcon)}
         </Show>
       </div>
-      <button class="aster-tab-add" aria-label="New tab" title={`New tab (${MOD}N)`} onClick={() => props.onNew()}>
+      <button class="aster-tab-add" aria-label={t('tab.new', { key: '' }).replace(/[（(]\s*[)）]/, '').trim()} title={t('tab.new', { key: `${MOD}N` })} onClick={() => props.onNew()}>
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
           <path d="M8 3v10M3 8h10" />
         </svg>

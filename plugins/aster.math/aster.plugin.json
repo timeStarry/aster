@@ -16,5 +16,11 @@
         "codeBlock": "math"
       }
     ]
+  },
+  "i18n": {
+    "zh": {
+      "name": "数学公式",
+      "description": "用 KaTeX 渲染 ```math 代码块"
+    }
   }
 }

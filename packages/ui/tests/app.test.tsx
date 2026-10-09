@@ -5,7 +5,13 @@ import { EditorView } from '@codemirror/view';
 import App from '../src/App';
 
 let dispose: (() => void) | null = null;
-afterEach(() => { dispose?.(); dispose = null; document.body.innerHTML = ''; });
+afterEach(() => {
+  dispose?.(); dispose = null;
+  document.body.innerHTML = '';
+  document.documentElement.removeAttribute('data-theme');
+  document.documentElement.removeAttribute('style');
+  localStorage.clear();
+});
 
 function mount() {
   const root = document.createElement('div');
@@ -92,6 +98,7 @@ describe('App shell', () => {
   it('settings controls apply immediately', () => {
     const root = mount();
     key('Comma', mod);
+    (root.querySelector('#aster-set-nav-appearance') as HTMLButtonElement).click();
     const dark = [...root.querySelectorAll('.aster-theme-card')].find((b) => b.textContent === 'Dark') as HTMLButtonElement;
     dark.click();
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
@@ -102,8 +109,57 @@ describe('App shell', () => {
     ln.click();
     expect(ln.getAttribute('aria-checked')).toBe('true');
     expect(root.querySelector('.cm-lineNumbers')).not.toBeNull();
-    document.documentElement.removeAttribute('data-theme');
-    localStorage.clear();
+  });
+
+  it('font choices are locked while following the theme', () => {
+    const root = mount();
+    key('Comma', mod);
+    (root.querySelector('#aster-set-nav-editor') as HTMLButtonElement).click();
+    const style = document.documentElement.style;
+    const presetBtns = () => [...root.querySelectorAll('[aria-labelledby="set-preset-label"] button')] as HTMLButtonElement[];
+    expect(presetBtns().every((b) => b.disabled)).toBe(true);
+    expect(style.getPropertyValue('--font-prose')).toBe('');
+
+    (root.querySelector('#set-ft') as HTMLButtonElement).click(); // stop following theme
+    expect(presetBtns().every((b) => !b.disabled)).toBe(true);
+    expect(style.getPropertyValue('--font-prose')).toContain('serif');
+
+    presetBtns().find((b) => b.textContent === 'Sans-serif')!.click();
+    expect(style.getPropertyValue('--font-prose')).toContain('sans-serif');
+    expect(root.querySelector('#set-body')).toBeNull(); // pickers only for Custom
+
+    presetBtns().find((b) => b.textContent === 'Custom')!.click();
+    const body = root.querySelector('#set-body') as HTMLSelectElement;
+    expect(body).not.toBeNull();
+    expect(root.querySelector('#set-code')).not.toBeNull();
+    body.value = 'wenkai';
+    body.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(style.getPropertyValue('--font-prose')).toContain('LXGW WenKai');
+
+    (root.querySelector('#set-ft') as HTMLButtonElement).click(); // back to theme fonts
+    expect(style.getPropertyValue('--font-prose')).toBe('');
+    expect(root.querySelector('#set-body')).toBeNull();
+  });
+
+  it('switches the interface to Chinese and back', () => {
+    const root = mount();
+    key('Comma', mod);
+    const sel = root.querySelector('#set-lang') as HTMLSelectElement;
+    sel.value = 'zh';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(document.documentElement.lang).toBe('zh-CN');
+    expect(root.querySelector('.aster-set-title')!.textContent).toBe('设置');
+    const tabTitles = [...root.querySelectorAll('.aster-tab-title')].map((x) => x.textContent);
+    expect(tabTitles).toEqual(['未命名', '设置']);
+    // Untouched welcome document follows the language.
+    const view = EditorView.findFromDOM(root.querySelector('.cm-editor') as HTMLElement)!;
+    expect(view.state.doc.toString()).toContain('欢迎使用 Aster');
+    expect(view.state.phrase('Find')).toBe('查找');
+
+    sel.value = 'en';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(root.querySelector('.aster-set-title')!.textContent).toBe('Settings');
+    expect(view.state.doc.toString()).toContain('Welcome to Aster');
   });
 
   it('closing a dirty tab asks before discarding', async () => {

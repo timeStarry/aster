@@ -4,8 +4,12 @@
   "version": "1.0.0",
   "apiVersion": "1",
   "description": "Full-text search index for your workspace",
-  "permissions": ["fs:workspace"],
-  "activation": ["onStartup"],
+  "permissions": [
+    "fs:workspace"
+  ],
+  "activation": [
+    "onStartup"
+  ],
   "frontend": null,
   "backend": "aster_library.wasm",
   "contributes": {
@@ -13,17 +17,55 @@
       {
         "id": "library.index",
         "description": "Scan workspace and build full-text index",
-        "params": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]},
-        "returns": {"type": "object", "properties": {"indexed": {"type": "number"}}},
+        "params": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "indexed": {
+              "type": "number"
+            }
+          }
+        },
         "headless": true
       },
       {
         "id": "library.search",
         "description": "Search the document library",
-        "params": {"type": "object", "properties": {"query": {"type": "string"}, "limit": {"type": "number"}}, "required": ["query"]},
-        "returns": {"type": "array"},
+        "params": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        },
+        "returns": {
+          "type": "array"
+        },
         "headless": true
       }
     ]
+  },
+  "i18n": {
+    "zh": {
+      "name": "文档库",
+      "description": "为工作区建立全文搜索索引"
+    }
   }
 }

@@ -25,4 +25,6 @@
   --syn-fn: #7dd3fc;
   --syn-type: #5eead4;
   --danger: #f87171;
+  /* Midnight sets type in a clean sans by default. */
+  --theme-font-prose: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
 }

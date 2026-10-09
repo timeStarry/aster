@@ -15,8 +15,17 @@
       {
         "id": "aster.theme-dark",
         "name": "Midnight",
-        "cssFile": "frontend/theme.css"
+        "cssFile": "frontend/theme.css",
+        "i18n": {
+          "zh": "Midnight"
+        }
       }
     ]
+  },
+  "i18n": {
+    "zh": {
+      "name": "Midnight 主题",
+      "description": "冷蓝色调的深色主题"
+    }
   }
 }

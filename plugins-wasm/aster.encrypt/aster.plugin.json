@@ -5,7 +5,9 @@
   "apiVersion": "1",
   "description": "AES-256-GCM encryption/decryption via onAfterRead and onBeforeSave hooks",
   "permissions": [],
-  "activation": ["onStartup"],
+  "activation": [
+    "onStartup"
+  ],
   "frontend": null,
   "backend": "aster_encrypt.wasm",
   "contributes": {
@@ -13,18 +15,48 @@
       {
         "id": "encrypt.setKey",
         "description": "Set the runtime encryption key (hex-encoded 32 bytes)",
-        "params": {"type": "object", "properties": {"key_hex": {"type": "string"}}, "required": ["key_hex"]},
-        "returns": {"type": "object"},
+        "params": {
+          "type": "object",
+          "properties": {
+            "key_hex": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "key_hex"
+          ]
+        },
+        "returns": {
+          "type": "object"
+        },
         "headless": true
       },
       {
         "id": "encrypt.status",
         "description": "Return whether an encryption key is currently active",
-        "params": {"type": "object"},
-        "returns": {"type": "object", "properties": {"active": {"type": "boolean"}}},
+        "params": {
+          "type": "object"
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "active": {
+              "type": "boolean"
+            }
+          }
+        },
         "headless": true
       }
     ],
-    "hooks": ["onAfterRead", "onBeforeSave"]
+    "hooks": [
+      "onAfterRead",
+      "onBeforeSave"
+    ]
+  },
+  "i18n": {
+    "zh": {
+      "name": "内容加密",
+      "description": "通过读取后与保存前钩子进行 AES-256-GCM 加解密"
+    }
   }
 }

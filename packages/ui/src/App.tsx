@@ -15,12 +15,14 @@ import { ConfirmModal, type ConfirmRequest, type ConfirmButton } from './Confirm
 import { initPluginLoader, activateForTrigger, asterApi, type LoadablePlugin } from './plugin-loader';
 import {
   type Tab, type Settings, type EditorMode, type PluginTheme,
-  loadSettings, saveSettings, applySettings, makeTab, basename, dirname, wordCount, isMac, WELCOME,
+  loadSettings, saveSettings, applySettings, makeTab, basename, dirname, wordCount, isMac, MOD, fileUrl,
 } from './model';
+import { t, lang, applyLanguage, editorPhrases, WELCOME, type Lang } from './i18n';
 import './theme.css';
 
 const inTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
-const MD_FILTERS = [{ name: 'Markdown', extensions: ['md', 'markdown', 'mdown', 'mkd', 'txt'] }];
+const MD_EXTS = ['md', 'markdown', 'mdown', 'mkd', 'txt'];
+const mdFilters = () => [{ name: t('dialog.markdown'), extensions: MD_EXTS }];
 const pipeline = createDefaultPipeline();
 
 interface AsterErr { code?: string; message?: string }
@@ -31,13 +33,22 @@ const SETTINGS_ID = 'settings';
 interface PluginInfo {
   id: string; name: string; version: string; description?: string; activation: string[];
   frontend_path: string | null; source: string;
+  i18n?: Record<string, { name?: string; description?: string }>;
+}
+
+/** Base URL of Tauri's asset protocol on this platform. */
+function assetBase(): string {
+  // convertFileSrc('') yields e.g. "asset://localhost/" or "http://asset.localhost/".
+  try { return convertFileSrc(''); } catch { return 'asset://localhost/'; }
 }
 
 export default function App() {
   const [settings, setSettingsSig] = createSignal<Settings>(loadSettings());
+  applyLanguage(settings().language);
   applySettings(settings());
 
-  const first = makeTab({ content: WELCOME }, []);
+  const welcomeText = (l: Lang) => WELCOME[l](MOD);
+  const first = makeTab({ content: welcomeText(lang()) }, [], t('tab.untitled'));
   const [tabs, setTabs] = createSignal<Tab[]>([first]);
   const [activeId, setActiveId] = createSignal(first.id);
   const [mode, setMode] = createSignal<EditorMode>('live');
@@ -51,7 +62,7 @@ export default function App() {
   const [plugins, setPlugins] = createSignal<PluginRow[]>([]);
   const [pluginThemes, setPluginThemes] = createSignal<PluginTheme[]>([]);
   let loadable: LoadablePlugin[] = [];
-  const pluginUrl = (_id: string, path: string) => convertFileSrc(path);
+  const pluginUrl = (_id: string, path: string) => fileUrl(path, assetBase());
 
   // Editor states are kept outside the reactive graph: Solid must not proxy them.
   const states = new Map<string, EditorState>();
@@ -63,12 +74,12 @@ export default function App() {
   let host!: HTMLDivElement;
   let noticeTimer: number | undefined;
 
-  const tab = (id: string) => tabs().find((t) => t.id === id);
+  const tab = (id: string) => tabs().find((tb) => tb.id === id);
   const active = createMemo(() => tab(activeId()));
   const onSettings = () => activeId() === SETTINGS_ID;
   const words = createMemo(() => wordCount(active()?.content ?? ''));
   const updateTab = (id: string, patch: Partial<Tab>) =>
-    setTabs((ts) => ts.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    setTabs((ts) => ts.map((tb) => (tb.id === id ? { ...tb, ...patch } : tb)));
 
   function flash(text: string, error = false) {
     setNotice({ text, error });
@@ -88,11 +99,11 @@ export default function App() {
     if (id === cur && editor) return;
     setActiveId(id);
     if (id === SETTINGS_ID || !editor) return;
-    const t = tab(id);
-    if (!t) return;
+    const tb = tab(id);
+    if (!tb) return;
     if (id !== editorDocId) {
       if (tab(editorDocId)) states.set(editorDocId, editor.view.state);
-      editor.setState(states.get(id) ?? editor.createState(t.content));
+      editor.setState(states.get(id) ?? editor.createState(tb.content));
       editorDocId = id;
     }
     updateCursor(editor.view.state);
@@ -108,13 +119,13 @@ export default function App() {
   }
 
   function newTab() {
-    const t = makeTab({}, tabs());
-    setTabs((ts) => [...ts, t]);
-    activate(t.id);
+    const nt = makeTab({}, tabs(), t('tab.untitled'));
+    setTabs((ts) => [...ts, nt]);
+    activate(nt.id);
   }
 
   function cycleTab(dir: 1 | -1) {
-    const ids = [...tabs().map((t) => t.id), ...(settingsOpen() ? [SETTINGS_ID] : [])];
+    const ids = [...tabs().map((tb) => tb.id), ...(settingsOpen() ? [SETTINGS_ID] : [])];
     const i = ids.indexOf(activeId());
     activate(ids[(i + dir + ids.length) % ids.length]);
   }
@@ -128,16 +139,16 @@ export default function App() {
       }
       return true;
     }
-    const t = tab(id);
-    if (!t) return true;
-    if (t.dirty) {
+    const tb = tab(id);
+    if (!tb) return true;
+    if (tb.dirty) {
       const choice = await ask(
-        `Save changes to “${t.title}”?`,
-        "Your changes will be lost if you don't save them.",
+        t('confirm.saveTitle', { name: tb.title }),
+        t('confirm.saveBody'),
         [
-          { id: 'discard', label: "Don't Save", kind: 'danger' },
-          { id: 'cancel', label: 'Cancel' },
-          { id: 'save', label: 'Save', kind: 'primary' },
+          { id: 'discard', label: t('confirm.dontSave'), kind: 'danger' },
+          { id: 'cancel', label: t('confirm.cancel') },
+          { id: 'save', label: t('confirm.save'), kind: 'primary' },
         ],
         'cancel',
       );
@@ -150,7 +161,7 @@ export default function App() {
     states.delete(id);
     clearTimeout(autoSaveTimers.get(id));
     conflicted.delete(id);
-    if (rest.length === 0) rest = [makeTab({}, [])];
+    if (rest.length === 0) rest = [makeTab({}, [], t('tab.untitled'))];
     setTabs(rest);
     const next = rest[Math.min(idx, rest.length - 1)].id;
     if (activeId() === id) {
@@ -167,31 +178,31 @@ export default function App() {
   }
 
   // ── Files ──────────────────────────────────────────────────
-  function isPristine(t: Tab | undefined) {
-    return !!t && !t.path && !t.dirty && (t.content === '' || t.content === WELCOME);
+  function isPristine(tb: Tab | undefined) {
+    return !!tb && !tb.path && !tb.dirty && (tb.content === '' || tb.content === welcomeText('en') || tb.content === welcomeText('zh'));
   }
 
   async function openPath(path: string) {
-    const existing = tabs().find((t) => t.path === path);
+    const existing = tabs().find((tb) => tb.path === path);
     if (existing) { activate(existing.id); return; }
     try {
       const r = await invoke<{ content: string; hash: string }>('dispatch', { id: 'doc.read', params: { path } });
       const replace = isPristine(active()) ? active()! : null;
-      const t = makeTab({ path, content: r.content, hash: r.hash }, tabs());
+      const nt = makeTab({ path, content: r.content, hash: r.hash }, tabs());
       if (replace) {
         states.delete(replace.id);
-        setTabs((ts) => ts.map((x) => (x.id === replace.id ? t : x)));
+        setTabs((ts) => ts.map((x) => (x.id === replace.id ? nt : x)));
       } else {
-        setTabs((ts) => [...ts, t]);
+        setTabs((ts) => [...ts, nt]);
       }
-      activate(t.id);
+      activate(nt.id);
     } catch (e) {
-      flash(`Could not open ${basename(path)}: ${errText(e)}`, true);
+      flash(t('notice.openFailed', { name: basename(path), err: errText(e) }), true);
     }
   }
 
   async function openFiles() {
-    const picked = await openDialog({ multiple: true, filters: MD_FILTERS });
+    const picked = await openDialog({ multiple: true, filters: mdFilters() });
     if (!picked) return;
     for (const p of Array.isArray(picked) ? picked : [picked]) await openPath(p);
   }
@@ -205,41 +216,41 @@ export default function App() {
   }
 
   function markSaved(id: string, path: string, content: string, hash: string) {
-    const t = tab(id);
-    if (!t) return;
-    updateTab(id, { path, title: basename(path), saved: content, hash, dirty: t.content !== content });
+    const tb = tab(id);
+    if (!tb) return;
+    updateTab(id, { path, title: basename(path), saved: content, hash, dirty: tb.content !== content });
     conflicted.delete(id);
   }
 
   /** Save a tab. Returns false if the user cancelled or the write failed. */
   async function saveTab(id: string, saveAs = false): Promise<boolean> {
-    const t = tab(id);
-    if (!t) return false;
-    let path = t.path;
+    const tb = tab(id);
+    if (!tb) return false;
+    let path = tb.path;
     if (!path || saveAs) {
-      const picked = await saveDialog({ defaultPath: t.path ?? `${t.title}.md`, filters: MD_FILTERS });
+      const picked = await saveDialog({ defaultPath: tb.path ?? `${tb.title}.md`, filters: mdFilters() });
       if (!picked) return false;
       path = picked;
     }
     const content = currentContent(id);
-    const expected = path === t.path ? t.hash ?? undefined : undefined;
+    const expected = path === tb.path ? tb.hash ?? undefined : undefined;
     try {
       const r = await writeFile(id, path, content, expected);
       markSaved(id, path, content, r.hash);
-      flash(`Saved ${basename(path)}`);
+      flash(t('notice.saved', { name: basename(path) }));
       return true;
     } catch (e) {
       if ((e as AsterErr)?.code !== 'E_CONFLICT') {
-        flash(`Save failed: ${errText(e)}`, true);
+        flash(t('notice.saveFailed', { err: errText(e) }), true);
         return false;
       }
       const choice = await ask(
-        `“${basename(path)}” changed on disk`,
-        'Another program modified this file after it was opened. Overwrite it with your version, or reload the version on disk?',
+        t('confirm.diskTitle', { name: basename(path) }),
+        t('confirm.diskBody'),
         [
-          { id: 'reload', label: 'Reload from Disk', kind: 'danger' },
-          { id: 'cancel', label: 'Cancel' },
-          { id: 'overwrite', label: 'Overwrite', kind: 'primary' },
+          { id: 'reload', label: t('confirm.reload'), kind: 'danger' },
+          { id: 'cancel', label: t('confirm.cancel') },
+          { id: 'overwrite', label: t('confirm.overwrite'), kind: 'primary' },
         ],
         'cancel',
       );
@@ -248,26 +259,26 @@ export default function App() {
       try {
         const r = await writeFile(id, path, content);
         markSaved(id, path, content, r.hash);
-        flash(`Saved ${basename(path)}`);
+        flash(t('notice.saved', { name: basename(path) }));
         return true;
       } catch (e2) {
-        flash(`Save failed: ${errText(e2)}`, true);
+        flash(t('notice.saveFailed', { err: errText(e2) }), true);
         return false;
       }
     }
   }
 
   async function reloadTab(id: string) {
-    const t = tab(id);
-    if (!t?.path) return;
+    const tb = tab(id);
+    if (!tb?.path) return;
     try {
-      const r = await invoke<{ content: string; hash: string }>('dispatch', { id: 'doc.read', params: { path: t.path } });
+      const r = await invoke<{ content: string; hash: string }>('dispatch', { id: 'doc.read', params: { path: tb.path } });
       updateTab(id, { content: r.content, saved: r.content, hash: r.hash, dirty: false });
       conflicted.delete(id);
       states.delete(id);
       if (id === editorDocId && editor) editor.setState(editor.createState(r.content));
     } catch (e) {
-      flash(`Reload failed: ${errText(e)}`, true);
+      flash(t('notice.reloadFailed', { err: errText(e) }), true);
     }
   }
 
@@ -275,18 +286,18 @@ export default function App() {
     clearTimeout(autoSaveTimers.get(id));
     if (!settings().autoSave || conflicted.has(id)) return;
     autoSaveTimers.set(id, window.setTimeout(async () => {
-      const t = tab(id);
-      if (!t?.path || !t.dirty || conflicted.has(id)) return;
-      const content = t.content;
+      const tb = tab(id);
+      if (!tb?.path || !tb.dirty || conflicted.has(id)) return;
+      const content = tb.content;
       try {
-        const r = await writeFile(id, t.path, content, t.hash ?? undefined);
-        markSaved(id, t.path, content, r.hash);
+        const r = await writeFile(id, tb.path, content, tb.hash ?? undefined);
+        markSaved(id, tb.path, content, r.hash);
       } catch (e) {
         if ((e as AsterErr)?.code === 'E_CONFLICT') {
           conflicted.add(id);
-          flash(`“${t.title}” changed on disk — auto-save paused. Save manually to resolve.`, true);
+          flash(t('notice.autoSavePaused', { name: tb.title }), true);
         } else {
-          flash(`Auto-save failed: ${errText(e)}`, true);
+          flash(t('notice.autoSaveFailed', { err: errText(e) }), true);
         }
       }
     }, 1000));
@@ -303,14 +314,39 @@ export default function App() {
     const on = !readOnly();
     setReadOnly(on);
     editor?.setReadOnly(on);
-    flash(on ? 'Read-only — editing is locked' : 'Editing unlocked');
+    flash(on ? t('notice.lockOn') : t('notice.lockOff'));
+  }
+
+  /** Push the current language to the parts that don't read `t()` reactively. */
+  function syncLanguage(l: Lang) {
+    editor?.setPhrases(editorPhrases(l));
+    if (inTauri) void invoke('set_menu_language', { lang: l }).catch(() => {});
+    // Untouched welcome tab: show it in the new language too.
+    const w = tabs().find((tb) => !tb.path && !tb.dirty && (tb.content === welcomeText('en') || tb.content === welcomeText('zh')));
+    if (w && w.content !== welcomeText(l)) {
+      const text = welcomeText(l);
+      updateTab(w.id, { content: text, saved: text });
+      if (w.id === editorDocId && editor) {
+        editor.setState(editor.createState(text));
+      } else {
+        states.delete(w.id);
+      }
+    }
+    // Rename untitled tabs that still carry the other language's base name.
+    const other = l === 'zh' ? 'Untitled' : '未命名';
+    const base = t('tab.untitled');
+    setTabs((ts) => ts.map((tb) => (!tb.path && (tb.title === other || tb.title.startsWith(other + ' '))
+      ? { ...tb, title: base + tb.title.slice(other.length) }
+      : tb)));
   }
 
   function changeSettings(s: Settings) {
     const themeChanged = s.theme !== settings().theme;
+    const langChanged = s.language !== settings().language;
     setSettingsSig(s);
     saveSettings(s);
     applySettings(s, pluginThemes());
+    if (langChanged) syncLanguage(applyLanguage(s.language));
     // Diagrams pick colors from the theme at render time.
     if (themeChanged && editor) requestAnimationFrame(() => editor && refreshCodeBlocks(editor.view, { clearCache: true }));
     editor?.setSettings({ lineNumbers: s.lineNumbers, typewriter: s.typewriter });
@@ -351,7 +387,7 @@ export default function App() {
     try {
       await asterApi?.commands.call('pdf-export.print', {});
     } catch {
-      flash('PDF export needs the PDF Export plugin (included in the full edition).', true);
+      flash(t('notice.pdfNeedsPlugin'), true);
     }
   }
 
@@ -419,12 +455,13 @@ export default function App() {
       settings: { lineNumbers: settings().lineNumbers, typewriter: settings().typewriter },
       resolveImage,
       renderCodeBlock,
+      phrases: editorPhrases(lang()),
       onContentChange: (content) => {
         const id = editorDocId;
-        const t = tab(id);
-        if (!t) return;
-        updateTab(id, { content, dirty: content !== t.saved });
-        if (t.path) scheduleAutoSave(id);
+        const tb = tab(id);
+        if (!tb) return;
+        updateTab(id, { content, dirty: content !== tb.saved });
+        if (tb.path) scheduleAutoSave(id);
       },
       onSelectionChange: updateCursor,
     });
@@ -457,6 +494,7 @@ export default function App() {
 
     const win = getCurrentWindow();
     void getVersion().then(setVersion).catch(() => {});
+    void invoke('set_menu_language', { lang: lang() }).catch(() => {});
     if (isMac) {
       // Traffic lights disappear in fullscreen; reclaim their space.
       const syncInset = async () => setInset(!(await win.isFullscreen().catch(() => false)));
@@ -464,24 +502,24 @@ export default function App() {
       unlisten.push(await win.onResized(() => void syncInset()));
     }
     unlisten.push(await win.onCloseRequested(async (event) => {
-      const dirty = tabs().filter((t) => t.dirty);
+      const dirty = tabs().filter((tb) => tb.dirty);
       if (dirty.length === 0) return;
       event.preventDefault();
       const choice = await ask(
-        dirty.length === 1 ? `Save changes to “${dirty[0].title}”?` : `${dirty.length} documents have unsaved changes`,
-        "Your changes will be lost if you don't save them.",
+        dirty.length === 1 ? t('confirm.saveTitle', { name: dirty[0].title }) : t('confirm.saveManyTitle', { n: dirty.length }),
+        t('confirm.saveBody'),
         [
-          { id: 'discard', label: "Don't Save", kind: 'danger' },
-          { id: 'cancel', label: 'Cancel' },
-          { id: 'save', label: dirty.length === 1 ? 'Save' : 'Save All', kind: 'primary' },
+          { id: 'discard', label: t('confirm.dontSave'), kind: 'danger' },
+          { id: 'cancel', label: t('confirm.cancel') },
+          { id: 'save', label: dirty.length === 1 ? t('confirm.save') : t('confirm.saveAll'), kind: 'primary' },
         ],
         'cancel',
       );
       if (choice === 'cancel') return;
       if (choice === 'save') {
-        for (const t of dirty) {
-          activate(t.id);
-          if (!(await saveTab(t.id))) return;
+        for (const tb of dirty) {
+          activate(tb.id);
+          if (!(await saveTab(tb.id))) return;
         }
       }
       await win.destroy();
@@ -489,7 +527,9 @@ export default function App() {
 
     try {
       const list = await invoke<PluginInfo[]>('dispatch', { id: 'plugin.list', params: {} });
-      setPlugins(list.map((p) => ({ id: p.id, name: p.name, version: p.version, description: p.description ?? '', source: p.source })));
+      setPlugins(list.map((p) => ({
+        id: p.id, name: p.name, version: p.version, description: p.description ?? '', source: p.source, i18n: p.i18n,
+      })));
       loadable = list.map((p) => ({ id: p.id, activation: p.activation, frontend: p.frontend_path ?? undefined }));
       await initPluginLoader(loadable, pluginUrl);
       if (asterApi) {
@@ -510,14 +550,14 @@ export default function App() {
 
   onCleanup(() => {
     window.removeEventListener('keydown', onKeyDown, true);
-    autoSaveTimers.forEach((t) => clearTimeout(t));
+    autoSaveTimers.forEach((h) => clearTimeout(h));
     editor?.destroy();
   });
 
   createEffect(() => {
-    const t = active();
-    if (!t && !onSettings()) return;
-    const title = t ? `${t.title}${t.dirty ? ' •' : ''} — Aster` : 'Settings — Aster';
+    const tb = active();
+    if (!tb && !onSettings()) return;
+    const title = tb ? `${tb.title}${tb.dirty ? ' •' : ''} — Aster` : t('window.settings');
     document.title = title;
     if (inTauri) void getCurrentWindow().setTitle(title).catch(() => {});
   });

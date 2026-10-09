@@ -45,7 +45,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .menu(menu::build)
+        .menu(|app| menu::build(app, menu::Lang::En))
         .on_menu_event(|app, event| menu::forward(app, event.id().as_ref()))
         .setup(move |_app| {
             #[cfg(feature = "bundled-plugins")]
@@ -69,6 +69,7 @@ pub fn run() {
             ipc::editor_open_file,
             ipc::editor_get_selection,
             ipc::editor_insert,
+            menu::set_menu_language,
         ])
         .on_window_event(move |_window, event| {
             if let tauri::WindowEvent::Destroyed = event {

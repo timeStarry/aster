@@ -1,24 +1,24 @@
-// Registers an inline and block math renderer using KaTeX.
-// KaTeX is bundled alongside this file as katex.min.js.
-let katex;
+// Renders ```math fenced blocks with KaTeX (vendored under ./vendor).
+let katexPromise = null;
 
-async function loadKatex() {
-  if (katex) return katex;
-  try {
-    const m = await import('./katex.min.js');
-    katex = m.default ?? m;
-  } catch (e) {
-    console.error('[aster.math] failed to load KaTeX:', e);
+function loadKatex() {
+  if (!katexPromise) {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = new URL('./vendor/katex.min.css', import.meta.url).href;
+    document.head.appendChild(css);
+    katexPromise = import('./vendor/katex.mjs').then((m) => m.default ?? m);
   }
-  return katex;
+  return katexPromise;
 }
 
 window.__aster.renderers.register('math', async (source) => {
-  const k = await loadKatex();
-  if (!k) return `<pre>${source}</pre>`;
-  try {
-    return k.renderToString(source.trim(), { throwOnError: false, displayMode: true });
-  } catch (e) {
-    return `<pre class="aster-error">Math error: ${e.message}</pre>`;
-  }
+  const katex = await loadKatex();
+  // throwOnError:false renders invalid TeX inline in red instead of failing
+  // the whole block; trust:false (default) blocks \href/\url/\includegraphics.
+  return katex.renderToString(source.trim(), {
+    displayMode: true,
+    throwOnError: false,
+    output: 'htmlAndMathml',
+  });
 });

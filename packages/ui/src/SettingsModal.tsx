@@ -1,5 +1,5 @@
 import { For, Show, onMount, onCleanup } from 'solid-js';
-import type { Settings } from './model';
+import type { Settings, PluginTheme } from './model';
 import { MOD, ALT, SHIFT } from './model';
 
 export interface PluginRow {
@@ -12,6 +12,7 @@ export interface PluginRow {
 interface Props {
   settings: Settings;
   plugins: PluginRow[];
+  themes: PluginTheme[];
   onChange: (s: Settings) => void;
   onClose: () => void;
 }
@@ -46,10 +47,11 @@ export function SettingsModal(props: Props) {
         <div class="aster-field">
           <label for="s-theme">Theme</label>
           <select id="s-theme" ref={first} value={props.settings.theme}
-            onChange={(e) => set('theme', e.currentTarget.value as Settings['theme'])}>
+            onChange={(e) => set('theme', e.currentTarget.value)}>
             <option value="system">Match system</option>
             <option value="light">Light</option>
             <option value="dark">Dark</option>
+            <For each={props.themes}>{(t) => <option value={t.id}>{t.name}</option>}</For>
           </select>
         </div>
         <div class="aster-field">

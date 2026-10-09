@@ -1,21 +1,46 @@
 {
   "id": "aster.mermaid",
   "name": "Mermaid",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "apiVersion": "1",
-  "description": "Render Mermaid diagrams in live preview and reading mode",
+  "description": "Render ```mermaid diagrams",
   "permissions": [],
-  "activation": ["onCodeBlock:mermaid"],
+  "activation": [
+    "onCodeBlock:mermaid"
+  ],
   "frontend": "frontend/index.js",
   "backend": null,
   "contributes": {
-    "renderers": [{ "codeBlock": "mermaid" }],
-    "commands": [{
-      "id": "mermaid.exportSvg",
-      "description": "Export the focused Mermaid block to SVG",
-      "params": { "type": "object", "properties": { "source": { "type": "string" } }, "required": ["source"] },
-      "returns": { "type": "object", "properties": { "svg": { "type": "string" } } },
-      "headless": false
-    }]
+    "renderers": [
+      {
+        "codeBlock": "mermaid"
+      }
+    ],
+    "commands": [
+      {
+        "id": "mermaid.exportSvg",
+        "description": "Export the focused Mermaid block to SVG",
+        "params": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "source"
+          ]
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "svg": {
+              "type": "string"
+            }
+          }
+        },
+        "headless": false
+      }
+    ]
   }
 }

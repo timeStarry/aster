@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg: #fbfbfa;
   --fg: #1c1917;
   --fg-muted: #57534e;
@@ -33,6 +34,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg: #1c1917;
     --fg: #e7e5e4;
     --fg-muted: #a8a29e;
@@ -61,6 +63,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #1c1917;
   --fg: #e7e5e4;
   --fg-muted: #a8a29e;
@@ -262,6 +265,12 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
   font-size: 0.88em;
   background: var(--code-bg);
 }
+
+.aster-lp-rendered { margin: 8px 0; overflow-x: auto; text-align: center; }
+.aster-lp-rendered svg { max-width: 100%; height: auto; }
+.aster-lp-rendered.is-pending { opacity: 0.6; }
+.aster-lp-rendered > .aster-lp-codeblock { text-align: left; }
+.aster-lp-render-error { color: var(--danger); font-size: 12px; text-align: left; font-family: var(--font-mono); }
 
 .aster-lp-image img { max-width: 100%; border-radius: 6px; display: block; margin: 8px 0; }
 .aster-lp-image-broken { color: var(--fg-faint); font-size: 0.9em; }

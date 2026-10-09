@@ -14,7 +14,8 @@ export interface Tab {
 }
 
 export interface Settings {
-  theme: 'system' | 'light' | 'dark';
+  /** 'system' | 'light' | 'dark', or a plugin theme id. */
+  theme: string;
   fontSize: number;
   proseWidth: number;
   lineNumbers: boolean;
@@ -47,9 +48,25 @@ export function saveSettings(s: Settings): void {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch { /* private mode */ }
 }
 
-export function applySettings(s: Settings): void {
+export interface PluginTheme { id: string; name: string; cssFile: string }
+
+export function applySettings(s: Settings, pluginThemes: PluginTheme[] = []): void {
   const root = document.documentElement;
-  if (s.theme === 'system') root.removeAttribute('data-theme');
+  const pt = pluginThemes.find((t) => t.id === s.theme);
+  let link = document.getElementById('aster-plugin-theme') as HTMLLinkElement | null;
+  if (pt) {
+    if (!link) {
+      link = document.createElement('link');
+      link.id = 'aster-plugin-theme';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    if (link.href !== pt.cssFile) link.href = pt.cssFile;
+  } else {
+    link?.remove();
+  }
+  // A plugin theme id that isn't loaded (yet) falls back to the system theme.
+  if (s.theme === 'system' || (!pt && s.theme !== 'light' && s.theme !== 'dark')) root.removeAttribute('data-theme');
   else root.setAttribute('data-theme', s.theme);
   root.style.setProperty('--editor-font-size', `${s.fontSize}px`);
   root.style.setProperty('--prose-width', `${s.proseWidth}px`);

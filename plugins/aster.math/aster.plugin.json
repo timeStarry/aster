@@ -1,14 +1,20 @@
 {
   "id": "aster.math",
   "name": "Math",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "apiVersion": "1",
-  "description": "Render LaTeX math expressions using KaTeX",
+  "description": "Render ```math blocks with KaTeX",
   "permissions": [],
-  "activation": ["onCodeBlock:math", "onStartup"],
+  "activation": [
+    "onCodeBlock:math"
+  ],
   "frontend": "frontend/index.js",
   "backend": null,
   "contributes": {
-    "renderers": [{ "codeBlock": "math" }]
+    "renderers": [
+      {
+        "codeBlock": "math"
+      }
+    ]
   }
 }

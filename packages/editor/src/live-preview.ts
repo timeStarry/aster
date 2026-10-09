@@ -1,4 +1,4 @@
-import { EditorState, Extension, StateField, Range } from '@codemirror/state';
+import { EditorState, Extension, StateField, StateEffect, Range } from '@codemirror/state';
 import { EditorView, Decoration, DecorationSet, WidgetType } from '@codemirror/view';
 import { syntaxTree, ensureSyntaxTree } from '@codemirror/language';
 import type { SyntaxNode } from '@lezer/common';
@@ -83,7 +83,7 @@ function build(state: EditorState): DecorationSet {
       if (name === 'FencedCode') {
         if (!touches(from, to)) {
           const info = node.getChild('CodeInfo');
-          const lang = info ? doc.sliceString(info.from, info.to).trim() : '';
+          const lang = info ? doc.sliceString(info.from, info.to).trim().split(/\s+/)[0].toLowerCase() : '';
           const text = node.getChild('CodeText');
           const body = text ? doc.sliceString(text.from, text.to) : '';
           out.push(Decoration.replace({ widget: new CodeBlockWidget(body, lang), block: true }).range(from, to));
@@ -255,29 +255,94 @@ class ImageWidget extends WidgetType {
   eq(o: ImageWidget) { return o.src === this.src && o.alt === this.alt; }
 }
 
-class CodeBlockWidget extends WidgetType {
-  constructor(readonly body: string, readonly lang: string) { super(); }
-  toDOM() {
-    const pre = document.createElement('pre');
-    pre.className = 'aster-lp-codeblock';
-    if (this.lang) {
-      const badge = document.createElement('span');
-      badge.className = 'aster-lp-codelang';
-      badge.textContent = this.lang;
-      pre.appendChild(badge);
-    }
-    const code = document.createElement('code');
-    code.textContent = this.body;
-    pre.appendChild(code);
-    return pre;
+/**
+ * Renders a fenced block's body to HTML, e.g. via a plugin. Return null
+ * (synchronously or from the promise) to fall back to a plain code block.
+ */
+export type CodeBlockRenderer = (lang: string, body: string) => Promise<string | null> | null;
+
+let codeRenderer: CodeBlockRenderer | null = null;
+const renderCache = new Map<string, string>();
+const RENDER_CACHE_MAX = 200;
+// Bumped by refreshCodeBlocks so existing widgets re-render (eq() fails).
+let renderGeneration = 0;
+
+function plainCodeBlock(body: string, lang: string): HTMLElement {
+  const pre = document.createElement('pre');
+  pre.className = 'aster-lp-codeblock';
+  if (lang) {
+    const badge = document.createElement('span');
+    badge.className = 'aster-lp-codelang';
+    badge.textContent = lang;
+    pre.appendChild(badge);
   }
-  eq(o: CodeBlockWidget) { return o.body === this.body && o.lang === this.lang; }
+  const code = document.createElement('code');
+  code.textContent = body;
+  pre.appendChild(code);
+  return pre;
+}
+
+class CodeBlockWidget extends WidgetType {
+  readonly gen = renderGeneration;
+  constructor(readonly body: string, readonly lang: string) { super(); }
+  toDOM(view: EditorView) {
+    const key = `${this.lang}\u0000${this.body}`;
+    const cached = renderCache.get(key);
+    if (cached !== undefined) {
+      const wrap = document.createElement('div');
+      wrap.className = 'aster-lp-rendered';
+      wrap.innerHTML = cached;
+      return wrap;
+    }
+    const pending = this.lang && codeRenderer ? codeRenderer(this.lang, this.body) : null;
+    if (!pending) return plainCodeBlock(this.body, this.lang);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'aster-lp-rendered is-pending';
+    wrap.appendChild(plainCodeBlock(this.body, this.lang));
+    pending.then(
+      (html) => {
+        wrap.classList.remove('is-pending');
+        if (html == null) return;
+        if (renderCache.size >= RENDER_CACHE_MAX) renderCache.delete(renderCache.keys().next().value!);
+        renderCache.set(key, html);
+        wrap.innerHTML = html;
+        view.requestMeasure();
+      },
+      (err) => {
+        wrap.classList.remove('is-pending');
+        const msg = document.createElement('div');
+        msg.className = 'aster-lp-render-error';
+        msg.textContent = `${this.lang}: ${err instanceof Error ? err.message : String(err)}`;
+        wrap.appendChild(msg);
+        view.requestMeasure();
+      },
+    );
+    return wrap;
+  }
+  eq(o: CodeBlockWidget) { return o.body === this.body && o.lang === this.lang && o.gen === this.gen; }
+}
+
+const refreshEffect = StateEffect.define<null>();
+
+/**
+ * Re-render fenced code blocks, e.g. after a renderer plugin finished loading
+ * or the theme changed. With clearCache, previously rendered output is dropped.
+ */
+export function refreshCodeBlocks(view: EditorView, opts: { clearCache?: boolean } = {}): void {
+  if (opts.clearCache) renderCache.clear();
+  renderGeneration++;
+  view.dispatch({ effects: refreshEffect.of(null) });
 }
 
 const livePreviewField = StateField.define<DecorationSet>({
   create: build,
   update(value, tr) {
-    if (tr.docChanged || tr.selection || syntaxTree(tr.state) !== syntaxTree(tr.startState)) {
+    if (
+      tr.docChanged || tr.selection ||
+      tr.effects.some((e) => e.is(refreshEffect)) ||
+      syntaxTree(tr.state) !== syntaxTree(tr.startState)
+    ) {
       return build(tr.state);
     }
     return value;
@@ -288,10 +353,13 @@ const livePreviewField = StateField.define<DecorationSet>({
 export interface LivePreviewOptions {
   /** Map a markdown image src (possibly relative) to a URL the webview can load. */
   resolveImage?: (src: string) => string;
+  /** Render fenced blocks such as ```math or ```mermaid. */
+  renderCodeBlock?: CodeBlockRenderer;
 }
 
 export function livePreviewExtension(opts: LivePreviewOptions = {}): Extension {
   imageResolver = opts.resolveImage ?? null;
+  codeRenderer = opts.renderCodeBlock ?? null;
   return livePreviewField;
 }
 

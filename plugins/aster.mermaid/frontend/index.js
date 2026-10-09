@@ -1,35 +1,45 @@
-// Loaded when a mermaid code block is encountered.
-// Registers a renderer that replaces the raw <pre> with a rendered SVG.
-let mermaid;
+// Renders ```mermaid fenced blocks (Mermaid vendored under ./vendor).
+let mermaidPromise = null;
+let currentTheme = null;
+let seq = 0;
 
-async function loadMermaid() {
-  if (mermaid) return mermaid;
-  try {
-    const m = await import('./mermaid.min.js');
-    mermaid = m.default ?? m;
-    mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
-  } catch (e) {
-    console.error('[aster.mermaid] failed to load mermaid:', e);
+function loadMermaid() {
+  if (!mermaidPromise) {
+    // The vendored build is an IIFE that assigns globalThis.mermaid.
+    mermaidPromise = import('./vendor/mermaid.min.js').then(() => globalThis.mermaid);
+  }
+  return mermaidPromise;
+}
+
+function wantedTheme() {
+  const scheme = getComputedStyle(document.documentElement).colorScheme || '';
+  return scheme.includes('dark') ? 'dark' : 'neutral';
+}
+
+async function ready() {
+  const mermaid = await loadMermaid();
+  const theme = wantedTheme();
+  if (theme !== currentTheme) {
+    // securityLevel 'strict' sanitizes labels and disables click handlers.
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme });
+    currentTheme = theme;
   }
   return mermaid;
 }
 
-window.__aster.renderers.register('mermaid', async (source) => {
-  const m = await loadMermaid();
-  if (!m) return `<pre>${source}</pre>`;
+async function render(source) {
+  const mermaid = await ready();
+  const id = `aster-mermaid-${++seq}`;
   try {
-    const id = 'mermaid-' + Math.random().toString(36).slice(2);
-    const { svg } = await m.render(id, source);
+    const { svg } = await mermaid.render(id, source);
     return svg;
-  } catch (e) {
-    return `<pre class="aster-error">Mermaid error: ${e.message}</pre>`;
+  } finally {
+    // On a parse error Mermaid leaves its scratch/error node in <body>.
+    document.getElementById(id)?.remove();
+    document.getElementById(`d${id}`)?.remove();
   }
-});
+}
 
-window.__aster.commands.register('mermaid.exportSvg', async ({ source }) => {
-  const m = await loadMermaid();
-  if (!m) throw new Error('mermaid not loaded');
-  const id = 'export-' + Math.random().toString(36).slice(2);
-  const { svg } = await m.render(id, source);
-  return { svg };
-});
+window.__aster.renderers.register('mermaid', render);
+
+window.__aster.commands.register('mermaid.exportSvg', async ({ source }) => ({ svg: await render(source) }));

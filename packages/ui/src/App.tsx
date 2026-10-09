@@ -5,15 +5,15 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import type { EditorState } from '@codemirror/state';
-import { createEditor, openSearchPanel, type AsterEditor } from '@aster/editor';
+import { createEditor, openSearchPanel, refreshCodeBlocks, type AsterEditor } from '@aster/editor';
 import { createDefaultPipeline } from '@aster/renderer';
 import { TabBar } from './TabBar';
 import { StatusBar } from './StatusBar';
 import { SettingsModal, type PluginRow } from './SettingsModal';
 import { ConfirmModal, type ConfirmRequest, type ConfirmButton } from './ConfirmModal';
-import { initPluginLoader, asterApi } from './plugin-loader';
+import { initPluginLoader, activateForTrigger, asterApi, type LoadablePlugin } from './plugin-loader';
 import {
-  type Tab, type Settings, type EditorMode,
+  type Tab, type Settings, type EditorMode, type PluginTheme,
   loadSettings, saveSettings, applySettings, makeTab, basename, dirname, wordCount, isMac, WELCOME,
 } from './model';
 import './theme.css';
@@ -44,6 +44,9 @@ export default function App() {
   const [showSettings, setShowSettings] = createSignal(false);
   const [confirmReq, setConfirmReq] = createSignal<ConfirmRequest | null>(null);
   const [plugins, setPlugins] = createSignal<PluginRow[]>([]);
+  const [pluginThemes, setPluginThemes] = createSignal<PluginTheme[]>([]);
+  let loadable: LoadablePlugin[] = [];
+  const pluginUrl = (_id: string, path: string) => convertFileSrc(path);
 
   // Editor states are kept outside the reactive graph: Solid must not proxy them.
   const states = new Map<string, EditorState>();
@@ -269,9 +272,12 @@ export default function App() {
   }
 
   function changeSettings(s: Settings) {
+    const themeChanged = s.theme !== settings().theme;
     setSettingsSig(s);
     saveSettings(s);
-    applySettings(s);
+    applySettings(s, pluginThemes());
+    // Diagrams pick colors from the theme at render time.
+    if (themeChanged && editor) requestAnimationFrame(() => editor && refreshCodeBlocks(editor.view, { clearCache: true }));
     editor?.setSettings({ lineNumbers: s.lineNumbers, typewriter: s.typewriter });
     editor?.view.requestMeasure();
   }
@@ -292,6 +298,18 @@ export default function App() {
       p = `${dirname(base)}/${p}`;
     }
     return convertFileSrc(p);
+  }
+
+  /** Live-preview hook: render ```lang blocks through a plugin renderer, if one exists. */
+  function renderCodeBlock(lang: string, body: string): Promise<string | null> | null {
+    if (!asterApi) return null;
+    const existing = asterApi.renderers.get(lang);
+    if (existing) return existing(body);
+    if (!loadable.some((p) => p.activation.includes(`onCodeBlock:${lang}`))) return null;
+    return activateForTrigger(`onCodeBlock:${lang}`, loadable, pluginUrl).then(() => {
+      const r = asterApi?.renderers.get(lang);
+      return r ? r(body) : null;
+    });
   }
 
   async function exportPdf() {
@@ -360,6 +378,7 @@ export default function App() {
       readOnly: readOnly(),
       settings: { lineNumbers: settings().lineNumbers, typewriter: settings().typewriter },
       resolveImage,
+      renderCodeBlock,
       onContentChange: (content) => {
         const id = activeId();
         const t = tab(id);
@@ -424,11 +443,11 @@ export default function App() {
     try {
       const list = await invoke<PluginInfo[]>('dispatch', { id: 'plugin.list', params: {} });
       setPlugins(list.map((p) => ({ id: p.id, name: p.name, version: p.version, source: p.source })));
-      await initPluginLoader(
-        list.map((p) => ({ id: p.id, activation: p.activation, frontend: p.frontend_path ?? undefined })),
-        (_id, path) => convertFileSrc(path),
-      );
+      loadable = list.map((p) => ({ id: p.id, activation: p.activation, frontend: p.frontend_path ?? undefined }));
+      await initPluginLoader(loadable, pluginUrl);
       if (asterApi) {
+        setPluginThemes(asterApi.themes.list());
+        applySettings(settings(), pluginThemes());
         asterApi.editor = {
           getContent: () => editor?.getContent() ?? '',
           getHtml: () => pipeline.render(editor?.getContent() ?? ''),
@@ -438,6 +457,8 @@ export default function App() {
     } catch (e) {
       console.error('[aster] plugin init failed:', e);
     }
+    // Blocks visible at startup were drawn before plugins existed.
+    if (editor) refreshCodeBlocks(editor.view);
   });
 
   onCleanup(() => {
@@ -480,6 +501,7 @@ export default function App() {
         <SettingsModal
           settings={settings()}
           plugins={plugins()}
+          themes={pluginThemes()}
           onChange={changeSettings}
           onClose={() => { setShowSettings(false); editor?.focus(); }}
         />

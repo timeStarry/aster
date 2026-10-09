@@ -14,7 +14,7 @@ import { languages } from '@codemirror/language-data';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { search, searchKeymap, highlightSelectionMatches } from '@codemirror/search';
-import { livePreviewExtension } from './live-preview';
+import { livePreviewExtension, type CodeBlockRenderer } from './live-preview';
 import { formattingExtension } from './formatting';
 import { themeExtension } from './theme';
 import { typewriterScrollExtension } from './immersive';
@@ -36,6 +36,8 @@ export interface EditorOptions {
   onSelectionChange?: (state: EditorState) => void;
   /** Resolve markdown image paths (e.g. relative to the open file). */
   resolveImage?: (src: string) => string;
+  /** Render fenced code blocks (math, diagrams) in live preview. */
+  renderCodeBlock?: CodeBlockRenderer;
 }
 
 export interface AsterEditor {
@@ -60,9 +62,10 @@ const lineNumbersComp = new Compartment();
 const typewriterComp = new Compartment();
 
 let resolveImage: ((src: string) => string) | undefined;
+let renderCodeBlock: CodeBlockRenderer | undefined;
 
 function modeExtension(mode: EditorMode): Extension {
-  return mode === 'live' ? livePreviewExtension({ resolveImage }) : [];
+  return mode === 'live' ? livePreviewExtension({ resolveImage, renderCodeBlock }) : [];
 }
 
 function readOnlyExtension(on: boolean): Extension {
@@ -74,6 +77,7 @@ export function createEditor(container: HTMLElement, opts: EditorOptions = {}): 
   let readOnly = opts.readOnly ?? false;
   const settings: EditorSettings = { lineNumbers: false, typewriter: false, ...opts.settings };
   resolveImage = opts.resolveImage;
+  renderCodeBlock = opts.renderCodeBlock;
 
   const listener = EditorView.updateListener.of((u) => {
     if (u.docChanged) opts.onContentChange?.(u.state.doc.toString());
@@ -158,3 +162,4 @@ export {
   insertTable,
 } from './formatting';
 export { openSearchPanel } from '@codemirror/search';
+export { refreshCodeBlocks, type CodeBlockRenderer } from './live-preview';

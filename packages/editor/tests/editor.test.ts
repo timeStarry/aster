@@ -251,3 +251,57 @@ describe('createEditor', () => {
     });
   });
 });
+
+describe('code block renderers', () => {
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+
+  it('renders a fenced block through the renderer hook', async () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const seen: [string, string][] = [];
+    const ed = createEditor(el, {
+      initialContent: 'x\n\n```math\na^2\n```\n',
+      renderCodeBlock: (lang, body) => {
+        seen.push([lang, body]);
+        return lang === 'math' ? Promise.resolve(`<span class="rendered">${body}</span>`) : null;
+      },
+    });
+    await tick();
+    expect(seen).toEqual([['math', 'a^2']]);
+    expect(el.querySelector('.aster-lp-rendered .rendered')?.textContent).toBe('a^2');
+    ed.destroy();
+  });
+
+  it('falls back to a plain code block when no renderer exists', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const ed = createEditor(el, { initialContent: 'x\n\n```js\nlet a\n```\n', renderCodeBlock: () => null });
+    expect(el.querySelector('.aster-lp-codeblock code')?.textContent).toBe('let a');
+    expect(el.querySelector('.aster-lp-rendered')).toBeNull();
+    ed.destroy();
+  });
+
+  it('shows an error under the source when rendering fails', async () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const ed = createEditor(el, {
+      initialContent: 'x\n\n```mermaid\nnot a diagram\n```\n',
+      renderCodeBlock: () => Promise.reject(new Error('Parse error')),
+    });
+    await tick();
+    expect(el.querySelector('.aster-lp-render-error')?.textContent).toBe('mermaid: Parse error');
+    expect(el.querySelector('.aster-lp-codeblock code')?.textContent).toBe('not a diagram');
+    ed.destroy();
+  });
+
+  it('shows source while the cursor is inside the block', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const doc = '```math\na^2\n```';
+    const ed = createEditor(el, { initialContent: doc, renderCodeBlock: () => Promise.resolve('<b>r</b>') });
+    ed.view.dispatch({ selection: { anchor: doc.indexOf('a^2') } });
+    expect(el.querySelector('.aster-lp-rendered')).toBeNull();
+    expect(el.querySelector('.cm-content')?.textContent).toContain('```math');
+    ed.destroy();
+  });
+});

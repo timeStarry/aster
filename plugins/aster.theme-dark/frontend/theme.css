@@ -1,12 +1,28 @@
-/* Dark theme CSS variable overrides */
+/* Midnight: a cool blue dark theme. Overrides the app's design tokens. */
 :root[data-theme="aster.theme-dark"] {
-  --color-bg: #1e1e1e;
-  --color-surface: #252526;
-  --color-border: #3e3e42;
-  --color-text: #cccccc;
-  --color-accent: #007acc;
-  --color-editor-bg: #1e1e1e;
-  --color-editor-text: #d4d4d4;
-  --color-editor-selection: #264f78;
-  --color-editor-cursor: #aeafad;
+  color-scheme: dark;
+  --bg: #0f172a;
+  --fg: #e2e8f0;
+  --fg-muted: #94a3b8;
+  --fg-faint: #64748b;
+  --border: #1e293b;
+  --accent: #38bdf8;
+  --accent-fg: #0f172a;
+  --surface: #172033;
+  --surface-2: #1e293b;
+  --tab-bg: #0b1222;
+  --tab-active: #0f172a;
+  --status-bg: #0b1222;
+  --selection: rgba(56, 189, 248, 0.25);
+  --search-match: rgba(250, 204, 21, 0.25);
+  --search-match-active: rgba(250, 204, 21, 0.5);
+  --code-bg: #172033;
+  --code-fg: #f9a8d4;
+  --quote-bar: #334155;
+  --syn-keyword: #c084fc;
+  --syn-string: #86efac;
+  --syn-number: #fcd34d;
+  --syn-fn: #7dd3fc;
+  --syn-type: #5eead4;
+  --danger: #f87171;
 }

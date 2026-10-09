@@ -1,18 +1,22 @@
 {
   "id": "aster.theme-dark",
-  "name": "Dark Theme",
-  "version": "1.0.0",
+  "name": "Midnight Theme",
+  "version": "1.1.0",
   "apiVersion": "1",
-  "description": "Dark color theme for Aster",
+  "description": "A cool blue dark theme",
   "permissions": [],
-  "activation": ["onStartup"],
+  "activation": [
+    "onStartup"
+  ],
   "frontend": "frontend/index.js",
   "backend": null,
   "contributes": {
-    "themes": [{
-      "id": "aster.theme-dark",
-      "name": "Dark",
-      "cssFile": "frontend/theme.css"
-    }]
+    "themes": [
+      {
+        "id": "aster.theme-dark",
+        "name": "Midnight",
+        "cssFile": "frontend/theme.css"
+      }
+    ]
   }
 }

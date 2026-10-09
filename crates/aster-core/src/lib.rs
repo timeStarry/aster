@@ -6,3 +6,4 @@ pub mod registry;
 pub mod workspace;
 pub mod commands;
 pub mod wasm_host;
+pub mod plugin_sig;

@@ -30,3 +30,4 @@ clap = { version = "4", features = ["derive"] }
 wasmtime = { version = "28.0.0", features = ["component-model"] }
 wasmtime-wasi = { version = "28.0.0" }
 wit-bindgen = { version = "0.36.0", features = ["macros"] }
+ed25519-dalek = { version = "2.1", features = ["serde"] }

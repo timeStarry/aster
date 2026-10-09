@@ -1,0 +1,20 @@
+{
+  "id": "aster.pdf-export",
+  "name": "PDF Export",
+  "version": "1.0.0",
+  "apiVersion": "1",
+  "description": "Export the current document to PDF via the system print dialog",
+  "permissions": [],
+  "activation": ["onStartup"],
+  "frontend": "frontend/index.js",
+  "backend": null,
+  "contributes": {
+    "commands": [{
+      "id": "pdf-export.print",
+      "description": "Export current document to PDF",
+      "params": { "type": "object", "properties": { "content": { "type": "string" } }, "required": [] },
+      "returns": { "type": "object", "properties": { "status": { "type": "string" } } },
+      "headless": false
+    }]
+  }
+}

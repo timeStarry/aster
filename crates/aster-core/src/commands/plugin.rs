@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 use serde_json::{json, Value};
 use crate::{
     plugin::PluginHost,
+    plugin_sig::{verify_plugin_signature, SignatureStatus},
     registry::{CommandRegistry, CommandSpec},
     error::{AsterError, AsterResult},
 };
@@ -73,6 +74,15 @@ pub fn register(registry: &mut CommandRegistry, host: Arc<Mutex<PluginHost>>) {
                 if !manifest_path.exists() {
                     return Err(AsterError::NotFound("aster.plugin.json not found in plugin directory".into()));
                 }
+                // Signature check: warn on unsigned, hard-fail on bad signature.
+                let sig_status = verify_plugin_signature(&src_canon)
+                    .map_err(|e| AsterError::InvalidParams(
+                        format!("plugin signature invalid: {e}")
+                    ))?;
+                let signed = match sig_status {
+                    SignatureStatus::Official => true,
+                    SignatureStatus::Unsigned => false,
+                };
                 let user_dir = dirs::home_dir()
                     .unwrap_or_else(|| std::path::PathBuf::from("."))
                     .join(".aster/plugins");
@@ -90,7 +100,7 @@ pub fn register(registry: &mut CommandRegistry, host: Arc<Mutex<PluginHost>>) {
                 copy_dir(&src_canon, &dest).map_err(|e| AsterError::Io(e.to_string()))?;
                 let mut host = h.lock().map_err(|_| AsterError::Io("lock poisoned".into()))?;
                 host.load_dir(&user_dir, crate::plugin::PluginSource::User)?;
-                Ok(json!({"id": id}))
+                Ok(json!({"id": id, "signed": signed}))
             },
         );
     }

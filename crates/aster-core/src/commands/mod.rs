@@ -2,6 +2,7 @@ pub mod doc;
 pub mod workspace;
 pub mod export;
 pub mod plugin;
+pub mod editor;
 
 use std::sync::{Arc, Mutex};
 use crate::{
@@ -21,4 +22,5 @@ pub fn register_core_commands(
     workspace::register(registry, Arc::clone(&ws));
     export::register(registry, Arc::clone(&doc));
     plugin::register(registry, Arc::clone(&host));
+    editor::register(registry);
 }

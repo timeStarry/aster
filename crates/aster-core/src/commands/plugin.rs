@@ -104,6 +104,95 @@ pub fn register(registry: &mut CommandRegistry, host: Arc<Mutex<PluginHost>>) {
             },
         );
     }
+
+    // plugin.installPack — install all plugins from a directory pack
+    {
+        let h = Arc::clone(&host);
+        registry.register_with_handler(
+            CommandSpec {
+                id: "plugin.installPack".into(),
+                description: "Install all plugins from a plugin pack directory (contains multiple plugin subdirs)".into(),
+                params_schema: json!({"type":"object","properties":{"path":{"type":"string"}},"required":["path"]}),
+                returns_schema: json!({"type":"object","properties":{"installed":{"type":"array","items":{"type":"string"}},"skipped":{"type":"array","items":{"type":"string"}}}}),
+                headless: true,
+                source: "core".into(),
+            },
+            move |params| {
+                let src = params.get("path").and_then(|v| v.as_str())
+                    .ok_or_else(|| AsterError::InvalidParams("missing field: path".into()))?;
+                let pack_dir = std::path::Path::new(src).canonicalize()
+                    .map_err(|e| AsterError::NotFound(format!("pack path not found: {e}")))?;
+                if !pack_dir.is_dir() {
+                    return Err(AsterError::NotFound("pack path is not a directory".into()));
+                }
+                let user_dir = dirs::home_dir()
+                    .unwrap_or_else(|| std::path::PathBuf::from("."))
+                    .join(".aster/plugins");
+                std::fs::create_dir_all(&user_dir).map_err(|e| AsterError::Io(e.to_string()))?;
+
+                let mut installed: Vec<String> = Vec::new();
+                let mut skipped: Vec<String> = Vec::new();
+
+                // Each subdirectory with aster.plugin.json is a plugin
+                for entry in std::fs::read_dir(&pack_dir)
+                    .map_err(|e| AsterError::Io(e.to_string()))?
+                    .flatten()
+                {
+                    let plugin_dir = entry.path();
+                    if !plugin_dir.is_dir() { continue; }
+                    let manifest_path = plugin_dir.join("aster.plugin.json");
+                    if !manifest_path.exists() { continue; }
+
+                    // Signature check — skip plugins with invalid signatures
+                    match verify_plugin_signature(&plugin_dir) {
+                        Err(e) => {
+                            eprintln!("[aster-plugins] skipping {:?}: {e}", plugin_dir.file_name());
+                            skipped.push(plugin_dir.file_name()
+                                .map(|n| n.to_string_lossy().into_owned())
+                                .unwrap_or_default());
+                            continue;
+                        }
+                        Ok(_) => {}
+                    }
+
+                    let raw = match std::fs::read(&manifest_path) {
+                        Ok(r) => r,
+                        Err(e) => { eprintln!("[aster-plugins] read error: {e}"); continue; }
+                    };
+                    let id_val: serde_json::Value = match serde_json::from_slice(&raw) {
+                        Ok(v) => v,
+                        Err(e) => { eprintln!("[aster-plugins] invalid manifest: {e}"); continue; }
+                    };
+                    let id = match id_val.get("id").and_then(|v| v.as_str()) {
+                        Some(s) => s.to_owned(),
+                        None => continue,
+                    };
+
+                    let dest = user_dir.join(&id);
+                    if dest.exists() {
+                        if let Err(e) = std::fs::remove_dir_all(&dest) {
+                            eprintln!("[aster-plugins] failed to remove existing {id}: {e}");
+                            skipped.push(id);
+                            continue;
+                        }
+                    }
+                    match copy_dir(&plugin_dir, &dest) {
+                        Ok(()) => installed.push(id),
+                        Err(e) => {
+                            eprintln!("[aster-plugins] copy failed for {dest:?}: {e}");
+                            skipped.push(dest.file_name()
+                                .map(|n| n.to_string_lossy().into_owned())
+                                .unwrap_or_default());
+                        }
+                    }
+                }
+
+                let mut host = h.lock().map_err(|_| AsterError::Io("lock poisoned".into()))?;
+                host.load_dir(&user_dir, crate::plugin::PluginSource::User)?;
+                Ok(json!({"installed": installed, "skipped": skipped}))
+            },
+        );
+    }
 }
 
 fn copy_dir(src: &std::path::Path, dst: &std::path::Path) -> std::io::Result<()> {

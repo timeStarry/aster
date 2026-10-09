@@ -7,6 +7,8 @@ interface Props {
   content: string;
   mode: EditorMode;
   onContentChange: (c: string) => void;
+  /** Called with the AsterEditor instance once mounted. */
+  onEditorReady?: (editor: AsterEditor) => void;
 }
 
 const pipeline = createDefaultPipeline();
@@ -22,6 +24,7 @@ export function EditorPane(props: Props) {
       mode: props.mode === 'reading' ? 'source' : props.mode,
       onContentChange: props.onContentChange,
     });
+    props.onEditorReady?.(editor);
   });
 
   createEffect(() => {

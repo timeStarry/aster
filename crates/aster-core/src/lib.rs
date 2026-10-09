@@ -5,3 +5,4 @@ pub mod plugin;
 pub mod registry;
 pub mod workspace;
 pub mod commands;
+pub mod wasm_host;

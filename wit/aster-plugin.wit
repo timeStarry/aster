@@ -1,0 +1,20 @@
+package aster:plugin@0.1.0;
+
+interface host {
+  read-file: func(path: string) -> result<list<u8>, string>;
+  write-file: func(path: string, data: list<u8>) -> result<_, string>;
+  // http-request is a stub in M4; calling it always returns err("not implemented")
+  http-request: func(url: string, method: string, body: list<u8>) -> result<list<u8>, string>;
+  log: func(level: string, msg: string);
+}
+
+interface guest {
+  activate: func(settings-json: string) -> result<_, string>;
+  invoke: func(command-id: string, params-json: string) -> result<string, string>;
+  transform: func(hook: string, path: string, content: list<u8>) -> result<list<u8>, string>;
+}
+
+world plugin {
+  import host;
+  export guest;
+}

@@ -32,10 +32,11 @@ jobs:
         run: |
           for plugin_dir in plugins-wasm/*/; do
             plugin_name=$(basename "$plugin_dir")
-            pkg_name=$(echo "$plugin_name" | tr '.' '-')
+            wasm_name=$(echo "$plugin_name" | tr '.' '_')
             echo "Building $plugin_name..."
-            cargo build -p "aster-${pkg_name#aster-}" --target wasm32-wasip2 --release 2>&1 || \
-              cargo build --manifest-path "${plugin_dir}Cargo.toml" --target wasm32-wasip2 --release
+            # --crate-type cdylib overrides Cargo.toml (which uses rlib for native tests)
+            cargo rustc --manifest-path "${plugin_dir}Cargo.toml" \
+              --target wasm32-wasip2 --release -- --crate-type cdylib
           done
 
       - name: Verify WASM outputs exist

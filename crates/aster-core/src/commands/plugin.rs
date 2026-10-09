@@ -21,13 +21,9 @@ pub fn register(registry: &mut CommandRegistry, host: Arc<Mutex<PluginHost>>) {
             },
             move |_params| {
                 let host = h.lock().map_err(|_| AsterError::Io("plugin host lock poisoned".into()))?;
-                let list: Vec<Value> = host.list().iter().map(|p| json!({
-                    "id": p.id,
-                    "name": p.name,
-                    "version": p.version,
-                    "description": p.description,
-                    "source": match p.source { crate::plugin::PluginSource::Builtin => "builtin", crate::plugin::PluginSource::User => "user" },
-                })).collect();
+                let list: Vec<Value> = host.list().iter()
+                    .map(|p| serde_json::to_value(p).unwrap_or(json!({})))
+                    .collect();
                 Ok(json!(list))
             },
         );
@@ -104,7 +100,15 @@ fn copy_dir(src: &std::path::Path, dst: &std::path::Path) -> std::io::Result<()>
     std::fs::create_dir_all(dst)?;
     for entry in std::fs::read_dir(src)? {
         let entry = entry?;
+        // Use lstat (file_type on DirEntry) so we see symlinks, not their targets.
         let ty = entry.file_type()?;
+        if ty.is_symlink() {
+            // Refuse symlinks — a crafted plugin could point outside the plugin dir.
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!("plugin contains a symlink: {:?}", entry.file_name()),
+            ));
+        }
         if ty.is_dir() {
             copy_dir(&entry.path(), &dst.join(entry.file_name()))?;
         } else {

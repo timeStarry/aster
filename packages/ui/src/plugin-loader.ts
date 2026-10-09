@@ -2,6 +2,8 @@ import { createPluginApi, type PluginApiImpl } from './plugin-api-impl';
 import type { PluginManifest } from '@aster/plugin-api';
 
 export let asterApi: PluginApiImpl | null = null;
+// Tracks which plugins have been activated; reset on each initPluginLoader call.
+let activated = new Set<string>();
 
 /**
  * Initialize the plugin system. Call once on app startup.
@@ -12,6 +14,7 @@ export async function initPluginLoader(
   resolvePluginUrl: (pluginId: string, relativePath: string) => string,
 ): Promise<void> {
   asterApi = createPluginApi();
+  activated = new Set<string>();
   // Expose globally so plugin ES modules can call window.__aster.*
   (window as Record<string, unknown>)['__aster'] = asterApi;
 
@@ -29,7 +32,6 @@ export async function initPluginLoader(
  * Activate plugins for a given trigger (e.g. 'onCodeBlock:mermaid').
  * Idempotent — already-loaded plugins are skipped.
  */
-const activated = new Set<string>();
 export async function activateForTrigger(
   trigger: string,
   manifests: PluginManifest[],

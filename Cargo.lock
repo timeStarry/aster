@@ -182,7 +182,7 @@ checksum = "3bc62ac97cc33321f50863d514c3bc38a453947a8f9e781137e47c7401020aed"
 
 [[package]]
 name = "aster-app"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 dependencies = [
  "aster-core",
  "aster-rpc",
@@ -196,7 +196,7 @@ dependencies = [
 
 [[package]]
 name = "aster-cli"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 dependencies = [
  "anyhow",
  "aster-core",
@@ -211,7 +211,7 @@ dependencies = [
 
 [[package]]
 name = "aster-core"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 dependencies = [
  "anyhow",
  "dirs 5.0.1",
@@ -231,7 +231,7 @@ dependencies = [
 
 [[package]]
 name = "aster-encrypt"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 dependencies = [
  "aes-gcm",
  "serde_json",
@@ -241,7 +241,7 @@ dependencies = [
 
 [[package]]
 name = "aster-library"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 dependencies = [
  "serde_json",
  "wit-bindgen 0.36.0",
@@ -249,7 +249,7 @@ dependencies = [
 
 [[package]]
 name = "aster-rpc"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 dependencies = [
  "aster-core",
  "serde",

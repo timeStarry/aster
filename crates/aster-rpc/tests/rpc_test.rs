@@ -16,7 +16,7 @@ fn make_registry() -> Arc<TokioMutex<CommandRegistry>> {
     let mut reg = CommandRegistry::new();
     let doc = Arc::new(DocumentService::new());
     let ws = Arc::new(WorkspaceService::new());
-    let host = Arc::new(Mutex::new(PluginHost::new()));
+    let host = Arc::new(Mutex::new(PluginHost::new().expect("wasmtime init")));
     register_core_commands(&mut reg, doc, ws, host);
     Arc::new(TokioMutex::new(reg))
 }

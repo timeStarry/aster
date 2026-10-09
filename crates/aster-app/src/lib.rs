@@ -15,7 +15,7 @@ use aster_core::{
 pub fn run() {
     // Build shared PluginHost, loading builtin and user plugins
     let plugin_host = {
-        let mut h = PluginHost::new();
+        let mut h = PluginHost::new().expect("wasmtime init failed");
         #[cfg(feature = "bundled-plugins")]
         {
             let bundled = std::env::current_exe()

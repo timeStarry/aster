@@ -1,10 +1,23 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 use serde::{Serialize, Deserialize};
+use serde_json::Value;
 use crate::error::{AsterError, AsterResult};
+use crate::wasm_host::WasmHost;
+use crate::registry::{CommandRegistry, CommandSpec};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PluginSource { Builtin, User }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ContribCommand {
+    pub id: String,
+    pub description: String,
+    pub params: Value,
+    pub returns: Value,
+    pub headless: bool,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PluginInfo {
@@ -15,13 +28,39 @@ pub struct PluginInfo {
     pub permissions: Vec<String>,
     pub activation: Vec<String>,
     pub frontend_path: Option<PathBuf>,
+    pub backend_path: Option<PathBuf>,
+    pub contributes_commands: Vec<ContribCommand>,
     pub dir: PathBuf,
     pub source: PluginSource,
 }
 
-#[derive(Debug, Default)]
 pub struct PluginHost {
     plugins: HashMap<String, PluginInfo>,
+    pub wasm_host: WasmHost,
+}
+
+impl std::fmt::Debug for PluginHost {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PluginHost")
+            .field("plugins", &self.plugins.keys().collect::<Vec<_>>())
+            .finish()
+    }
+}
+
+#[derive(Deserialize)]
+struct RawContribCommand {
+    id: String,
+    description: String,
+    params: Value,
+    returns: Value,
+    #[serde(default)]
+    headless: bool,
+}
+
+#[derive(Deserialize, Default)]
+struct RawContributes {
+    #[serde(default)]
+    commands: Vec<RawContribCommand>,
 }
 
 #[derive(Deserialize)]
@@ -35,10 +74,18 @@ struct RawManifest {
     permissions: Vec<String>,
     activation: Vec<String>,
     frontend: Option<String>,
+    backend: Option<String>,
+    #[serde(default)]
+    contributes: RawContributes,
 }
 
 impl PluginHost {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> AsterResult<Self> {
+        Ok(Self {
+            plugins: HashMap::new(),
+            wasm_host: WasmHost::new(),
+        })
+    }
 
     /// Scan `dir` for subdirectories containing `aster.plugin.json`.
     /// Invalid manifests are silently skipped (logged to stderr).
@@ -46,7 +93,7 @@ impl PluginHost {
     pub fn load_dir(&mut self, dir: &Path, source: PluginSource) -> AsterResult<()> {
         let entries = match std::fs::read_dir(dir) {
             Ok(e) => e,
-            Err(_) => return Ok(()), // non-existent dirs are fine
+            Err(_) => return Ok(()),
         };
         for entry in entries.flatten() {
             let plugin_dir = entry.path();
@@ -61,6 +108,17 @@ impl PluginHost {
                             && existing.source == PluginSource::Builtin,
                     };
                     if should_insert {
+                        // Load WASM component if backend is present
+                        if let Some(ref bp) = info.backend_path {
+                            if let Err(e) = self.wasm_host.load_component(
+                                bp,
+                                &info.id,
+                                info.permissions.clone(),
+                                None,
+                            ) {
+                                eprintln!("[aster-plugins] wasm load failed for {:?}: {e}", info.id);
+                            }
+                        }
                         self.plugins.insert(info.id.clone(), info);
                     }
                 }
@@ -85,6 +143,14 @@ impl PluginHost {
             ));
         }
         let frontend_path = m.frontend.as_ref().map(|f| dir.join(f));
+        let backend_path = m.backend.as_ref().map(|b| dir.join(b));
+        let contributes_commands = m.contributes.commands.into_iter().map(|c| ContribCommand {
+            id: c.id,
+            description: c.description,
+            params: c.params,
+            returns: c.returns,
+            headless: c.headless,
+        }).collect();
         Ok(PluginInfo {
             id: m.id,
             name: m.name,
@@ -93,6 +159,8 @@ impl PluginHost {
             permissions: m.permissions,
             activation: m.activation,
             frontend_path,
+            backend_path,
+            contributes_commands,
             dir: dir.to_path_buf(),
             source,
         })
@@ -106,5 +174,40 @@ impl PluginHost {
 
     pub fn get(&self, id: &str) -> Option<&PluginInfo> {
         self.plugins.get(id)
+    }
+
+    /// Register commands contributed by loaded WASM plugins into `registry`.
+    pub fn register_wasm_commands(
+        &self,
+        registry: &mut CommandRegistry,
+        host: Arc<Mutex<PluginHost>>,
+    ) {
+        for info in self.plugins.values() {
+            if info.backend_path.is_none() { continue; }
+            for cmd in &info.contributes_commands {
+                let plugin_id = info.id.clone();
+                let cmd_id = cmd.id.clone();
+                let h = Arc::clone(&host);
+                registry.register_with_handler(
+                    CommandSpec {
+                        id: cmd.id.clone(),
+                        description: cmd.description.clone(),
+                        params_schema: cmd.params.clone(),
+                        returns_schema: cmd.returns.clone(),
+                        headless: cmd.headless,
+                        source: plugin_id.clone(),
+                    },
+                    move |params| {
+                        let params_json = serde_json::to_string(&params)
+                            .unwrap_or_else(|_| "{}".into());
+                        let mut h = h.lock()
+                            .map_err(|_| AsterError::Io("plugin host lock poisoned".into()))?;
+                        let result_json = h.wasm_host.invoke_mut(&plugin_id, &cmd_id, &params_json)?;
+                        serde_json::from_str(&result_json)
+                            .map_err(|e| AsterError::PluginFailed(e.to_string()))
+                    },
+                );
+            }
+        }
     }
 }

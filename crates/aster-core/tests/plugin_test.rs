@@ -24,7 +24,7 @@ fn test_load_dir_finds_plugins() {
     write_manifest(dir.path(), "aster.foo", "Foo Plugin");
     write_manifest(dir.path(), "aster.bar", "Bar Plugin");
 
-    let mut host = PluginHost::new();
+    let mut host = PluginHost::new().unwrap();
     host.load_dir(dir.path(), PluginSource::User).unwrap();
 
     let list = host.list();
@@ -43,7 +43,7 @@ fn test_invalid_manifest_skipped() {
     fs::create_dir_all(&bad).unwrap();
     fs::write(bad.join("aster.plugin.json"), r#"{"id": "bad"}"#).unwrap();
 
-    let mut host = PluginHost::new();
+    let mut host = PluginHost::new().unwrap();
     host.load_dir(dir.path(), PluginSource::User).unwrap();
 
     assert_eq!(host.list().len(), 1);
@@ -57,7 +57,7 @@ fn test_user_overrides_builtin() {
     write_manifest(builtin_dir.path(), "aster.x", "Builtin X v1");
     write_manifest(user_dir.path(), "aster.x", "User X v2");
 
-    let mut host = PluginHost::new();
+    let mut host = PluginHost::new().unwrap();
     host.load_dir(builtin_dir.path(), PluginSource::Builtin).unwrap();
     host.load_dir(user_dir.path(), PluginSource::User).unwrap();
 
@@ -72,7 +72,7 @@ fn test_official_plugins_valid() {
         .parent().unwrap().parent().unwrap()
         .join("plugins");
     if !manifest_dir.exists() { return; }
-    let mut host = PluginHost::new();
+    let mut host = PluginHost::new().unwrap();
     host.load_dir(&manifest_dir, PluginSource::Builtin).unwrap();
     let list = host.list();
     assert!(list.len() >= 3, "expected at least 3 official plugins, got {}", list.len());

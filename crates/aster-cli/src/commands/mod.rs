@@ -16,7 +16,7 @@ pub fn build_registry() -> CommandRegistry {
     let mut reg = CommandRegistry::new();
     let doc = Arc::new(DocumentService::new());
     let ws = Arc::new(WorkspaceService::new());
-    let mut host = PluginHost::new();
+    let mut host = PluginHost::new().expect("wasmtime init failed");
     let user_dir = dirs::home_dir()
         .unwrap_or_default()
         .join(".aster/plugins");

@@ -95,6 +95,27 @@ jobs:
           cp -r plugins/aster.mermaid    crates/aster-app/bundled-plugins/
           cp -r plugins/aster.math       crates/aster-app/bundled-plugins/
 
+      - name: Install wasm32-wasip2 target (full edition only)
+        if: matrix.edition == 'full'
+        run: rustup target add wasm32-wasip2
+
+      - name: Build WASM backend plugins (full edition only)
+        if: matrix.edition == 'full'
+        shell: bash
+        run: |
+          set -e
+          for plugin_dir in plugins-wasm/*/; do
+            plugin_name=$(basename "$plugin_dir")
+            wasm_name=$(echo "$plugin_name" | tr '.' '_')
+            echo "Building WASM: $plugin_name"
+            cargo build --manifest-path "${plugin_dir}Cargo.toml" --target wasm32-wasip2 --release
+            wasm_src="target/wasm32-wasip2/release/${wasm_name}.wasm"
+            dest="crates/aster-app/bundled-plugins/${plugin_name}"
+            mkdir -p "$dest"
+            cp "$wasm_src" "$dest/"
+            cp "${plugin_dir}aster.plugin.json" "$dest/"
+          done
+
       - name: Build Tauri app (${{ matrix.edition }} edition)
         shell: bash
         run: |

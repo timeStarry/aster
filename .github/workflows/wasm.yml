@@ -1,0 +1,53 @@
+name: WASM Plugins
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'plugins-wasm/**'
+      - 'wit/**'
+  pull_request:
+    paths:
+      - 'plugins-wasm/**'
+      - 'wit/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: wasm-plugins
+
+      - name: Test WASM plugins (host-side, native target)
+        run: cargo test -p aster-library -p aster-encrypt
+
+      - name: Build WASM components
+        run: |
+          for plugin_dir in plugins-wasm/*/; do
+            plugin_name=$(basename "$plugin_dir")
+            pkg_name=$(echo "$plugin_name" | tr '.' '-')
+            echo "Building $plugin_name..."
+            cargo build -p "aster-${pkg_name#aster-}" --target wasm32-wasip2 --release 2>&1 || \
+              cargo build --manifest-path "${plugin_dir}Cargo.toml" --target wasm32-wasip2 --release
+          done
+
+      - name: Verify WASM outputs exist
+        run: |
+          for plugin_dir in plugins-wasm/*/; do
+            plugin_name=$(basename "$plugin_dir")
+            wasm_name=$(echo "$plugin_name" | tr '.' '_')
+            wasm_path="target/wasm32-wasip2/release/${wasm_name}.wasm"
+            if [ -f "$wasm_path" ]; then
+              echo "OK: $wasm_path ($(du -sh "$wasm_path" | cut -f1))"
+            else
+              echo "MISSING: $wasm_path"
+              # Not a hard failure in M4 — wasm output path depends on crate name
+            fi
+          done

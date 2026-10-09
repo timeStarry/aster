@@ -105,6 +105,19 @@ jobs:
             cargo tauri build --target ${{ matrix.target }}
           fi
 
+      - name: Rename artifacts with edition prefix
+        shell: bash
+        run: |
+          set -e
+          find target/${{ matrix.target }}/release/bundle -name "${{ matrix.artifact }}" | while read f; do
+            dir=$(dirname "$f")
+            base=$(basename "$f")
+            # Insert edition prefix before the first underscore-separated version segment
+            # e.g. Aster_0.1.0_aarch64.dmg -> Aster-lite_0.1.0_aarch64.dmg
+            newbase=$(echo "$base" | sed 's/^Aster_/Aster-${{ matrix.edition }}_/')
+            mv "$f" "$dir/$newbase"
+          done
+
       - name: Upload bundle
         uses: actions/upload-artifact@v4
         with:

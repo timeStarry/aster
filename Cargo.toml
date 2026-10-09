@@ -25,3 +25,6 @@ notify = "7"
 dirs = "5"
 tauri = { version = "2", features = [] }
 clap = { version = "4", features = ["derive"] }
+wasmtime = { version = "28.0.0", features = ["component-model"] }
+wasmtime-wasi = { version = "28.0.0" }
+wit-bindgen = { version = "0.36.0", features = ["macros"] }

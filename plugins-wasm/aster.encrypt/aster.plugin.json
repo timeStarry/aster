@@ -1,0 +1,30 @@
+{
+  "id": "aster.encrypt",
+  "name": "Content Encryption",
+  "version": "1.0.0",
+  "apiVersion": "1",
+  "description": "AES-256-GCM encryption/decryption via onAfterRead and onBeforeSave hooks",
+  "permissions": [],
+  "activation": ["onStartup"],
+  "frontend": null,
+  "backend": "aster_encrypt.wasm",
+  "contributes": {
+    "commands": [
+      {
+        "id": "encrypt.setKey",
+        "description": "Set the runtime encryption key (hex-encoded 32 bytes)",
+        "params": {"type": "object", "properties": {"key_hex": {"type": "string"}}, "required": ["key_hex"]},
+        "returns": {"type": "object"},
+        "headless": true
+      },
+      {
+        "id": "encrypt.status",
+        "description": "Return whether an encryption key is currently active",
+        "params": {"type": "object"},
+        "returns": {"type": "object", "properties": {"active": {"type": "boolean"}}},
+        "headless": true
+      }
+    ],
+    "hooks": ["onAfterRead", "onBeforeSave"]
+  }
+}

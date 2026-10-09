@@ -5,6 +5,8 @@ members = [
   "crates/aster-rpc",
   "crates/aster-app",
   "crates/aster-cli",
+  "plugins-wasm/aster.library",
+  "plugins-wasm/aster.encrypt",
 ]
 
 [workspace.package]

@@ -1,0 +1,16 @@
+[package]
+name = "aster-encrypt"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# rlib for native tests; cdylib output comes from `--target wasm32-wasip2` in CI
+crate-type = ["rlib"]
+
+[dependencies]
+wit-bindgen = { workspace = true, features = ["macros"] }
+aes-gcm = "0.10"
+zeroize = { version = "1.8", features = ["derive"] }
+serde_json = { workspace = true }
+
+[dev-dependencies]

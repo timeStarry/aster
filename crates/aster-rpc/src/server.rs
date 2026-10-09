@@ -11,55 +11,59 @@ pub struct RpcServer {
 }
 
 impl RpcServer {
-    /// Start a JSON-RPC 2.0 server on the given Unix socket path.
-    /// The socket file is created with 0600 permissions on Unix.
+    /// Start a JSON-RPC 2.0 server on the given Unix socket / Windows named pipe.
     pub async fn start(
         path: &Path,
         registry: Arc<Mutex<CommandRegistry>>,
     ) -> std::io::Result<Self> {
-        // Remove stale socket
-        let _ = tokio::fs::remove_file(path).await;
-
         let path_buf = path.to_path_buf();
 
         #[cfg(unix)]
-        let listener = {
+        let task = {
             use tokio::net::UnixListener;
+            // Remove stale socket file
+            let _ = tokio::fs::remove_file(&path_buf).await;
             let listener = UnixListener::bind(&path_buf)?;
-            // Restrict to owner only
+            // Restrict to owner only — before anyone else can connect
             use std::os::unix::fs::PermissionsExt;
             std::fs::set_permissions(&path_buf, std::fs::Permissions::from_mode(0o600))?;
-            listener
+            tokio::spawn(unix_accept_loop(listener, registry))
         };
 
         #[cfg(windows)]
-        let listener = {
-            // Windows named pipe — best-effort, no ACL in M2
+        let task = {
             use tokio::net::windows::named_pipe::ServerOptions;
-            ServerOptions::new()
+            let pipe = ServerOptions::new()
                 .first_pipe_instance(true)
-                .create(&path_buf)?
+                .create(&path_buf)?;
+            tokio::spawn(windows_accept_loop(pipe, registry))
         };
 
-        let task = tokio::spawn(accept_loop(listener, registry));
+        #[cfg(not(any(unix, windows)))]
+        let task = tokio::spawn(async {});
 
         Ok(Self { path: path_buf, task })
     }
 
-    /// Stop the server and delete the socket file.
+    /// Stop the server and clean up the socket file.
     pub async fn stop(self) {
         self.task.abort();
         let _ = tokio::fs::remove_file(&self.path).await;
     }
 }
 
+// ── Unix implementation ──────────────────────────────────────────────────────
+
 #[cfg(unix)]
-async fn accept_loop(listener: tokio::net::UnixListener, registry: Arc<Mutex<CommandRegistry>>) {
+async fn unix_accept_loop(
+    listener: tokio::net::UnixListener,
+    registry: Arc<Mutex<CommandRegistry>>,
+) {
     loop {
         match listener.accept().await {
             Ok((stream, _)) => {
                 let reg = Arc::clone(&registry);
-                tokio::spawn(handle_conn(stream, reg));
+                tokio::spawn(unix_handle_conn(stream, reg));
             }
             Err(_) => break,
         }
@@ -67,10 +71,12 @@ async fn accept_loop(listener: tokio::net::UnixListener, registry: Arc<Mutex<Com
 }
 
 #[cfg(unix)]
-async fn handle_conn(stream: tokio::net::UnixStream, registry: Arc<Mutex<CommandRegistry>>) {
+async fn unix_handle_conn(
+    stream: tokio::net::UnixStream,
+    registry: Arc<Mutex<CommandRegistry>>,
+) {
     let (read_half, mut write_half) = tokio::io::split(stream);
     let mut lines = BufReader::new(read_half).lines();
-
     while let Ok(Some(line)) = lines.next_line().await {
         let response = dispatch_line(&line, &registry).await;
         let mut out = serde_json::to_string(&response).unwrap_or_default();
@@ -80,6 +86,56 @@ async fn handle_conn(stream: tokio::net::UnixStream, registry: Arc<Mutex<Command
         }
     }
 }
+
+// ── Windows implementation ───────────────────────────────────────────────────
+
+#[cfg(windows)]
+async fn windows_accept_loop(
+    first_pipe: tokio::net::windows::named_pipe::NamedPipeServer,
+    registry: Arc<Mutex<CommandRegistry>>,
+) {
+    use tokio::net::windows::named_pipe::ServerOptions;
+    let path = {
+        // We can't easily get the pipe path back from the handle, so we re-derive it.
+        // This is fine because socket_path() is deterministic.
+        let user = std::env::var("USERNAME").unwrap_or_else(|_| "user".into());
+        format!(r"\\.\pipe\aster-{user}")
+    };
+
+    let mut current = first_pipe;
+    loop {
+        if current.connect().await.is_err() {
+            break;
+        }
+        // Prepare next instance before spawning handler so we don't miss connections
+        let next = match ServerOptions::new().create(&path) {
+            Ok(p) => p,
+            Err(_) => break,
+        };
+        let reg = Arc::clone(&registry);
+        tokio::spawn(windows_handle_conn(current, reg));
+        current = next;
+    }
+}
+
+#[cfg(windows)]
+async fn windows_handle_conn(
+    pipe: tokio::net::windows::named_pipe::NamedPipeServer,
+    registry: Arc<Mutex<CommandRegistry>>,
+) {
+    let (read_half, mut write_half) = tokio::io::split(pipe);
+    let mut lines = BufReader::new(read_half).lines();
+    while let Ok(Some(line)) = lines.next_line().await {
+        let response = dispatch_line(&line, &registry).await;
+        let mut out = serde_json::to_string(&response).unwrap_or_default();
+        out.push('\n');
+        if write_half.write_all(out.as_bytes()).await.is_err() {
+            break;
+        }
+    }
+}
+
+// ── Shared JSON-RPC dispatch ─────────────────────────────────────────────────
 
 async fn dispatch_line(line: &str, registry: &Arc<Mutex<CommandRegistry>>) -> Value {
     let req: Value = match serde_json::from_str(line) {

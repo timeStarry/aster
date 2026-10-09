@@ -10,6 +10,9 @@ interface Props {
   mode: EditorMode;
   readOnly: boolean;
   notice: { text: string; error?: boolean } | null;
+  /** False while a non-document tab (Settings) is active. */
+  editorActive: boolean;
+  settingsActive: boolean;
   onModeChange: (m: EditorMode) => void;
   onToggleLock: () => void;
   onSettings: () => void;
@@ -33,10 +36,11 @@ export function StatusBar(props: Props) {
   return (
     <div class="aster-status" role="status">
       <span class="aster-status-path" title={props.path ?? ''}>
-        <Show when={props.notice} fallback={props.path ?? 'Not saved yet'}>
+        <Show when={props.notice} fallback={props.editorActive ? (props.path ?? 'Not saved yet') : 'Settings'}>
           <span style={{ color: props.notice?.error ? 'var(--danger)' : 'var(--fg)' }}>{props.notice?.text}</span>
         </Show>
       </span>
+      <Show when={props.editorActive}>
       <span>{props.words} {props.words === 1 ? 'word' : 'words'}</span>
       <span>Ln {props.line}, Col {props.col}</span>
       <div class="aster-seg" role="group" aria-label="Editor mode">
@@ -63,7 +67,15 @@ export function StatusBar(props: Props) {
       >
         <LockIcon locked={props.readOnly} />
       </button>
-      <button class="aster-icon-btn" aria-label="Settings" title={`Settings (${MOD},)`} onClick={() => props.onSettings()}>
+      </Show>
+      <button
+        class="aster-icon-btn"
+        classList={{ 'is-on': props.settingsActive }}
+        aria-label="Settings"
+        aria-pressed={props.settingsActive}
+        title={`Settings (${MOD},)`}
+        onClick={() => props.onSettings()}
+      >
         <GearIcon />
       </button>
     </div>

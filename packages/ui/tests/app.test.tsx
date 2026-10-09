@@ -55,12 +55,55 @@ describe('App shell', () => {
     expect(root.querySelector('.cm-content')!.getAttribute('contenteditable')).toBe('true');
   });
 
-  it('opens settings with the gear and closes on Escape', () => {
+  it('settings opens as a single tab and keeps the editor state', () => {
     const root = mount();
+    const view = EditorView.findFromDOM(root.querySelector('.cm-editor') as HTMLElement)!;
+    view.dispatch({ changes: { from: 0, insert: 'kept ' }, selection: { anchor: 5 } });
+
     (root.querySelector('[aria-label="Settings"]') as HTMLButtonElement).click();
-    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
-    key('Escape', { key: 'Escape' });
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    key('Comma', mod); // second open focuses the same tab
+    const settingsTabs = root.querySelectorAll('.aster-tab-settings');
+    expect(settingsTabs).toHaveLength(1);
+    expect(settingsTabs[0].getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('.aster-settings')).not.toBeNull();
+    expect((root.querySelector('.aster-editor-host') as HTMLElement).hidden).toBe(true);
+    // Editor-only status items are hidden on the settings tab.
+    expect(root.querySelector('.aster-seg[aria-label="Editor mode"]')).toBeNull();
+
+    key('KeyW', mod);
+    expect(root.querySelector('.aster-tab-settings')).toBeNull();
+    expect((root.querySelector('.aster-editor-host') as HTMLElement).hidden).toBe(false);
+    expect(view.state.doc.toString().startsWith('kept ')).toBe(true);
+    expect(view.state.selection.main.head).toBe(5);
+  });
+
+  it('settings tab is part of tab cycling and stays last', () => {
+    const root = mount();
+    key('Comma', mod);
+    key('KeyN', mod);
+    const titles = [...root.querySelectorAll('.aster-tab-title')].map((t) => t.textContent);
+    expect(titles).toEqual(['Untitled', 'Untitled 2', 'Settings']);
+    key('Tab', { ctrlKey: true });
+    expect(root.querySelector('.aster-tab-settings')!.getAttribute('aria-selected')).toBe('true');
+    key('Tab', { ctrlKey: true });
+    expect(root.querySelectorAll('.aster-tab')[0].getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('settings controls apply immediately', () => {
+    const root = mount();
+    key('Comma', mod);
+    const dark = [...root.querySelectorAll('.aster-theme-card')].find((b) => b.textContent === 'Dark') as HTMLButtonElement;
+    dark.click();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(dark.getAttribute('aria-checked')).toBe('true');
+    (root.querySelector('#aster-set-nav-editor') as HTMLButtonElement).click();
+    const ln = root.querySelector('#set-ln') as HTMLButtonElement;
+    expect(ln.getAttribute('aria-checked')).toBe('false');
+    ln.click();
+    expect(ln.getAttribute('aria-checked')).toBe('true');
+    expect(root.querySelector('.cm-lineNumbers')).not.toBeNull();
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.clear();
   });
 
   it('closing a dirty tab asks before discarding', async () => {

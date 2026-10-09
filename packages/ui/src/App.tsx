@@ -3,13 +3,14 @@ import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { listen, emit, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
+import { getVersion } from '@tauri-apps/api/app';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import type { EditorState } from '@codemirror/state';
 import { createEditor, openSearchPanel, refreshCodeBlocks, type AsterEditor } from '@aster/editor';
 import { createDefaultPipeline } from '@aster/renderer';
 import { TabBar } from './TabBar';
 import { StatusBar } from './StatusBar';
-import { SettingsModal, type PluginRow } from './SettingsModal';
+import { SettingsPane, type PluginRow } from './SettingsPane';
 import { ConfirmModal, type ConfirmRequest, type ConfirmButton } from './ConfirmModal';
 import { initPluginLoader, activateForTrigger, asterApi, type LoadablePlugin } from './plugin-loader';
 import {
@@ -25,8 +26,10 @@ const pipeline = createDefaultPipeline();
 interface AsterErr { code?: string; message?: string }
 const errText = (e: unknown) => (e as AsterErr)?.message ?? String(e);
 
+const SETTINGS_ID = 'settings';
+
 interface PluginInfo {
-  id: string; name: string; version: string; activation: string[];
+  id: string; name: string; version: string; description?: string; activation: string[];
   frontend_path: string | null; source: string;
 }
 
@@ -41,7 +44,9 @@ export default function App() {
   const [readOnly, setReadOnly] = createSignal(false);
   const [cursor, setCursor] = createSignal({ line: 1, col: 1 });
   const [notice, setNotice] = createSignal<{ text: string; error?: boolean } | null>(null);
-  const [showSettings, setShowSettings] = createSignal(false);
+  const [settingsOpen, setSettingsOpen] = createSignal(false);
+  const [version, setVersion] = createSignal('');
+  const [inset, setInset] = createSignal(isMac && inTauri);
   const [confirmReq, setConfirmReq] = createSignal<ConfirmRequest | null>(null);
   const [plugins, setPlugins] = createSignal<PluginRow[]>([]);
   const [pluginThemes, setPluginThemes] = createSignal<PluginTheme[]>([]);
@@ -53,11 +58,14 @@ export default function App() {
   const autoSaveTimers = new Map<string, number>();
   const conflicted = new Set<string>();
   let editor: AsterEditor | null = null;
+  /** Document currently loaded in the editor (stays set while Settings is shown). */
+  let editorDocId = first.id;
   let host!: HTMLDivElement;
   let noticeTimer: number | undefined;
 
   const tab = (id: string) => tabs().find((t) => t.id === id);
   const active = createMemo(() => tab(activeId()));
+  const onSettings = () => activeId() === SETTINGS_ID;
   const words = createMemo(() => wordCount(active()?.content ?? ''));
   const updateTab = (id: string, patch: Partial<Tab>) =>
     setTabs((ts) => ts.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -78,13 +86,25 @@ export default function App() {
   function activate(id: string) {
     const cur = activeId();
     if (id === cur && editor) return;
-    if (editor && cur && tab(cur)) states.set(cur, editor.view.state);
     setActiveId(id);
+    if (id === SETTINGS_ID || !editor) return;
     const t = tab(id);
-    if (!editor || !t) return;
-    editor.setState(states.get(id) ?? editor.createState(t.content));
+    if (!t) return;
+    if (id !== editorDocId) {
+      if (tab(editorDocId)) states.set(editorDocId, editor.view.state);
+      editor.setState(states.get(id) ?? editor.createState(t.content));
+      editorDocId = id;
+    }
     updateCursor(editor.view.state);
+    // The editor was hidden while Settings was shown; re-measure before focusing.
+    editor.view.requestMeasure();
     editor.focus();
+  }
+
+  /** Settings is a singleton tab: open it, or focus it if already open. */
+  function openSettings() {
+    setSettingsOpen(true);
+    activate(SETTINGS_ID);
   }
 
   function newTab() {
@@ -94,12 +114,20 @@ export default function App() {
   }
 
   function cycleTab(dir: 1 | -1) {
-    const ts = tabs();
-    const i = ts.findIndex((t) => t.id === activeId());
-    activate(ts[(i + dir + ts.length) % ts.length].id);
+    const ids = [...tabs().map((t) => t.id), ...(settingsOpen() ? [SETTINGS_ID] : [])];
+    const i = ids.indexOf(activeId());
+    activate(ids[(i + dir + ids.length) % ids.length]);
   }
 
   async function closeTab(id: string): Promise<boolean> {
+    if (id === SETTINGS_ID) {
+      setSettingsOpen(false);
+      if (activeId() === SETTINGS_ID) {
+        setActiveId('');
+        activate(tab(editorDocId) ? editorDocId : tabs()[tabs().length - 1].id);
+      }
+      return true;
+    }
     const t = tab(id);
     if (!t) return true;
     if (t.dirty) {
@@ -124,9 +152,16 @@ export default function App() {
     conflicted.delete(id);
     if (rest.length === 0) rest = [makeTab({}, [])];
     setTabs(rest);
+    const next = rest[Math.min(idx, rest.length - 1)].id;
     if (activeId() === id) {
       setActiveId('');
-      activate(rest[Math.min(idx, rest.length - 1)].id);
+      activate(next);
+    } else if (editorDocId === id && editor) {
+      // Closed (e.g. middle-click) while Settings was showing: load a live doc
+      // into the hidden editor so it never points at a removed tab.
+      const t2 = tab(next)!;
+      editor.setState(states.get(next) ?? editor.createState(t2.content));
+      editorDocId = next;
     }
     return true;
   }
@@ -162,7 +197,7 @@ export default function App() {
   }
 
   function currentContent(id: string): string {
-    return id === activeId() && editor ? editor.getContent() : tab(id)?.content ?? '';
+    return id === editorDocId && editor ? editor.getContent() : tab(id)?.content ?? '';
   }
 
   async function writeFile(id: string, path: string, content: string, expectedHash?: string) {
@@ -230,7 +265,7 @@ export default function App() {
       updateTab(id, { content: r.content, saved: r.content, hash: r.hash, dirty: false });
       conflicted.delete(id);
       states.delete(id);
-      if (id === activeId() && editor) editor.setState(editor.createState(r.content));
+      if (id === editorDocId && editor) editor.setState(editor.createState(r.content));
     } catch (e) {
       flash(`Reload failed: ${errText(e)}`, true);
     }
@@ -321,14 +356,18 @@ export default function App() {
   }
 
   // ── Actions (menu + keyboard share one dispatcher) ─────────
-  const lastRun = new Map<string, number>();
+  // A native menu accelerator and the webview keydown can both fire for the
+  // same keystroke. Drop a menu event that arrives right after the keyboard
+  // already ran that action; never throttle repeated keystrokes themselves.
+  const keyRanAt = new Map<string, number>();
+  function runFromMenu(action: string) {
+    if (performance.now() - (keyRanAt.get(action) ?? -1e9) < 150) return;
+    run(action);
+  }
   function run(action: string) {
-    // A native menu accelerator and the webview keydown can both fire for the
-    // same keystroke on some platforms; collapse duplicates.
-    const now = performance.now();
-    if (now - (lastRun.get(action) ?? -1e9) < 150) return;
-    lastRun.set(action, now);
     if (confirmReq()) return;
+    const editorOnly = ['save', 'saveAs', 'find', 'toggleMode', 'modeLive', 'modeSource', 'toggleLock', 'exportPdf'];
+    if (onSettings() && editorOnly.includes(action)) return;
     switch (action) {
       case 'new': return newTab();
       case 'open': return void openFiles();
@@ -341,7 +380,7 @@ export default function App() {
       case 'modeLive': return changeMode('live');
       case 'modeSource': return changeMode('source');
       case 'toggleLock': return toggleLock();
-      case 'settings': return setShowSettings((v) => !v);
+      case 'settings': return openSettings();
       case 'find': if (editor) openSearchPanel(editor.view); return;
       case 'exportPdf': return void exportPdf();
       case 'quit': return void getCurrentWindow().close();
@@ -364,9 +403,10 @@ export default function App() {
       }
     } else if (mod && e.altKey && e.code === 'KeyL') action = 'toggleLock';
     if (!action) return;
-    if ((showSettings() || confirmReq()) && action !== 'settings') return;
+    if (confirmReq()) return;
     e.preventDefault();
     e.stopPropagation();
+    keyRanAt.set(action, performance.now());
     run(action);
   }
 
@@ -380,7 +420,7 @@ export default function App() {
       resolveImage,
       renderCodeBlock,
       onContentChange: (content) => {
-        const id = activeId();
+        const id = editorDocId;
         const t = tab(id);
         if (!t) return;
         updateTab(id, { content, dirty: content !== t.saved });
@@ -395,7 +435,7 @@ export default function App() {
     const unlisten: UnlistenFn[] = [];
     onCleanup(() => unlisten.forEach((u) => u()));
 
-    unlisten.push(await listen<string>('aster://menu', (e) => run(e.payload)));
+    unlisten.push(await listen<string>('aster://menu', (e) => runFromMenu(e.payload)));
     unlisten.push(await listen<{ path: string }>('aster://editor/openFile', (e) => void openPath(e.payload.path)));
     unlisten.push(await listen('aster://editor/getSelection', async () => {
       if (!editor) return;
@@ -416,6 +456,13 @@ export default function App() {
     }));
 
     const win = getCurrentWindow();
+    void getVersion().then(setVersion).catch(() => {});
+    if (isMac) {
+      // Traffic lights disappear in fullscreen; reclaim their space.
+      const syncInset = async () => setInset(!(await win.isFullscreen().catch(() => false)));
+      void syncInset();
+      unlisten.push(await win.onResized(() => void syncInset()));
+    }
     unlisten.push(await win.onCloseRequested(async (event) => {
       const dirty = tabs().filter((t) => t.dirty);
       if (dirty.length === 0) return;
@@ -442,7 +489,7 @@ export default function App() {
 
     try {
       const list = await invoke<PluginInfo[]>('dispatch', { id: 'plugin.list', params: {} });
-      setPlugins(list.map((p) => ({ id: p.id, name: p.name, version: p.version, source: p.source })));
+      setPlugins(list.map((p) => ({ id: p.id, name: p.name, version: p.version, description: p.description ?? '', source: p.source })));
       loadable = list.map((p) => ({ id: p.id, activation: p.activation, frontend: p.frontend_path ?? undefined }));
       await initPluginLoader(loadable, pluginUrl);
       if (asterApi) {
@@ -469,8 +516,8 @@ export default function App() {
 
   createEffect(() => {
     const t = active();
-    if (!t) return;
-    const title = `${t.title}${t.dirty ? ' •' : ''} — Aster`;
+    if (!t && !onSettings()) return;
+    const title = t ? `${t.title}${t.dirty ? ' •' : ''} — Aster` : 'Settings — Aster';
     document.title = title;
     if (inTauri) void getCurrentWindow().setTitle(title).catch(() => {});
   });
@@ -480,11 +527,31 @@ export default function App() {
       <TabBar
         tabs={tabs()}
         activeId={activeId()}
+        settingsId={settingsOpen() ? SETTINGS_ID : null}
+        inset={inset()}
         onSelect={activate}
         onClose={(id) => void closeTab(id)}
         onNew={newTab}
       />
-      <div class="aster-editor-host" ref={host} classList={{ 'is-readonly': readOnly() }} />
+      <div class="aster-main">
+        {/* The editor stays mounted while Settings is shown, so undo history,
+            scroll and selection survive the round trip. */}
+        <div
+          class="aster-editor-host"
+          ref={host}
+          classList={{ 'is-readonly': readOnly() }}
+          hidden={onSettings()}
+        />
+        <Show when={onSettings()}>
+          <SettingsPane
+            settings={settings()}
+            plugins={plugins()}
+            themes={pluginThemes()}
+            version={version()}
+            onChange={changeSettings}
+          />
+        </Show>
+      </div>
       <StatusBar
         path={active()?.path ?? null}
         words={words()}
@@ -493,19 +560,12 @@ export default function App() {
         mode={mode()}
         readOnly={readOnly()}
         notice={notice()}
+        editorActive={!onSettings()}
+        settingsActive={onSettings()}
         onModeChange={changeMode}
         onToggleLock={toggleLock}
-        onSettings={() => setShowSettings(true)}
+        onSettings={openSettings}
       />
-      <Show when={showSettings()}>
-        <SettingsModal
-          settings={settings()}
-          plugins={plugins()}
-          themes={pluginThemes()}
-          onChange={changeSettings}
-          onClose={() => { setShowSettings(false); editor?.focus(); }}
-        />
-      </Show>
       <Show when={confirmReq()}>
         {(req) => <ConfirmModal req={req()} />}
       </Show>

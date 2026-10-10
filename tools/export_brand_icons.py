@@ -527,9 +527,9 @@ def main() -> int:
         manifest = {
             "schema_version": 1, "generator": "tools/export_brand_icons.py",
             "generated_at": datetime.now(timezone.utc).isoformat(),
-            "renderer": {"name": renderer.name, "executable": renderer.executable, "version": renderer.version},
+            "renderer": {"name": renderer.name, "executable": Path(renderer.executable).name, "version": renderer.version},
             "iconutil": iconutil, "complete": not args.skip_icns,
-            "source_dir": str(source_dir), "small_master_max_pixels": 32,
+            "source_dir": source_dir.resolve().relative_to(ROOT).as_posix() if source_dir.resolve().is_relative_to(ROOT) else source_dir.name, "small_master_max_pixels": 32,
             "policy": {"raster_resampling": False, "ico_payloads": "PNG",
                        "pwa_apple_windows": "opaque square; platform applies its own mask",
                        "macos": "transparent perimeter with rounded inset tile",

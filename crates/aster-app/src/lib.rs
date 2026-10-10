@@ -1,5 +1,6 @@
 mod backup;
 mod fonts;
+mod links;
 mod ipc;
 mod menu;
 mod recovery;
@@ -73,6 +74,7 @@ pub fn run() {
             ipc::editor_insert,
             menu::set_menu_language,
             fonts::fonts_list,
+            links::open_repo,
             recovery::session_save,
             recovery::session_take,
             recovery::session_clear,

@@ -675,7 +675,13 @@ button, [role="tab"], [role="menuitem"], [role="option"], .aster-tab, .aster-swa
 }
 .aster-about-mark { color: var(--accent); margin-bottom: 10px; }
 .aster-about-name { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
-.aster-about-zh { font-weight: 400; color: var(--fg-muted); }
 .aster-about-tag { font-size: 14px; color: var(--fg-muted); }
 .aster-about-ver { margin-top: 4px; }
 .aster-about-lic { font-size: 12.5px; color: var(--fg-faint); margin-top: 2px; }
+.aster-about-link {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 14px;
+  padding: 6px 14px; border-radius: 7px; font-size: 13px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--fg);
+}
+.aster-about-link:hover { border-color: var(--fg-faint); background: var(--surface-2); }
+.aster-about-url { font-size: 12px; color: var(--fg-faint); font-family: var(--font-mono); }

@@ -14,6 +14,7 @@ edition = "2021"
 rust-version = "1.80"
 authors = ["timestarry <timestarry@qq.com>"]
 license = "MIT"
+repository = "https://github.com/timeStarry/aster"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

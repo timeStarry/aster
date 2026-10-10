@@ -493,29 +493,19 @@ const livePreviewField = StateField.define<DecorationSet>({
   ],
 });
 
-/** Gives the line-number cell of a heading line the heading's size, so the number sits on the heading's baseline. */
+/** Marks the line-number cell of a heading line so the number centers on the (taller) heading. */
 class HeadingGutter extends GutterMarker {
-  elementClass: string;
-  constructor(readonly cls: string) { super(); this.elementClass = cls; }
-  eq(other: HeadingGutter) { return this.cls === other.cls; }
+  elementClass = 'aster-gutter-heading';
+  eq() { return true; }
 }
-const HEADING_GUTTERS: Record<string, HeadingGutter> = {
-  'aster-lp-h1': new HeadingGutter('aster-lp-h1'),
-  'aster-lp-h2': new HeadingGutter('aster-lp-h2'),
-  'aster-lp-h3': new HeadingGutter('aster-lp-h3'),
-  'aster-lp-h4': new HeadingGutter('aster-lp-h4'),
-  'aster-lp-h5': new HeadingGutter('aster-lp-h5'),
-  'aster-lp-h6': new HeadingGutter('aster-lp-h6'),
-};
+const HEADING_GUTTER = new HeadingGutter();
 
 function headingGutterClasses(set: DecorationSet) {
   const b = new RangeSetBuilder<GutterMarker>();
   set.between(0, 1e9, (from, _to, deco) => {
     const spec = deco.spec as { class?: string };
     if (!spec.class || !spec.class.includes('aster-lp-heading')) return;
-    const cls = spec.class.split(' ').find((c) => c.startsWith('aster-lp-h'));
-    const marker = cls ? HEADING_GUTTERS[cls] : undefined;
-    if (marker) b.add(from, from, marker);
+    b.add(from, from, HEADING_GUTTER);
   });
   return b.finish();
 }

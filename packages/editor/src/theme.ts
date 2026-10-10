@@ -58,7 +58,14 @@ export const asterEditorTheme = EditorView.theme({
     padding: '0 0 0 8px',
     minWidth: '2.4em',
     fontSize: '0.8em',
-    lineHeight: 'inherit',
+    // Same line box as body text (the number is 0.8x its size), so the number
+    // sits on the vertical middle of the line's first visual row.
+    lineHeight: 'calc(var(--editor-line-height, 1.75) / 0.8 * 1em)',
+  },
+  '.cm-lineNumbers .cm-gutterElement.aster-gutter-heading': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   '.cm-panels': { backgroundColor: 'var(--surface)', color: 'var(--fg)' },
   '.cm-panels.cm-panels-top': { borderBottom: '1px solid var(--border)' },

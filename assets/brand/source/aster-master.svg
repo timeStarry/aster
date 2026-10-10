@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1024" height="1024" viewBox="0 0 1024 1024" version="1.1">
-  <title>Aster / 星文 — app-macos</title>
+  <title>Aster — app-macos</title>
   <desc>Geometric six-arm asterisk and period. No raster images or font dependencies.</desc>
   <g id="background" inkscape:groupmode="layer" inkscape:label="Background — paper">
     <rect id="tile" x="104" y="104" width="816" height="816" rx="182" fill="#F7F4EE" />

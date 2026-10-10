@@ -7,7 +7,7 @@
     "executable": "inkscape",
     "version": "Inkscape 1.4.4 (dcaf3e7, 2026-05-05)"
   },
-  "iconutil": "/usr/bin/iconutil",
+  "iconutil": "iconutil",
   "complete": true,
   "source_dir": "assets/brand/source",
   "small_master_max_pixels": 32,

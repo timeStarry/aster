@@ -198,6 +198,7 @@ const en = {
   'dialog.settingsJson': 'Aster settings',
   'about.edition': 'Version {v}',
   'about.license': 'Open source under the MIT License',
+  'about.github': 'View on GitHub',
 
   // Font names
   'font.sans': 'System sans-serif',
@@ -420,6 +421,7 @@ const zh: Record<Key, string> = {
   'dialog.settingsJson': 'Aster 设置',
   'about.edition': '版本 {v}',
   'about.license': '基于 MIT 许可证开源',
+  'about.github': '在 GitHub 上查看',
 
   'font.sans': '系统无衬线',
   'font.serif': '书籍衬线',

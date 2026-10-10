@@ -174,7 +174,7 @@ def write_family(out: Path, variant: str, g: dict, united: ET.Element, cfg: dict
     suffix = "-small" if variant == "small" else ""
     palette, layout = cfg["colors"], cfg["layout"]
     for kind in ("mark", "app-tile", "app-square", "app-macos"):
-        root = document(f"Aster / 星文 — {kind}{suffix}",
+        root = document(f"Aster — {kind}{suffix}",
                         "Geometric six-arm asterisk and period. No raster images or font dependencies.")
         scale = 1
         if kind != "mark":

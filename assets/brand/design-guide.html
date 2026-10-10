@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Aster / 星文 · 星号句点设计说明</title>
+  <title>Aster · 星号句点设计说明</title>
   <style>
     :root { color-scheme: light; --ink: #191c26; --muted: #666874; --line: #e5e3df; --paper: #f7f4ee; --indigo: #4250dc; }
     * { box-sizing: border-box; }
@@ -103,8 +103,8 @@
 <body>
   <main class="page">
     <header class="masthead">
-      <div class="wordmark">Aster <span>星文 · 品牌图形</span></div>
-      <div class="status">交付资源 · 待接入</div>
+      <div class="wordmark">Aster <span>品牌图形</span></div>
+      <div class="status">已接入应用</div>
     </header>
 
     <div class="hero">
@@ -187,7 +187,7 @@
 
     <section>
       <div class="section-head"><span>03</span><h2>平台资源</h2></div>
-      <p class="body-copy">当前为独立交付目录，尚未替换项目现有 Tauri 图标。</p>
+      <p class="body-copy">应用图标由本目录生成：<code>export/tauri/</code> 复制到 <code>crates/aster-app/icons/</code> 用于打包，应用内标识使用 <code>export/in-app/</code> 的矢量母版。</p>
       <div class="table-wrap">
         <table class="assets" aria-label="各平台交付资源映射">
           <thead><tr><th>用途</th><th>资源与构图</th></tr></thead>
@@ -197,7 +197,7 @@
             <tr><td>Web</td><td><div class="asset-links"><a href="export/web/favicon.svg">favicon.svg</a><a href="export/web/favicon.ico">favicon.ico</a><a href="export/web/favicon-96.png">96px PNG</a><a href="export/web/pwa-192.png">PWA 192</a><a href="export/web/pwa-512.png">PWA 512</a><a href="export/web/apple-touch-icon.png">Apple touch 180</a></div><div class="asset-detail">favicon为圆角底板；PWA与Apple touch为不透明方形资源。PWA maskable需另行配置与验收。</div></td></tr>
             <tr><td>README</td><td><div class="asset-links"><a href="export/readme/mark.svg">透明标识 SVG</a><a href="export/readme/app-tile.svg">底板 SVG</a><a href="export/readme/mark-512.png">标识 PNG</a><a href="export/readme/app-tile-512.png">底板 PNG</a></div></td></tr>
             <tr><td>应用内</td><td><div class="asset-links"><a href="export/in-app/mark.svg">标准 SVG</a><a href="export/in-app/mark-small.svg">小尺寸 SVG</a><a href="export/in-app/mark-32.png">32px PNG</a><a href="export/in-app/mark-64.png">64px PNG</a></div><div class="asset-detail">透明背景；16、20、24、32、48、64px PNG均已导出。</div></td></tr>
-            <tr><td>Tauri</td><td><div class="asset-links"><a href="export/tauri/icon.icns">icon.icns</a><a href="export/tauri/icon.ico">icon.ico</a><a href="export/tauri/32x32.png">32×32</a><a href="export/tauri/128x128.png">128×128</a><a href="export/tauri/128x128@2x.png">128×128@2x</a><a href="export/tauri/icon.png">icon.png · 1024</a></div><div class="asset-detail">静态打包资源已备；后续按项目配置接入。</div></td></tr>
+            <tr><td>Tauri</td><td><div class="asset-links"><a href="export/tauri/icon.icns">icon.icns</a><a href="export/tauri/icon.ico">icon.ico</a><a href="export/tauri/32x32.png">32×32</a><a href="export/tauri/128x128.png">128×128</a><a href="export/tauri/128x128@2x.png">128×128@2x</a><a href="export/tauri/icon.png">icon.png · 1024</a></div><div class="asset-detail">已用于 <code>crates/aster-app/icons/</code>。</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -211,22 +211,17 @@
 
     <section>
       <div class="section-head"><span>04</span><h2>验证与再导出</h2></div>
-      <p class="body-copy">导出清单记录了8个源SVG与59项交付资产，已通过尺寸、alpha、裁切、容器完整性及SVG自包含检查。使用Inkscape 1.4.4渲染，Apple <code>iconutil</code> 打包ICNS。</p>
-      <div class="checks"><span>8 源 SVG</span><span>59 交付资产</span><span>直接矢量渲染</span><span>完整 ICNS / ICO</span></div>
+      <p class="body-copy">导出清单记录了8个源SVG与62项交付资产，已通过尺寸、alpha、裁切、容器完整性及SVG自包含检查。使用Inkscape 1.4.4渲染，Apple <code>iconutil</code> 打包ICNS。</p>
+      <div class="checks"><span>8 源 SVG</span><span>62 交付资产</span><span>直接矢量渲染</span><span>完整 ICNS / ICO</span></div>
       <p class="note">ICNS原生16px / 32px槽位的颜色回读存在转换与舍入差异，alpha逐像素精确一致；相应差异及深浅背景合成诊断已记录在 <a href="export/manifest.json">manifest.json</a>。这不代表所有RGB像素完全一致。</p>
       <pre><code>python3 tools/build_brand_sources.py
 python3 tools/export_brand_icons.py --overwrite</code></pre>
       <p class="note">在项目根目录运行。Python须提供Pillow；源构建需要Inkscape，完整macOS导出需要<code>iconutil</code>。参数源为<a href="geometry.json">geometry.json</a>，生成器为<a href="../../tools/build_brand_sources.py">build_brand_sources.py</a>与<a href="../../tools/export_brand_icons.py">export_brand_icons.py</a>。</p>
       <p class="note">母版可在Inkscape中编辑独立路径与圆形；批量一致性以geometry.json为准，重建会覆盖派生SVG。若直接手改SVG，需同步各变体。</p>
-      <details>
-        <summary>Python</summary>
-        <code>python3</code>
-        <p>若默认python3缺少Pillow，可用此解释器替换命令中的python3。</p>
-      </details>
     </section>
 
     <footer>
-      <span>Aster / 星文 · 星号句点 · 2026.10</span>
+      <span>Aster · 星号句点 · 2026.10</span>
       <div class="asset-links"><a href="source/aster-master.svg">母版</a><a href="export/manifest.json">资产清单</a><a href="https://developer.apple.com/icon-composer/">Apple</a><a href="https://v2.tauri.app/develop/icons/">Tauri</a></div>
     </footer>
   </main>

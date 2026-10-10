@@ -847,6 +847,7 @@ export default function App() {
             onExport={() => void exportSettings()}
             onImport={() => void importSettings()}
             onReset={() => void resetSettings()}
+            onOpenRepo={() => { if (inTauri) void invoke('open_repo').catch((e) => flash(errText(e), true)); }}
           />
         </Show>
       </div>

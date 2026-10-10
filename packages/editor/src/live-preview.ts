@@ -1,6 +1,10 @@
 import { EditorState, Extension, StateField, StateEffect, Range } from '@codemirror/state';
-import { EditorView, Decoration, DecorationSet, WidgetType } from '@codemirror/view';
+import { EditorView, Decoration, DecorationSet, WidgetType, GutterMarker, gutterLineClass } from '@codemirror/view';
+import { RangeSetBuilder } from '@codemirror/state';
 import { syntaxTree, ensureSyntaxTree } from '@codemirror/language';
+import { LanguageDescription } from '@codemirror/language';
+import { languages } from '@codemirror/language-data';
+import { classHighlighter, highlightCode } from '@lezer/highlight';
 import type { SyntaxNode } from '@lezer/common';
 
 /**
@@ -57,6 +61,7 @@ function build(state: EditorState): DecorationSet {
       // ── Headings ───────────────────────────────────────────────
       if (name.startsWith('ATXHeading')) {
         const level = name.slice('ATXHeading'.length);
+        lineClass(from, `aster-lp-heading aster-lp-h${level}`);
         mark(from, to, `aster-lp-heading aster-lp-h${level}`);
         if (!lineTouched(from)) {
           const hm = node.getChild('HeaderMark');
@@ -68,7 +73,9 @@ function build(state: EditorState): DecorationSet {
         return true; // descend: inline formatting inside headings
       }
       if (name === 'SetextHeading1' || name === 'SetextHeading2') {
-        mark(from, to, `aster-lp-heading aster-lp-h${name.endsWith('1') ? 1 : 2}`);
+        const lv = name.endsWith('1') ? 1 : 2;
+        lineClass(from, `aster-lp-heading aster-lp-h${lv}`);
+        mark(from, to, `aster-lp-heading aster-lp-h${lv}`);
         for (const hm of node.getChildren('HeaderMark')) {
           if (!lineTouched(hm.from)) hide(doc.lineAt(hm.from).from - 1, hm.to);
         }
@@ -269,7 +276,39 @@ let renderGeneration = 0;
 /** Bumped on theme change so cached SVGs from a previous palette are not reused. */
 let themeGeneration = 0;
 
-function plainCodeBlock(body: string, lang: string): HTMLElement {
+const langCache = new Map<string, Promise<import('@lezer/common').Parser | null>>();
+
+function parserFor(lang: string): Promise<import('@lezer/common').Parser | null> {
+  const key = lang.toLowerCase();
+  let p = langCache.get(key);
+  if (!p) {
+    const desc = LanguageDescription.matchLanguageName(languages, key, true);
+    p = desc
+      ? desc.load().then((s) => s.language.parser).catch(() => null)
+      : Promise.resolve(null);
+    langCache.set(key, p);
+  }
+  return p;
+}
+
+function highlightedCode(body: string, parser: import('@lezer/common').Parser): HTMLElement {
+  const code = document.createElement('code');
+  const tree = parser.parse(body);
+  let line: HTMLSpanElement | null = null;
+  const ensure = () => {
+    if (!line) { line = document.createElement('span'); line.className = 'tok-line'; code.appendChild(line); }
+    return line;
+  };
+  highlightCode(body, tree, classHighlighter, (text, cls) => {
+    const span = document.createElement('span');
+    if (cls) span.className = cls;
+    span.textContent = text;
+    ensure().appendChild(span);
+  }, () => { line = null; });
+  return code;
+}
+
+function plainCodeBlock(body: string, lang: string, parser: import('@lezer/common').Parser | null = null): HTMLElement {
   const pre = document.createElement('pre');
   pre.className = 'aster-lp-codeblock';
   if (lang) {
@@ -278,9 +317,12 @@ function plainCodeBlock(body: string, lang: string): HTMLElement {
     badge.textContent = lang;
     pre.appendChild(badge);
   }
-  const code = document.createElement('code');
-  code.textContent = body;
-  pre.appendChild(code);
+  if (parser) pre.appendChild(highlightedCode(body, parser));
+  else {
+    const code = document.createElement('code');
+    code.textContent = body;
+    pre.appendChild(code);
+  }
   return pre;
 }
 
@@ -296,19 +338,21 @@ class CodeBlockWidget extends WidgetType {
       wrap.innerHTML = cached;
       return wrap;
     }
-    const pending = this.lang && codeRenderer ? codeRenderer(this.lang, this.body) : null;
-    if (!pending) return plainCodeBlock(this.body, this.lang);
-
+    const plugin = this.lang && codeRenderer ? codeRenderer(this.lang, this.body) : null;
+    const syntax = this.lang ? parserFor(this.lang) : Promise.resolve(null);
     const wrap = document.createElement('div');
     wrap.className = 'aster-lp-rendered is-pending';
     wrap.appendChild(plainCodeBlock(this.body, this.lang));
-    pending.then(
-      (html) => {
+    Promise.all([plugin ?? Promise.resolve(null), syntax]).then(
+      ([html, parser]) => {
         wrap.classList.remove('is-pending');
-        if (html == null) return;
-        if (renderCache.size >= RENDER_CACHE_MAX) renderCache.delete(renderCache.keys().next().value!);
-        renderCache.set(key, html);
-        wrap.innerHTML = html;
+        if (html != null) {
+          if (renderCache.size >= RENDER_CACHE_MAX) renderCache.delete(renderCache.keys().next().value!);
+          renderCache.set(key, html);
+          wrap.innerHTML = html;
+        } else if (parser) {
+          wrap.replaceChildren(plainCodeBlock(this.body, this.lang, parser));
+        }
         view.requestMeasure();
       },
       (err) => {
@@ -352,8 +396,38 @@ const livePreviewField = StateField.define<DecorationSet>({
     }
     return value;
   },
-  provide: (f) => EditorView.decorations.from(f),
+  provide: (f) => [
+    EditorView.decorations.from(f),
+    gutterLineClass.from(f, headingGutterClasses),
+  ],
 });
+
+/** Gives the line-number cell of a heading line the heading's size, so the number sits on the heading's baseline. */
+class HeadingGutter extends GutterMarker {
+  elementClass: string;
+  constructor(readonly cls: string) { super(); this.elementClass = cls; }
+  eq(other: HeadingGutter) { return this.cls === other.cls; }
+}
+const HEADING_GUTTERS: Record<string, HeadingGutter> = {
+  'aster-lp-h1': new HeadingGutter('aster-lp-h1'),
+  'aster-lp-h2': new HeadingGutter('aster-lp-h2'),
+  'aster-lp-h3': new HeadingGutter('aster-lp-h3'),
+  'aster-lp-h4': new HeadingGutter('aster-lp-h4'),
+  'aster-lp-h5': new HeadingGutter('aster-lp-h5'),
+  'aster-lp-h6': new HeadingGutter('aster-lp-h6'),
+};
+
+function headingGutterClasses(set: DecorationSet) {
+  const b = new RangeSetBuilder<GutterMarker>();
+  set.between(0, 1e9, (from, _to, deco) => {
+    const spec = deco.spec as { class?: string };
+    if (!spec.class || !spec.class.includes('aster-lp-heading')) return;
+    const cls = spec.class.split(' ').find((c) => c.startsWith('aster-lp-h'));
+    const marker = cls ? HEADING_GUTTERS[cls] : undefined;
+    if (marker) b.add(from, from, marker);
+  });
+  return b.finish();
+}
 
 export interface LivePreviewOptions {
   /** Map a markdown image src (possibly relative) to a URL the webview can load. */

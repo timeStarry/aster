@@ -272,12 +272,13 @@ describe('code block renderers', () => {
     ed.destroy();
   });
 
-  it('falls back to a plain code block when no renderer exists', () => {
+  it('falls back to a plain code block when no renderer exists', async () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
     const ed = createEditor(el, { initialContent: 'x\n\n```js\nlet a\n```\n', renderCodeBlock: () => null });
-    expect(el.querySelector('.aster-lp-codeblock code')?.textContent).toBe('let a');
-    expect(el.querySelector('.aster-lp-rendered')).toBeNull();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(el.querySelector('.aster-lp-codeblock')?.textContent).toContain('let a');
+    expect(el.querySelector('.aster-lp-render-error')).toBeNull();
     ed.destroy();
   });
 

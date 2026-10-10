@@ -17,6 +17,7 @@ interface Props {
   onModeChange: (m: EditorMode) => void;
   onToggleLock: () => void;
   onSettings: () => void;
+  onCopyPath: () => void;
 }
 
 const LockIcon = (p: { locked: boolean }) => (
@@ -41,6 +42,13 @@ export function StatusBar(props: Props) {
           <span style={{ color: props.notice?.error ? 'var(--danger)' : 'var(--fg)' }}>{props.notice?.text}</span>
         </Show>
       </span>
+      <Show when={props.editorActive && props.path && !props.notice}>
+        <button class="aster-icon-btn aster-copy-path" aria-label={t('status.copyPath')} title={t('status.copyPath')} onClick={() => props.onCopyPath()}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="5" y="5" width="8.5" height="9" rx="1.5" /><path d="M10.5 5V3.5A1.5 1.5 0 0 0 9 2H4A1.5 1.5 0 0 0 2.5 3.5V10A1.5 1.5 0 0 0 4 11.5h1" />
+          </svg>
+        </button>
+      </Show>
       <Show when={props.editorActive}>
       <span>{props.words === 1 ? t('status.word') : t('status.words', { n: props.words })}</span>
       <span>{t('status.lnCol', { line: props.line, col: props.col })}</span>

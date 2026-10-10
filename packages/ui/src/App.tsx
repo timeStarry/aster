@@ -19,6 +19,7 @@ import {
   loadSettings, saveSettings, applySettings, makeTab, basename, dirname, wordCount, isMac, MOD, fileUrl,
 } from './model';
 import { t, lang, applyLanguage, editorPhrases, WELCOME, type Lang } from './i18n';
+import { showEditorContextMenu } from './contextmenu';
 import './theme.css';
 
 const inTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
@@ -384,6 +385,36 @@ export default function App() {
     return convertFileSrc(p);
   }
 
+  async function copyPath() {
+    const p = active()?.path;
+    if (!p) return;
+    try {
+      await navigator.clipboard.writeText(p);
+      flash(t('notice.pathCopied'));
+    } catch {
+      flash(t('notice.copyFailed'), true);
+    }
+  }
+
+  function onContextMenu(e: MouseEvent) {
+    // Inputs and the settings page keep the native text menu.
+    const target = e.target as HTMLElement;
+    if (!editor || !inTauri) return;
+    if (!host.contains(target)) {
+      if (!target.closest('input, textarea, [contenteditable="true"], .aster-selectable')) e.preventDefault();
+      return;
+    }
+    e.preventDefault();
+    const view = editor.view;
+    // Right-click outside the selection moves the cursor there first (as in native editors).
+    const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
+    const sel = view.state.selection.main;
+    if (pos != null && (pos < sel.from || pos > sel.to)) view.dispatch({ selection: { anchor: pos } });
+    const renderable = ['math', 'mermaid'].filter((l) => loadable.some((p) => p.activation.includes(`onCodeBlock:${l}`)));
+    void showEditorContextMenu({ view, readOnly: readOnly(), renderable, x: e.clientX, y: e.clientY })
+      .catch((err) => console.error('[aster] context menu failed:', err));
+  }
+
   /** Live-preview hook: render ```lang blocks through a plugin renderer, if one exists. */
   function renderCodeBlock(lang: string, body: string): Promise<string | null> | null {
     if (!asterApi) return null;
@@ -480,6 +511,7 @@ export default function App() {
     });
     editor.focus();
     window.addEventListener('keydown', onKeyDown, true);
+    window.addEventListener('contextmenu', onContextMenu);
 
     if (!inTauri) return;
     const unlisten: UnlistenFn[] = [];
@@ -563,6 +595,7 @@ export default function App() {
 
   onCleanup(() => {
     window.removeEventListener('keydown', onKeyDown, true);
+    window.removeEventListener('contextmenu', onContextMenu);
     autoSaveTimers.forEach((h) => clearTimeout(h));
     editor?.destroy();
   });
@@ -621,6 +654,7 @@ export default function App() {
         onModeChange={changeMode}
         onToggleLock={toggleLock}
         onSettings={openSettings}
+        onCopyPath={() => void copyPath()}
       />
       <Show when={confirmReq()}>
         {(req) => <ConfirmModal req={req()} />}

@@ -47,17 +47,19 @@ export const asterEditorTheme = EditorView.theme({
   '.cm-activeLine': { backgroundColor: 'transparent' },
   '.cm-gutters': {
     marginInlineStart: 'auto',
-    paddingTop: '40px',
     backgroundColor: 'transparent',
     border: 'none',
     color: 'var(--fg-faint)',
     fontFamily: 'var(--font-mono)',
-    fontSize: '0.75em',
-    // Match the text's line box so numbers line up with the first line of
-    // each paragraph (the gutter font is 0.75× the text size).
-    lineHeight: 'calc(var(--editor-line-height, 1.75) / 0.75)',
+    fontSize: 'inherit',
+    lineHeight: 'inherit',
   },
-  '.cm-lineNumbers .cm-gutterElement': { padding: '0 0 0 8px', minWidth: '28px' },
+  '.cm-lineNumbers .cm-gutterElement': {
+    padding: '0 0 0 8px',
+    minWidth: '2.4em',
+    fontSize: '0.8em',
+    lineHeight: 'inherit',
+  },
   '.cm-panels': { backgroundColor: 'var(--surface)', color: 'var(--fg)' },
   '.cm-panels.cm-panels-top': { borderBottom: '1px solid var(--border)' },
   '.cm-panels.cm-panels-bottom': { borderTop: '1px solid var(--border)' },
@@ -102,9 +104,10 @@ export const asterEditorTheme = EditorView.theme({
 
 /** Source-mode syntax colors: readable markup, not a rainbow. */
 export const asterHighlight = HighlightStyle.define([
-  { tag: t.heading1, fontWeight: '700', fontSize: '1.6em' },
-  { tag: t.heading2, fontWeight: '700', fontSize: '1.35em' },
-  { tag: t.heading3, fontWeight: '600', fontSize: '1.15em' },
+  // Source mode keeps a uniform line height so line numbers stay aligned.
+  { tag: t.heading1, fontWeight: '700' },
+  { tag: t.heading2, fontWeight: '700' },
+  { tag: t.heading3, fontWeight: '600' },
   { tag: [t.heading4, t.heading5, t.heading6], fontWeight: '600' },
   { tag: t.strong, fontWeight: '700' },
   { tag: t.emphasis, fontStyle: 'italic' },
@@ -119,9 +122,13 @@ export const asterHighlight = HighlightStyle.define([
   { tag: t.keyword, color: 'var(--syn-keyword)' },
   { tag: [t.string, t.special(t.string)], color: 'var(--syn-string)' },
   { tag: [t.number, t.bool, t.null], color: 'var(--syn-number)' },
-  { tag: t.comment, color: 'var(--fg-faint)', fontStyle: 'italic' },
-  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: 'var(--syn-fn)' },
-  { tag: [t.typeName, t.className], color: 'var(--syn-type)' },
+  { tag: [t.regexp, t.escape], color: 'var(--syn-string)' },
+  { tag: [t.atom, t.self, t.constant(t.variableName), t.standard(t.variableName)], color: 'var(--syn-number)' },
+  { tag: t.comment, color: 'var(--syn-comment, var(--fg-faint))' },
+  { tag: [t.function(t.variableName), t.function(t.propertyName), t.definition(t.function(t.variableName))], color: 'var(--syn-fn)' },
+  { tag: [t.typeName, t.className, t.namespace, t.attributeName], color: 'var(--syn-type)' },
+  { tag: [t.tagName, t.special(t.variableName)], color: 'var(--syn-tag, var(--syn-keyword))' },
+  { tag: [t.definition(t.propertyName), t.labelName], color: 'var(--syn-variable, var(--fg))' },
 ]);
 
 export function themeExtension(): Extension {

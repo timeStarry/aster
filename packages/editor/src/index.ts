@@ -164,7 +164,6 @@ export function createEditor(container: HTMLElement, opts: EditorOptions = {}): 
   };
 }
 
-export { formatTable } from './table-format';
 export {
   toggleInline,
   insertLink,
@@ -173,5 +172,9 @@ export {
   insertCodeBlock,
   insertTable,
 } from './formatting';
+export {
+  formatTable, insertTableCmd, tableCommand, tableContext, findTable,
+  type TableOp, type TableContext,
+} from './tables';
 export { openSearchPanel } from '@codemirror/search';
 export { refreshCodeBlocks, type CodeBlockRenderer } from './live-preview';

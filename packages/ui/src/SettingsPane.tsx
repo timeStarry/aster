@@ -89,7 +89,7 @@ const MONO_PRESETS: FontStackId[] = ['mono'];
 // Static previews; the real colors live in theme.css / plugin CSS.
 const SWATCHES: Record<string, { bg: string; fg: string; accent: string }> = {
   light: { bg: '#fbfbfa', fg: '#1c1917', accent: '#4f46e5' },
-  dark: { bg: '#1c1917', fg: '#e7e5e4', accent: '#818cf8' },
+  dark: { bg: '#22272e', fg: '#adbac7', accent: '#539bf5' },
 };
 
 function Swatch(p: { id: string }) {

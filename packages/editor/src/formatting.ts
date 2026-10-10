@@ -2,6 +2,7 @@ import { EditorSelection, Extension, Prec } from '@codemirror/state';
 import { EditorView, KeyBinding, keymap } from '@codemirror/view';
 import { indentMore, indentLess } from '@codemirror/commands';
 import { indentList, renumberChanges } from './lists';
+import { nextCell, prevCell, insertTableCmd } from './tables';
 
 type Cmd = (view: EditorView) => boolean;
 
@@ -159,22 +160,7 @@ export const insertCodeBlock: Cmd = (view) => {
 };
 
 /** Insert a 3x2 table skeleton at the cursor. */
-export const insertTable: Cmd = (view) => {
-  if (view.state.readOnly) return false;
-  const { from } = view.state.selection.main;
-  const line = view.state.doc.lineAt(from);
-  const lead = line.text.trim() === '' ? '' : '\n\n';
-  const insert = `${lead}| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n|          |          |          |\n`;
-  const at = line.text.trim() === '' ? line.from : line.to;
-  view.dispatch({
-    changes: { from: at, to: line.text.trim() === '' ? line.to : at, insert },
-    selection: EditorSelection.range(at + lead.length + 2, at + lead.length + 10),
-    scrollIntoView: true,
-    userEvent: 'input.format',
-  });
-  return true;
-};
-
+export const insertTable: Cmd = insertTableCmd(3, 2);
 const LIST_RE = /^(\s*)([-*+]\s+\[[ xX]\]\s+|[-*+]\s+|(\d+)([.)])\s+|>\s?)/;
 
 /**
@@ -273,6 +259,7 @@ export const formattingKeymap: KeyBinding[] = [
   { key: 'Mod-Shift-.', run: toggleLinePrefix('quote'), preventDefault: true },
   { key: 'Enter', run: continueMarkup },
   { key: 'Backspace', run: deleteMarkup },
+  { key: 'Tab', run: nextCell, shift: prevCell },
   { key: 'Tab', run: tabIndent, shift: tabOutdent },
 ];
 

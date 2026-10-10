@@ -20,14 +20,19 @@
   --search-match: rgba(79, 70, 229, 0.12);
   --search-match-active: rgba(79, 70, 229, 0.3);
   --search-outline: rgba(79, 70, 229, 0.5);
-  --code-bg: #f4f4f5;
-  --code-fg: #9f1239;
+  --code-bg: #f6f8fa;
+  --code-fg: #1f2328;
   --quote-bar: #c7c4c0;
-  --syn-keyword: #7c3aed;
-  --syn-string: #b45309;
-  --syn-number: #0f766e;
-  --syn-fn: #1d4ed8;
-  --syn-type: #0e7490;
+  --syn-keyword: #cf222e;
+  --syn-string: #0a3069;
+  --syn-number: #0550ae;
+  --syn-fn: #6639ba;
+  --syn-type: #6639ba;
+  --syn-comment: #59636e;
+  --syn-variable: #953800;
+  --syn-tag: #116329;
+  /* GitHub-style inline code: neutral tint, default text color. */
+  --code-inline-bg: rgba(129, 139, 152, 0.15);
   --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
   /* Theme fonts. Typography settings override --font-prose/--font-mono inline. */
   --theme-font-prose: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', Georgia, serif;
@@ -42,64 +47,74 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    /* GitHub Dark Dimmed */
     color-scheme: dark;
-    --bg: #1c1917;
-    --fg: #e7e5e4;
-    --fg-muted: #a8a29e;
-    --fg-faint: #78716c;
-    --border: #3f3c3a;
-    --accent: #818cf8;
-    --accent-fg: #1c1917;
-    --surface: #292524;
-    --surface-2: #35302e;
-    --tab-bg: #292524;
-    --tab-active: #1c1917;
-    --status-bg: #292524;
-    --selection: rgba(129, 140, 248, 0.28);
-    --selection-match: rgba(129, 140, 248, 0.14);
-    --search-match: rgba(129, 140, 248, 0.18);
-    --search-match-active: rgba(129, 140, 248, 0.4);
-    --search-outline: rgba(129, 140, 248, 0.65);
-    --code-bg: #292524;
-    --code-fg: #fda4af;
-    --quote-bar: #57534e;
-    --syn-keyword: #c4b5fd;
-    --syn-string: #fdba74;
-    --syn-number: #5eead4;
-    --syn-fn: #93c5fd;
-    --syn-type: #67e8f9;
-    --danger: #f87171;
+    --bg: #22272e;
+    --fg: #adbac7;
+    --fg-muted: #768390;
+    --fg-faint: #636e7b;
+    --border: #444c56;
+    --accent: #539bf5;
+    --accent-fg: #22272e;
+    --surface: #2d333b;
+    --surface-2: #373e47;
+    --tab-bg: #1c2128;
+    --tab-active: #22272e;
+    --status-bg: #1c2128;
+    --selection: rgba(83, 155, 245, 0.3);
+    --selection-match: rgba(83, 155, 245, 0.14);
+    --search-match: rgba(83, 155, 245, 0.18);
+    --search-match-active: rgba(83, 155, 245, 0.4);
+    --search-outline: rgba(83, 155, 245, 0.65);
+    --code-bg: #2d333b;
+    --code-inline-bg: rgba(99, 110, 123, 0.4);
+    --code-fg: #adbac7;
+    --quote-bar: #444c56;
+    --syn-keyword: #f47067;
+    --syn-string: #96d0ff;
+    --syn-number: #6cb6ff;
+    --syn-fn: #dcbdfb;
+    --syn-type: #dcbdfb;
+    --syn-comment: #768390;
+    --syn-variable: #f69d50;
+    --syn-tag: #8ddb8c;
+    --danger: #e5534b;
   }
 }
 
 :root[data-theme="dark"] {
+  /* GitHub Dark Dimmed */
   color-scheme: dark;
-  --bg: #1c1917;
-  --fg: #e7e5e4;
-  --fg-muted: #a8a29e;
-  --fg-faint: #78716c;
-  --border: #3f3c3a;
-  --accent: #818cf8;
-  --accent-fg: #1c1917;
-  --surface: #292524;
-  --surface-2: #35302e;
-  --tab-bg: #292524;
-  --tab-active: #1c1917;
-  --status-bg: #292524;
-  --selection: rgba(129, 140, 248, 0.28);
-  --selection-match: rgba(129, 140, 248, 0.14);
-  --search-match: rgba(129, 140, 248, 0.18);
-  --search-match-active: rgba(129, 140, 248, 0.4);
-  --search-outline: rgba(129, 140, 248, 0.65);
-  --code-bg: #292524;
-  --code-fg: #fda4af;
-  --quote-bar: #57534e;
-  --syn-keyword: #c4b5fd;
-  --syn-string: #fdba74;
-  --syn-number: #5eead4;
-  --syn-fn: #93c5fd;
-  --syn-type: #67e8f9;
-  --danger: #f87171;
+  --bg: #22272e;
+  --fg: #adbac7;
+  --fg-muted: #768390;
+  --fg-faint: #636e7b;
+  --border: #444c56;
+  --accent: #539bf5;
+  --accent-fg: #22272e;
+  --surface: #2d333b;
+  --surface-2: #373e47;
+  --tab-bg: #1c2128;
+  --tab-active: #22272e;
+  --status-bg: #1c2128;
+  --selection: rgba(83, 155, 245, 0.3);
+  --selection-match: rgba(83, 155, 245, 0.14);
+  --search-match: rgba(83, 155, 245, 0.18);
+  --search-match-active: rgba(83, 155, 245, 0.4);
+  --search-outline: rgba(83, 155, 245, 0.65);
+  --code-bg: #2d333b;
+  --code-inline-bg: rgba(99, 110, 123, 0.4);
+  --code-fg: #adbac7;
+  --quote-bar: #444c56;
+  --syn-keyword: #f47067;
+  --syn-string: #96d0ff;
+  --syn-number: #6cb6ff;
+  --syn-fn: #dcbdfb;
+  --syn-type: #dcbdfb;
+  --syn-comment: #768390;
+  --syn-variable: #f69d50;
+  --syn-tag: #8ddb8c;
+  --danger: #e5534b;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -220,7 +235,9 @@ button:disabled { opacity: 0.45; cursor: default; }
   color: var(--fg-muted);
   gap: 10px;
 }
-.aster-status-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.aster-status-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 0 1 auto; min-width: 0; }
+.aster-copy-path { flex-shrink: 0; }
+.aster-status > .aster-status-path + :not(.aster-copy-path), .aster-copy-path + * { margin-left: auto; }
 .aster-seg { display: flex; background: var(--surface-2); border-radius: 5px; padding: 1px; }
 .aster-seg button {
   padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--fg-muted);
@@ -255,7 +272,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .aster-lp-code {
   font-family: var(--font-mono);
   font-size: 0.88em;
-  background: var(--code-bg);
+  background: var(--code-inline-bg, var(--code-bg));
   color: var(--code-fg);
   border-radius: 4px;
   padding: 0.1em 0.35em;
@@ -556,3 +573,15 @@ button, [role="tab"], [role="menuitem"], [role="option"], .aster-tab, .aster-swa
 .aster-combo-note { padding: 8px; font-size: 12.5px; color: var(--fg-muted); }
 
 @media (prefers-reduced-motion: reduce) { .aster-tab-more { transition: none; } }
+
+/* ── GitHub-style token colors (live-preview highlighted code) ── */
+.aster-lp-codeblock .tok-keyword { color: var(--syn-keyword); }
+.aster-lp-codeblock .tok-atom, .aster-lp-codeblock .tok-bool, .aster-lp-codeblock .tok-number { color: var(--syn-number); }
+.aster-lp-codeblock .tok-string, .aster-lp-codeblock .tok-regexp { color: var(--syn-string); }
+.aster-lp-codeblock .tok-variableName { color: var(--syn-variable, var(--fg)); }
+.aster-lp-codeblock .tok-typeName, .aster-lp-codeblock .tok-className, .aster-lp-codeblock .tok-namespace, .aster-lp-codeblock .tok-attributeName { color: var(--syn-type); }
+.aster-lp-codeblock .tok-propertyName { color: var(--syn-fn); }
+.aster-lp-codeblock .tok-comment, .aster-lp-codeblock .tok-meta { color: var(--syn-comment, var(--fg-faint)); }
+.aster-lp-codeblock .tok-tagName { color: var(--syn-tag, var(--syn-keyword)); }
+.aster-lp-codeblock .tok-operator, .aster-lp-codeblock .tok-punctuation { color: var(--fg-muted); }
+.aster-lp-codeblock .tok-invalid { color: var(--danger); }

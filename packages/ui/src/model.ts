@@ -81,8 +81,6 @@ export interface Settings {
   fontSize: number;
   lineHeight: number;
   proseWidth: number;
-  /** Horizontal padding around the text column, in px. */
-  margin: number;
   lineNumbers: boolean;
   typewriter: boolean;
   autoSave: boolean;
@@ -100,7 +98,6 @@ export const DEFAULT_SETTINGS: Settings = {
   fontSize: 16,
   lineHeight: 1.75,
   proseWidth: 760,
-  margin: 32,
   lineNumbers: false,
   typewriter: false,
   autoSave: true,
@@ -137,7 +134,6 @@ export function normalizeSettings(raw: unknown): Settings {
     fontSize: Math.round(clamp(r.fontSize, 12, 28, d.fontSize)),
     lineHeight: Math.round(clamp(r.lineHeight, 1.2, 2.2, d.lineHeight) * 100) / 100,
     proseWidth: clamp(r.proseWidth, 480, 100000, d.proseWidth),
-    margin: Math.round(clamp(r.margin, 0, 160, d.margin)),
     lineNumbers: typeof r.lineNumbers === 'boolean' ? r.lineNumbers : d.lineNumbers,
     typewriter: typeof r.typewriter === 'boolean' ? r.typewriter : d.typewriter,
     autoSave: typeof r.autoSave === 'boolean' ? r.autoSave : d.autoSave,
@@ -159,10 +155,16 @@ export function saveSettings(s: Settings): void {
 
 export interface PluginTheme { id: string; name: string; cssFile: string; i18n?: Record<string, string> }
 
-export function applySettings(s: Settings, pluginThemes: PluginTheme[] = []): void {
+/**
+ * Apply settings to the document. Resolves once the theme's colors are in
+ * effect: for a plugin theme that means after its stylesheet has loaded, so
+ * anything that reads computed colors (diagram rendering) sees the new palette.
+ */
+export function applySettings(s: Settings, pluginThemes: PluginTheme[] = []): Promise<void> {
   const root = document.documentElement;
   const pt = pluginThemes.find((t) => t.id === s.theme);
   let link = document.getElementById('aster-plugin-theme') as HTMLLinkElement | null;
+  let ready: Promise<void> = Promise.resolve();
   if (pt) {
     if (!link) {
       link = document.createElement('link');
@@ -170,7 +172,17 @@ export function applySettings(s: Settings, pluginThemes: PluginTheme[] = []): vo
       link.rel = 'stylesheet';
       document.head.appendChild(link);
     }
-    if (link.href !== pt.cssFile) link.href = pt.cssFile;
+    if (link.href !== pt.cssFile) {
+      const el = link;
+      ready = new Promise<void>((resolve) => {
+        const done = () => { el.removeEventListener('load', done); el.removeEventListener('error', done); resolve(); };
+        el.addEventListener('load', done);
+        el.addEventListener('error', done);
+        // Never block forever if the webview doesn't fire load (e.g. cached).
+        setTimeout(done, 1500);
+      });
+      link.href = pt.cssFile;
+    }
   } else {
     link?.remove();
   }
@@ -190,7 +202,8 @@ export function applySettings(s: Settings, pluginThemes: PluginTheme[] = []): vo
   root.style.setProperty('--editor-font-size', `${s.fontSize}px`);
   root.style.setProperty('--editor-line-height', String(s.lineHeight));
   root.style.setProperty('--prose-width', `${s.proseWidth}px`);
-  root.style.setProperty('--editor-margin', `${s.margin}px`);
+  // Two frames: let the new data-theme / stylesheet reach computed style.
+  return ready.then(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
 }
 
 // ── Helpers ──────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+mod fonts;
 mod ipc;
 mod menu;
 mod recovery;
@@ -70,6 +71,7 @@ pub fn run() {
             ipc::editor_get_selection,
             ipc::editor_insert,
             menu::set_menu_language,
+            fonts::fonts_list,
         ])
         .on_window_event(move |_window, event| {
             if let tauri::WindowEvent::Destroyed = event {

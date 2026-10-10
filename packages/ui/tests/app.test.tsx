@@ -129,12 +129,23 @@ describe('App shell', () => {
     expect(root.querySelector('#set-body')).toBeNull(); // pickers only for Custom
 
     presetBtns().find((b) => b.textContent === 'Custom')!.click();
-    const body = root.querySelector('#set-body') as HTMLSelectElement;
+    const body = root.querySelector('#set-body') as HTMLButtonElement;
     expect(body).not.toBeNull();
     expect(root.querySelector('#set-code')).not.toBeNull();
-    body.value = 'wenkai';
-    body.dispatchEvent(new Event('change', { bubbles: true }));
+    body.click();
+    const opt = [...document.querySelectorAll('#set-body-list [role="option"]')]
+      .find((o) => o.textContent === 'LXGW WenKai') as HTMLElement;
+    opt.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
     expect(style.getPropertyValue('--font-prose')).toContain('LXGW WenKai');
+    expect(document.querySelector('#set-body-list')).toBeNull(); // closed after choosing
+
+    // Typing a name that isn't listed still works.
+    body.click();
+    const search = document.querySelector('.aster-combo-search') as HTMLInputElement;
+    search.value = 'My Font';
+    search.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    search.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(style.getPropertyValue('--font-prose').startsWith('"My Font"')).toBe(true);
 
     (root.querySelector('#set-ft') as HTMLButtonElement).click(); // back to theme fonts
     expect(style.getPropertyValue('--font-prose')).toBe('');
@@ -160,6 +171,21 @@ describe('App shell', () => {
     sel.dispatchEvent(new Event('change', { bubbles: true }));
     expect(root.querySelector('.aster-set-title')!.textContent).toBe('Settings');
     expect(view.state.doc.toString()).toContain('Welcome to Aster');
+  });
+
+  it('new-tab menu offers blank tab, open and settings', () => {
+    const root = mount();
+    const more = root.querySelector('.aster-tab-more') as HTMLButtonElement;
+    more.click();
+    const items = [...root.querySelectorAll('[role="menuitem"]')].map((x) => x.querySelector('span')!.textContent);
+    expect(items).toEqual(['New blank tab', 'Open file…', 'Settings']);
+    expect(more.getAttribute('aria-expanded')).toBe('true');
+    (root.querySelectorAll('[role="menuitem"]')[2] as HTMLButtonElement).click();
+    expect(root.querySelector('.aster-tab-settings')).not.toBeNull();
+    expect(root.querySelector('[role="menu"]')).toBeNull();
+    // The + itself still creates a blank tab in one click.
+    (root.querySelector('.aster-tab-add') as HTMLButtonElement).click();
+    expect([...root.querySelectorAll('.aster-tab-title')].map((x) => x.textContent)).toEqual(['Untitled', 'Untitled 2', 'Settings']);
   });
 
   it('closing a dirty tab asks before discarding', async () => {

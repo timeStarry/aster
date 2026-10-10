@@ -21,12 +21,24 @@ export const asterEditorTheme = EditorView.theme({
     lineHeight: 'var(--editor-line-height, 1.75)',
     overflow: 'auto',
   },
+  // The text column is centered. Its width is the line width plus fixed
+  // padding, so text never touches the window edge on narrow windows.
   '.cm-content': {
-    // The margin is padding inside the column, so the text width stays constant.
-    maxWidth: 'calc(var(--prose-width, 760px) + 2 * var(--editor-margin, 32px))',
+    flex: '0 1 calc(var(--prose-width, 760px) + 64px)',
+    maxWidth: 'calc(var(--prose-width, 760px) + 64px)',
+    minWidth: '0',
     margin: '0 auto',
-    padding: '40px var(--editor-margin, 32px) 40vh',
+    padding: '40px 32px 40vh',
     caretColor: 'var(--accent)',
+  },
+  // With line numbers on, the gutter and the column are centered as one unit,
+  // so numbers sit right before the start of each line instead of at the
+  // window edge. The text width stays the same.
+  '.cm-gutters + .cm-content': {
+    marginInlineStart: '0',
+    paddingInlineStart: '12px',
+    flexBasis: 'calc(var(--prose-width, 760px) + 44px)',
+    maxWidth: 'calc(var(--prose-width, 760px) + 44px)',
   },
   '.cm-line': { padding: '0' },
   '&.cm-focused .cm-cursor': { borderLeftColor: 'var(--accent)', borderLeftWidth: '2px' },
@@ -34,12 +46,18 @@ export const asterEditorTheme = EditorView.theme({
   '&.cm-focused .cm-selectionBackground': { backgroundColor: 'var(--selection) !important' },
   '.cm-activeLine': { backgroundColor: 'transparent' },
   '.cm-gutters': {
+    marginInlineStart: 'auto',
+    paddingTop: '40px',
     backgroundColor: 'transparent',
     border: 'none',
     color: 'var(--fg-faint)',
     fontFamily: 'var(--font-mono)',
     fontSize: '0.75em',
+    // Match the text's line box so numbers line up with the first line of
+    // each paragraph (the gutter font is 0.75× the text size).
+    lineHeight: 'calc(var(--editor-line-height, 1.75) / 0.75)',
   },
+  '.cm-lineNumbers .cm-gutterElement': { padding: '0 0 0 8px', minWidth: '28px' },
   '.cm-panels': { backgroundColor: 'var(--surface)', color: 'var(--fg)' },
   '.cm-panels.cm-panels-top': { borderBottom: '1px solid var(--border)' },
   '.cm-panels.cm-panels-bottom': { borderTop: '1px solid var(--border)' },

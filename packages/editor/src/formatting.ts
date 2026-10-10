@@ -1,6 +1,7 @@
 import { EditorSelection, Extension, Prec } from '@codemirror/state';
 import { EditorView, KeyBinding, keymap } from '@codemirror/view';
 import { indentMore, indentLess } from '@codemirror/commands';
+import { indentList, renumberChanges } from './lists';
 
 type Cmd = (view: EditorView) => boolean;
 
@@ -193,6 +194,7 @@ export const continueMarkup: Cmd = (view) => {
 
   const content = line.text.slice(m[0].length);
   if (content.trim() === '' && range.from === line.to) {
+    if (m[1].length > 0 && !m[2].startsWith('>')) return indentList(-1)(view);
     view.dispatch({
       changes: { from: line.from, to: line.to, insert: '' },
       selection: EditorSelection.cursor(line.from),
@@ -212,6 +214,11 @@ export const continueMarkup: Cmd = (view) => {
     scrollIntoView: true,
     userEvent: 'input',
   });
+  // Inserting in the middle of a numbered list shifts the items after it.
+  if (m[3]) {
+    const fix = renumberChanges(view.state, view.state.doc.lineAt(view.state.selection.main.head).number);
+    if (fix.length) view.dispatch({ changes: fix, userEvent: 'input' });
+  }
   return true;
 };
 
@@ -233,11 +240,16 @@ export const deleteMarkup: Cmd = (view) => {
 /** Tab inside a list item indents it; elsewhere inserts indentation. */
 const tabIndent: Cmd = (view) => {
   if (view.state.readOnly) return false;
+  if (indentList(1)(view)) return true;
   const r = view.state.selection.main;
-  const line = view.state.doc.lineAt(r.from);
-  if (!r.empty || LIST_RE.test(line.text)) return indentMore(view);
+  if (!r.empty) return indentMore(view);
   view.dispatch(view.state.replaceSelection('  '));
   return true;
+};
+
+const tabOutdent: Cmd = (view) => {
+  if (view.state.readOnly) return false;
+  return indentList(-1)(view) || indentLess(view);
 };
 
 export const formattingKeymap: KeyBinding[] = [
@@ -261,7 +273,7 @@ export const formattingKeymap: KeyBinding[] = [
   { key: 'Mod-Shift-.', run: toggleLinePrefix('quote'), preventDefault: true },
   { key: 'Enter', run: continueMarkup },
   { key: 'Backspace', run: deleteMarkup },
-  { key: 'Tab', run: tabIndent, shift: indentLess },
+  { key: 'Tab', run: tabIndent, shift: tabOutdent },
 ];
 
 export function formattingExtension(): Extension {

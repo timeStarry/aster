@@ -1,4 +1,4 @@
-import { Index, Show, createEffect } from 'solid-js';
+import { Index, Show, createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import type { Tab } from './model';
 import { MOD, isMac } from './model';
 import { t } from './i18n';
@@ -13,6 +13,8 @@ interface Props {
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
   onNew: () => void;
+  onOpen: () => void;
+  onSettings: () => void;
 }
 
 const GearIcon = () => (
@@ -28,6 +30,84 @@ function findTab(root: ParentNode | undefined, id: string): HTMLElement | undefi
     if (el.dataset.tabId === id) return el;
   }
   return undefined;
+}
+
+/**
+ * "+" opens a blank tab in one click; the chevron next to it opens a menu with
+ * the other ways to start (open a file, settings). A click-to-open menu rather
+ * than hover: hover menus pop up on fly-overs and can't be reached by keyboard.
+ */
+function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: () => void }) {
+  const [open, setOpen] = createSignal(false);
+  let root!: HTMLDivElement;
+  let toggle!: HTMLButtonElement;
+  const items = () => [
+    { id: 'new', label: t('tab.menuNew'), key: `${MOD}N`, run: p.onNew },
+    { id: 'open', label: t('tab.menuOpen'), key: `${MOD}O`, run: p.onOpen },
+    { id: 'settings', label: t('tab.menuSettings'), key: `${MOD},`, run: p.onSettings },
+  ];
+  const focusItem = (i: number) => root.querySelectorAll<HTMLElement>('[role="menuitem"]')[i]?.focus();
+  const show = (focusFirst = true) => { setOpen(true); if (focusFirst) queueMicrotask(() => focusItem(0)); };
+  const hide = (refocus = true) => { setOpen(false); if (refocus) toggle.focus(); };
+  const onMenuKey = (e: KeyboardEvent) => {
+    const els = [...root.querySelectorAll<HTMLElement>('[role="menuitem"]')];
+    const i = els.indexOf(document.activeElement as HTMLElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); focusItem((i + 1) % els.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); focusItem((i - 1 + els.length) % els.length); }
+    else if (e.key === 'Home') { e.preventDefault(); focusItem(0); }
+    else if (e.key === 'End') { e.preventDefault(); focusItem(els.length - 1); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); hide(); }
+    else if (e.key === 'Tab') hide(false);
+  };
+  const onDocDown = (e: MouseEvent) => { if (open() && !root.contains(e.target as Node)) hide(false); };
+  onMount(() => document.addEventListener('mousedown', onDocDown, true));
+  onCleanup(() => document.removeEventListener('mousedown', onDocDown, true));
+
+  return (
+    <div class="aster-tab-new" ref={root}>
+      <button
+        class="aster-tab-add"
+        aria-label={t('tab.menuNew')}
+        title={t('tab.new', { key: `${MOD}N` })}
+        onClick={() => p.onNew()}
+      >
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M8 3v10M3 8h10" />
+        </svg>
+      </button>
+      <button
+        ref={toggle}
+        class="aster-tab-more"
+        aria-label={t('tab.moreNew')}
+        title={t('tab.moreNew')}
+        aria-haspopup="menu"
+        aria-expanded={open()}
+        onClick={() => (open() ? hide() : show(false))}
+        onKeyDown={(e) => { if (e.key === 'ArrowDown') { e.preventDefault(); show(); } }}
+      >
+        <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M4 6l4 4 4-4" />
+        </svg>
+      </button>
+      <Show when={open()}>
+        <div class="aster-menu" role="menu" aria-label={t('tab.moreNew')} onKeyDown={onMenuKey}>
+          <Index each={items()}>
+            {(it) => (
+              <button
+                role="menuitem"
+                class="aster-menu-item"
+                tabIndex={-1}
+                onClick={() => { hide(false); it().run(); }}
+              >
+                <span>{it().label}</span>
+                <kbd>{it().key}</kbd>
+              </button>
+            )}
+          </Index>
+        </div>
+      </Show>
+    </div>
+  );
 }
 
 export function TabBar(props: Props) {
@@ -122,11 +202,7 @@ export function TabBar(props: Props) {
           {(id) => tabEl(id, () => t('tab.settings'), () => `${t('tab.settings')} (${MOD},)`, () => false, GearIcon)}
         </Show>
       </div>
-      <button class="aster-tab-add" aria-label={t('tab.new', { key: '' }).replace(/[（(]\s*[)）]/, '').trim()} title={t('tab.new', { key: `${MOD}N` })} onClick={() => props.onNew()}>
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-          <path d="M8 3v10M3 8h10" />
-        </svg>
-      </button>
+      <NewTabButton onNew={props.onNew} onOpen={props.onOpen} onSettings={props.onSettings} />
       <div class="aster-tabs-spacer" {...drag} onDblClick={() => { if (!isMac) props.onNew(); }} />
     </div>
   );

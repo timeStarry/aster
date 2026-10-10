@@ -266,6 +266,8 @@ const renderCache = new Map<string, string>();
 const RENDER_CACHE_MAX = 200;
 // Bumped by refreshCodeBlocks so existing widgets re-render (eq() fails).
 let renderGeneration = 0;
+/** Bumped on theme change so cached SVGs from a previous palette are not reused. */
+let themeGeneration = 0;
 
 function plainCodeBlock(body: string, lang: string): HTMLElement {
   const pre = document.createElement('pre');
@@ -286,7 +288,7 @@ class CodeBlockWidget extends WidgetType {
   readonly gen = renderGeneration;
   constructor(readonly body: string, readonly lang: string) { super(); }
   toDOM(view: EditorView) {
-    const key = `${this.lang}\u0000${this.body}`;
+    const key = `${themeGeneration}\u0000${this.lang}\u0000${this.body}`;
     const cached = renderCache.get(key);
     if (cached !== undefined) {
       const wrap = document.createElement('div');
@@ -330,7 +332,10 @@ const refreshEffect = StateEffect.define<null>();
  * or the theme changed. With clearCache, previously rendered output is dropped.
  */
 export function refreshCodeBlocks(view: EditorView, opts: { clearCache?: boolean } = {}): void {
-  if (opts.clearCache) renderCache.clear();
+  if (opts.clearCache) {
+    renderCache.clear();
+    themeGeneration++;
+  }
   renderGeneration++;
   view.dispatch({ effects: refreshEffect.of(null) });
 }

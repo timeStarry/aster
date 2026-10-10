@@ -32,7 +32,6 @@
   --prose-width: 760px;
   --editor-font-size: 16px;
   --editor-line-height: 1.75;
-  --editor-margin: 32px;
   --danger: #dc2626;
 }
 
@@ -97,6 +96,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; }
 body {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-ui);
@@ -191,12 +193,6 @@ button:disabled { opacity: 0.45; cursor: default; }
 .aster-tab-close.is-dirty:hover .dot { display: none; }
 .aster-tab-close.is-dirty:hover .x { display: inline; visibility: visible; }
 .aster-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.aster-tab-add {
-  width: 28px; height: 28px; align-self: center; flex-shrink: 0;
-  display: grid; place-items: center;
-  color: var(--fg-muted); border-radius: 7px;
-}
-.aster-tab-add:hover { background: var(--surface-2); color: var(--fg); }
 .aster-tabs-spacer { flex: 1; min-width: 24px; }
 
 .aster-main { flex: 1; min-height: 0; position: relative; display: flex; }
@@ -476,3 +472,76 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
   border-radius: 4px;
   padding: 0.1em 0.35em;
 }
+
+/* ── Selection policy ───────────────────────────────────── */
+/* Interface text is not selectable; the document, form fields and values a
+   user might copy (paths, versions, shortcuts) are. */
+.cm-editor .cm-content, .cm-editor .cm-content *,
+input, textarea, [contenteditable="true"],
+.aster-selectable, .aster-set-ver, .aster-status-path, .aster-set-panel kbd,
+.aster-lp-rendered, .aster-lp-codeblock {
+  user-select: text;
+  -webkit-user-select: text;
+}
+.cm-editor .cm-content { cursor: text; }
+.cm-gutters { user-select: none; -webkit-user-select: none; }
+button, [role="tab"], [role="menuitem"], [role="option"], .aster-tab, .aster-swatch { cursor: default; }
+
+/* ── New-tab split button + menu ────────────────────────── */
+.aster-tab-new { position: relative; display: flex; align-items: center; align-self: center; flex-shrink: 0; border-radius: 7px; }
+.aster-tab-new:hover { background: var(--surface-2); }
+.aster-tab-add, .aster-tab-more {
+  height: 28px; display: grid; place-items: center; color: var(--fg-muted);
+}
+.aster-tab-add { width: 28px; border-radius: 7px 0 0 7px; }
+.aster-tab-more { width: 16px; border-radius: 0 7px 7px 0; opacity: 0; transition: opacity 0.12s; }
+.aster-tab-new:hover .aster-tab-more, .aster-tab-more:focus-visible, .aster-tab-more[aria-expanded="true"] { opacity: 1; }
+.aster-tab-add:hover, .aster-tab-more:hover, .aster-tab-more[aria-expanded="true"] { background: var(--border); color: var(--fg); }
+
+.aster-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 50;
+  min-width: 220px; padding: 4px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 9px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  display: flex; flex-direction: column;
+}
+.aster-menu-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 6px 10px; border-radius: 6px; font-size: 13px; color: var(--fg); text-align: left;
+}
+.aster-menu-item:hover, .aster-menu-item:focus-visible { background: var(--accent); color: var(--accent-fg); outline: none; }
+.aster-menu-item kbd { font-family: var(--font-ui); font-size: 11.5px; color: inherit; opacity: 0.6; }
+
+/* ── Font combobox ──────────────────────────────────────── */
+.aster-combo { position: relative; }
+.aster-combo-button {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 220px; padding: 5px 9px;
+  background: var(--bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 6px; font-size: 13px; text-align: left;
+}
+.aster-combo-button:hover { border-color: var(--fg-faint); }
+.aster-combo-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aster-combo-pop {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 40;
+  width: 300px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 9px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+}
+.aster-combo-search { width: 100%; margin-bottom: 4px; }
+.aster-combo-list { list-style: none; max-height: 280px; overflow-y: auto; }
+.aster-combo-group {
+  font-size: 11px; color: var(--fg-faint); text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 8px 8px 4px;
+}
+.aster-combo-opt {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 6px 8px; border-radius: 6px; font-size: 14px; color: var(--fg);
+}
+.aster-combo-opt > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aster-combo-opt.is-active { background: var(--surface-2); }
+.aster-combo-opt[aria-selected="true"] { color: var(--accent); font-weight: 500; }
+.aster-combo-sub { font-family: var(--font-ui); font-size: 11px; color: var(--fg-faint); flex-shrink: 0; }
+.aster-combo-note { padding: 8px; font-size: 12.5px; color: var(--fg-muted); }
+
+@media (prefers-reduced-motion: reduce) { .aster-tab-more { transition: none; } }

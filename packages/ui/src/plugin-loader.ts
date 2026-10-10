@@ -8,45 +8,47 @@ export interface LoadablePlugin {
   frontend?: string;
 }
 
+type Resolve = (pluginId: string, path: string) => string;
+
 export let asterApi: PluginApiImpl | null = null;
-let activated = new Set<string>();
+
+/**
+ * One activation promise per plugin. Concurrent callers (e.g. two ```math
+ * blocks rendering at once) must wait for the same load: marking a plugin as
+ * "activated" before its module finished registering let the second caller
+ * look up a renderer that did not exist yet and fall back for good.
+ */
+let activations = new Map<string, Promise<void>>();
+
+function activate(plugin: LoadablePlugin, resolve: Resolve): Promise<void> {
+  let p = activations.get(plugin.id);
+  if (!p) {
+    p = plugin.frontend && asterApi
+      ? asterApi._activateModule(resolve(plugin.id, plugin.frontend), plugin.id)
+      : Promise.resolve();
+    activations.set(plugin.id, p);
+  }
+  return p;
+}
 
 /**
  * Initialize the plugin system. Call once on app startup.
  * Installs window.__aster, then activates onStartup plugins.
  */
-export async function initPluginLoader(
-  plugins: LoadablePlugin[],
-  resolvePluginUrl: (pluginId: string, path: string) => string,
-): Promise<void> {
+export async function initPluginLoader(plugins: LoadablePlugin[], resolvePluginUrl: Resolve): Promise<void> {
   asterApi = createPluginApi();
-  activated = new Set<string>();
+  activations = new Map();
   (window as unknown as Record<string, unknown>)['__aster'] = asterApi;
-
-  for (const plugin of plugins.filter((p) => p.activation.includes('onStartup'))) {
-    activated.add(plugin.id);
-    if (plugin.frontend) {
-      await asterApi._activateModule(resolvePluginUrl(plugin.id, plugin.frontend), plugin.id);
-    }
-  }
+  await Promise.all(plugins.filter((p) => p.activation.includes('onStartup')).map((p) => activate(p, resolvePluginUrl)));
 }
 
 /**
- * Activate plugins for a given trigger (e.g. 'onCodeBlock:mermaid').
- * Idempotent — already-loaded plugins are skipped.
+ * Activate plugins for a trigger (e.g. 'onCodeBlock:mermaid') and resolve
+ * once all of them have finished loading. Safe to call concurrently.
  */
-export async function activateForTrigger(
-  trigger: string,
-  plugins: LoadablePlugin[],
-  resolvePluginUrl: (pluginId: string, path: string) => string,
-): Promise<void> {
+export async function activateForTrigger(trigger: string, plugins: LoadablePlugin[], resolvePluginUrl: Resolve): Promise<void> {
   if (!asterApi) return;
-  for (const plugin of plugins.filter((p) => p.activation.includes(trigger) && !activated.has(p.id))) {
-    activated.add(plugin.id);
-    if (plugin.frontend) {
-      await asterApi._activateModule(resolvePluginUrl(plugin.id, plugin.frontend), plugin.id);
-    }
-  }
+  await Promise.all(plugins.filter((p) => p.activation.includes(trigger)).map((p) => activate(p, resolvePluginUrl)));
 }
 
 export function getCodeBlockRenderer(lang: string) {

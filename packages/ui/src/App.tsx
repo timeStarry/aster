@@ -11,6 +11,7 @@ import { createDefaultPipeline } from '@aster/renderer';
 import { TabBar } from './TabBar';
 import { StatusBar } from './StatusBar';
 import { SettingsPane, type PluginRow } from './SettingsPane';
+import type { InstalledFont } from './FontCombobox';
 import { ConfirmModal, type ConfirmRequest, type ConfirmButton } from './ConfirmModal';
 import { initPluginLoader, activateForTrigger, asterApi, type LoadablePlugin } from './plugin-loader';
 import {
@@ -61,6 +62,15 @@ export default function App() {
   const [confirmReq, setConfirmReq] = createSignal<ConfirmRequest | null>(null);
   const [plugins, setPlugins] = createSignal<PluginRow[]>([]);
   const [pluginThemes, setPluginThemes] = createSignal<PluginTheme[]>([]);
+  // Installed fonts are scanned lazily the first time Settings opens.
+  const [fonts, setFonts] = createSignal<InstalledFont[] | null>(null);
+  let fontsRequested = false;
+  function loadFonts() {
+    if (fontsRequested) return;
+    fontsRequested = true;
+    if (!inTauri) { setFonts([]); return; }
+    invoke<InstalledFont[]>('fonts_list').then(setFonts, () => setFonts([]));
+  }
   let loadable: LoadablePlugin[] = [];
   const pluginUrl = (_id: string, path: string) => fileUrl(path, assetBase());
 
@@ -114,6 +124,7 @@ export default function App() {
 
   /** Settings is a singleton tab: open it, or focus it if already open. */
   function openSettings() {
+    loadFonts();
     setSettingsOpen(true);
     activate(SETTINGS_ID);
   }
@@ -345,10 +356,12 @@ export default function App() {
     const langChanged = s.language !== settings().language;
     setSettingsSig(s);
     saveSettings(s);
-    applySettings(s, pluginThemes());
+    const applied = applySettings(s, pluginThemes());
     if (langChanged) syncLanguage(applyLanguage(s.language));
     // Diagrams pick colors from the theme at render time.
-    if (themeChanged && editor) requestAnimationFrame(() => editor && refreshCodeBlocks(editor.view, { clearCache: true }));
+    // Diagrams read theme colors at render time: re-render once the new
+    // palette (including a plugin stylesheet) is actually applied.
+    if (themeChanged) void applied.then(() => editor && refreshCodeBlocks(editor.view, { clearCache: true }));
     editor?.setSettings({ lineNumbers: s.lineNumbers, typewriter: s.typewriter });
     editor?.view.requestMeasure();
   }
@@ -534,7 +547,7 @@ export default function App() {
       await initPluginLoader(loadable, pluginUrl);
       if (asterApi) {
         setPluginThemes(asterApi.themes.list());
-        applySettings(settings(), pluginThemes());
+        void applySettings(settings(), pluginThemes()).then(() => editor && refreshCodeBlocks(editor.view, { clearCache: true }));
         asterApi.editor = {
           getContent: () => editor?.getContent() ?? '',
           getHtml: () => pipeline.render(editor?.getContent() ?? ''),
@@ -572,6 +585,8 @@ export default function App() {
         onSelect={activate}
         onClose={(id) => void closeTab(id)}
         onNew={newTab}
+        onOpen={() => void openFiles()}
+        onSettings={openSettings}
       />
       <div class="aster-main">
         {/* The editor stays mounted while Settings is shown, so undo history,
@@ -587,6 +602,7 @@ export default function App() {
             settings={settings()}
             plugins={plugins()}
             themes={pluginThemes()}
+            fonts={fonts()}
             version={version()}
             onChange={changeSettings}
           />

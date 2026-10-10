@@ -305,3 +305,80 @@ describe('code block renderers', () => {
     ed.destroy();
   });
 });
+
+describe('ordered list nesting', () => {
+  const run = async (doc: string, line: number, dir: 1 | -1) => {
+    const { indentList } = await import('../src/lists');
+    const view = makeView(doc, doc.split('\n').slice(0, line - 1).join('\n').length + (line > 1 ? 1 : 0) + 3);
+    indentList(dir)(view);
+    return view.state.doc.toString();
+  };
+
+  it('indenting an item starts a sublist at 1 and renumbers the parent', async () => {
+    const doc = '1. a\n2. b\n3. c\n4. d';
+    expect(await run(doc, 3, 1)).toBe('1. a\n2. b\n   1. c\n3. d');
+  });
+
+  it('indents under the sibling content column, not by a fixed width', async () => {
+    const doc = '9. a\n10. b\n11. c';
+    expect(await run(doc, 3, 1)).toBe('9. a\n10. b\n    1. c');
+  });
+
+  it('continues an existing sublist when indenting the next item', async () => {
+    const doc = '1. a\n   1. x\n2. b\n3. c';
+    expect(await run(doc, 3, 1)).toBe('1. a\n   1. x\n   2. b\n2. c');
+  });
+
+  it('outdenting returns an item to the parent level and renumbers both', async () => {
+    const doc = '1. a\n   1. x\n   2. y\n2. b';
+    expect(await run(doc, 3, -1)).toBe('1. a\n   1. x\n2. y\n3. b');
+  });
+
+  it('moves children with their item', async () => {
+    const doc = '1. a\n2. b\n   1. child\n3. c';
+    expect(await run(doc, 2, 1)).toBe('1. a\n   1. b\n      1. child\n2. c');
+  });
+
+  it('does not indent the first item of a list', async () => {
+    expect(await run('1. a\n2. b', 1, 1)).toBe('1. a\n2. b');
+  });
+
+  it('leaves bullets alone but nests them', async () => {
+    expect(await run('- a\n- b', 2, 1)).toBe('- a\n  - b');
+  });
+
+  it('Enter on an empty nested item outdents it', () => {
+    const doc = '1. a\n   1. ';
+    const view = makeView(doc, doc.length);
+    continueMarkup(view);
+    expect(view.state.doc.toString()).toBe('1. a\n2. ');
+  });
+
+  it('Enter in the middle of a numbered list renumbers the rest', () => {
+    const doc = '1. a\n2. b\n3. c';
+    const view = makeView(doc, 4);
+    continueMarkup(view);
+    expect(view.state.doc.toString()).toBe('1. a\n2. \n3. b\n4. c');
+  });
+});
+
+describe('render cache', () => {
+  it('re-renders after a cache-clearing refresh (theme change)', async () => {
+    const { refreshCodeBlocks } = await import('../src/live-preview');
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    let calls = 0;
+    const ed = createEditor(el, {
+      initialContent: 'x\n\n```mermaid\ngraph LR\n```\n',
+      renderCodeBlock: () => { calls++; return Promise.resolve(`<svg data-n="${calls}"></svg>`); },
+    });
+    await new Promise((r) => setTimeout(r, 0));
+    refreshCodeBlocks(ed.view); // plain refresh: served from cache
+    expect(calls).toBe(1);
+    refreshCodeBlocks(ed.view, { clearCache: true });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(calls).toBe(2);
+    expect(el.querySelector('svg')?.getAttribute('data-n')).toBe('2');
+    ed.destroy();
+  });
+});

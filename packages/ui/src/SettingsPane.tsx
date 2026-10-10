@@ -2,6 +2,7 @@ import { For, Show, createSignal, type JSX } from 'solid-js';
 import type { Settings, PluginTheme, FontChoice, FontStackId, FontPreset, Typography } from './model';
 import { MOD, ALT, SHIFT, FONT_STACKS, resolveFonts } from './model';
 import { t, pick, type Key } from './i18n';
+import { FontCombobox, type InstalledFont } from './FontCombobox';
 
 export interface PluginRow {
   id: string;
@@ -16,6 +17,8 @@ interface Props {
   settings: Settings;
   plugins: PluginRow[];
   themes: PluginTheme[];
+  /** Installed font families; null while loading. */
+  fonts: InstalledFont[] | null;
   version: string;
   onChange: (s: Settings) => void;
 }
@@ -80,8 +83,8 @@ const WIDTHS: { value: number; label: Key }[] = [
   { value: 100000, label: 'width.full' },
 ];
 
-const BODY_STACKS: FontStackId[] = ['serif', 'sans', 'wenkai'];
-const CODE_STACKS: FontStackId[] = ['mono'];
+const TEXT_PRESETS: FontStackId[] = ['serif', 'sans', 'wenkai'];
+const MONO_PRESETS: FontStackId[] = ['mono'];
 
 // Static previews; the real colors live in theme.css / plugin CSS.
 const SWATCHES: Record<string, { bg: string; fg: string; accent: string }> = {
@@ -177,42 +180,6 @@ function Range(p: {
         onInput={(e) => p.onInput(Number(e.currentTarget.value))}
       />
       <output for={p.id}>{p.format(p.value)}</output>
-    </div>
-  );
-}
-
-/** A font picker: known stacks, or a typed family name ("Other…"). */
-function FontPicker(p: { id: string; value: FontChoice; stacks: FontStackId[]; onChange: (c: FontChoice) => void }) {
-  const OTHER = '__other__';
-  const selected = () => ('stack' in p.value ? p.value.stack : OTHER);
-  return (
-    <div class="aster-font-picker">
-      <select
-        id={p.id}
-        aria-labelledby={`${p.id}-label`}
-        value={selected()}
-        onChange={(e) => {
-          const v = e.currentTarget.value;
-          p.onChange(v === OTHER ? { family: '' } : { stack: v as FontStackId });
-        }}
-      >
-        <For each={p.stacks}>
-          {(id) => <option value={id} style={{ 'font-family': FONT_STACKS[id].css }}>{t(FONT_STACKS[id].label as Key)}</option>}
-        </For>
-        <option value={OTHER}>{t('set.fontOther')}</option>
-      </select>
-      <Show when={'family' in p.value}>
-        <input
-          type="text"
-          class="aster-text"
-          spellcheck={false}
-          autocomplete="off"
-          aria-label={t('set.fontOtherPlaceholder')}
-          placeholder={t('set.fontOtherPlaceholder')}
-          value={'family' in p.value ? p.value.family : ''}
-          onChange={(e) => p.onChange({ family: e.currentTarget.value })}
-        />
-      </Show>
     </div>
   );
 }
@@ -337,11 +304,26 @@ export function SettingsPane(props: Props) {
                 />
               </Row>
               <Show when={!ty().followTheme && ty().preset === 'custom'}>
-                <Row id="set-body" label={t('set.bodyFont')}>
-                  <FontPicker id="set-body" value={ty().body} stacks={BODY_STACKS} onChange={(c) => setType({ body: c })} />
+                <Row id="set-body" label={t('set.textFont')} hint={t('set.textFontHint')}>
+                  <FontCombobox
+                    id="set-body"
+                    labelledBy="set-body-label"
+                    value={ty().body}
+                    presets={TEXT_PRESETS}
+                    fonts={props.fonts}
+                    onChange={(c) => setType({ body: c })}
+                  />
                 </Row>
-                <Row id="set-code" label={t('set.codeFont')}>
-                  <FontPicker id="set-code" value={ty().code} stacks={CODE_STACKS} onChange={(c) => setType({ code: c })} />
+                <Row id="set-code" label={t('set.monoFont')} hint={t('set.monoFontHint')}>
+                  <FontCombobox
+                    id="set-code"
+                    labelledBy="set-code-label"
+                    value={ty().code}
+                    presets={MONO_PRESETS}
+                    fonts={props.fonts}
+                    monoOnly
+                    onChange={(c) => setType({ code: c })}
+                  />
                 </Row>
               </Show>
               <div class="aster-set-row is-stacked">
@@ -378,10 +360,6 @@ export function SettingsPane(props: Props) {
                   options={WIDTHS.map((w) => ({ value: w.value, label: t(w.label) }))}
                   onChange={(v) => set('proseWidth', v)}
                 />
-              </Row>
-              <Row id="set-margin" label={t('set.margins')} hint={t('set.marginsHint')}>
-                <Range id="set-margin" min={0} max={120} step={4} value={props.settings.margin}
-                  format={(v) => `${v}px`} onInput={(v) => set('margin', v)} />
               </Row>
             </div>
 

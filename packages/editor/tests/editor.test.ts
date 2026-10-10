@@ -382,3 +382,15 @@ describe('render cache', () => {
     ed.destroy();
   });
 });
+
+describe('highlight colors', () => {
+  it('selection matches and search results use theme tokens, not CodeMirror defaults', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const ed = createEditor(el, { initialContent: 'word word' });
+    const css = [...document.querySelectorAll('style')].map((s) => s.textContent).join('\n');
+    expect(css).toMatch(/cm-selectionMatch[^}]*var\(--selection-match\)/);
+    expect(css).toMatch(/cm-searchMatch[^}]*var\(--search-match\)/);
+    ed.destroy();
+  });
+});

@@ -77,8 +77,18 @@ export const asterEditorTheme = EditorView.theme({
     borderRadius: '4px',
     color: 'var(--fg)',
   },
-  '.cm-searchMatch': { backgroundColor: 'var(--search-match)' },
-  '.cm-searchMatch.cm-searchMatch-selected': { backgroundColor: 'var(--search-match-active)' },
+  // Other occurrences of the selected text. CodeMirror's default is a
+  // fluorescent #99ff7780 that ignores the theme.
+  '.cm-selectionMatch': { backgroundColor: 'var(--selection-match)', borderRadius: '2px' },
+  '.cm-searchMatch': {
+    backgroundColor: 'var(--search-match)',
+    boxShadow: 'inset 0 0 0 1px var(--search-outline)',
+    borderRadius: '2px',
+  },
+  '.cm-searchMatch.cm-searchMatch-selected': {
+    backgroundColor: 'var(--search-match-active)',
+    boxShadow: 'inset 0 0 0 1px var(--accent)',
+  },
   '.cm-matchingBracket, &.cm-focused .cm-matchingBracket': {
     backgroundColor: 'transparent',
     outline: '1px solid var(--fg-faint)',

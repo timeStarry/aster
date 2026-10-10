@@ -14,8 +14,10 @@
   --tab-active: #0f172a;
   --status-bg: #0b1222;
   --selection: rgba(56, 189, 248, 0.25);
-  --search-match: rgba(250, 204, 21, 0.25);
-  --search-match-active: rgba(250, 204, 21, 0.5);
+  --selection-match: rgba(56, 189, 248, 0.12);
+  --search-match: rgba(56, 189, 248, 0.16);
+  --search-match-active: rgba(56, 189, 248, 0.38);
+  --search-outline: rgba(56, 189, 248, 0.65);
   --code-bg: #172033;
   --code-fg: #f9a8d4;
   --quote-bar: #334155;

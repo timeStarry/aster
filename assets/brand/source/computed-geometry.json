@@ -1,0 +1,44 @@
+{
+  "standard": {
+    "arm_radius": 256,
+    "stroke_width": 112,
+    "outer_width": 118,
+    "corner_radius": 12,
+    "period_radius": 64,
+    "horizontal_clearance": 40,
+    "valley_radius": 114.32041524468157,
+    "outer_expansion_percent": 5.35714285714286,
+    "cx": 482.67437847231525,
+    "cy": 496.14842440603763,
+    "dot_cx": 837.8768818411315,
+    "dot_cy": 688.1484244060376,
+    "star_area": 142993.45096687798,
+    "period_area": 12867.963509103793,
+    "filled_area_centroid": [
+      512,
+      512
+    ],
+    "baseline": 752.1484244060376
+  },
+  "small": {
+    "arm_radius": 256,
+    "stroke_width": 136,
+    "outer_width": 143,
+    "corner_radius": 8,
+    "period_radius": 72,
+    "horizontal_clearance": 32,
+    "valley_radius": 139.2986451479538,
+    "outer_expansion_percent": 5.147058823529416,
+    "cx": 479.50744710426966,
+    "cy": 495.4594319389346,
+    "dot_cx": 840.959950473086,
+    "dot_cy": 679.4594319389346,
+    "star_area": 164882.3082007859,
+    "period_area": 16286.016316209487,
+    "filled_area_centroid": [
+      512,
+      512
+    ],
+    "baseline": 751.4594319389346
+  }
+}

@@ -83,6 +83,8 @@ export interface Settings {
   proseWidth: number;
   lineNumbers: boolean;
   typewriter: boolean;
+  /** Heading navigator on the editor's right edge. */
+  outlineRail: boolean;
   autoSave: boolean;
 }
 
@@ -100,6 +102,7 @@ export const DEFAULT_SETTINGS: Settings = {
   proseWidth: 760,
   lineNumbers: false,
   typewriter: false,
+  outlineRail: true,
   autoSave: true,
 };
 
@@ -136,6 +139,7 @@ export function normalizeSettings(raw: unknown): Settings {
     proseWidth: clamp(r.proseWidth, 480, 100000, d.proseWidth),
     lineNumbers: typeof r.lineNumbers === 'boolean' ? r.lineNumbers : d.lineNumbers,
     typewriter: typeof r.typewriter === 'boolean' ? r.typewriter : d.typewriter,
+    outlineRail: typeof r.outlineRail === 'boolean' ? r.outlineRail : d.outlineRail,
     autoSave: typeof r.autoSave === 'boolean' ? r.autoSave : d.autoSave,
   };
 }

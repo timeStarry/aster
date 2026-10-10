@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Aster / 星文 · 星号句点设计说明</title>
+  <style>
+    :root { color-scheme: light; --ink: #191c26; --muted: #666874; --line: #e5e3df; --paper: #f7f4ee; --indigo: #4250dc; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #fcfbf8; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.7; }
+    a { color: var(--indigo); text-underline-offset: 4px; text-decoration-thickness: 1px; }
+    a:hover { text-decoration: none; }
+    a:focus-visible { outline: 2px solid var(--indigo); outline-offset: 4px; border-radius: 2px; }
+    img, svg { display: block; max-width: 100%; }
+    img { height: auto; }
+    figure, p { margin: 0; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    code { font-size: .88em; }
+    .page { max-width: 1080px; margin: auto; padding: 44px 40px 32px; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+    .wordmark { font-weight: 650; letter-spacing: -.03em; font-size: 20px; }
+    .wordmark span { color: var(--muted); font-size: 13px; font-weight: 400; letter-spacing: .08em; margin-left: 14px; }
+    .status { color: var(--indigo); background: #eeeffd; border-radius: 100px; padding: 5px 12px; font-size: 12px; white-space: nowrap; }
+    .hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: center; padding: 58px 0 50px; }
+    .eyebrow { color: var(--muted); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { font-size: clamp(38px, 5vw, 60px); line-height: 1.18; letter-spacing: -.05em; font-weight: 600; margin: 16px 0 22px; }
+    .lead { max-width: 440px; font-size: 16px; color: #4c4e59; }
+    .hero-links { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 26px; font-size: 13px; }
+    .hero-art { background: #edede9; border-radius: 28px; display: grid; place-items: center; aspect-ratio: 1; }
+    .hero-art img { width: 88%; }
+    section { padding: 34px 0; border-top: 1px solid var(--line); }
+    .section-head { display: flex; align-items: baseline; gap: 15px; margin-bottom: 22px; }
+    .section-head span { font-size: 11px; color: var(--indigo); letter-spacing: .08em; }
+    h2 { font-size: 22px; letter-spacing: -.025em; line-height: 1.3; font-weight: 600; margin: 0; }
+    h3 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+    .body-copy { color: #4c4e59; font-size: 14px; max-width: 810px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+    .comparison { background: white; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+    .comparison img { width: 100%; aspect-ratio: 1.35; object-fit: contain; }
+    figcaption { font-size: 12px; color: var(--muted); padding: 0 18px 16px; }
+    .comparison.selected { border-color: #b9bffc; }
+    .comparison.selected figcaption { color: var(--indigo); }
+    .table-wrap { overflow-x: auto; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { font-weight: 500; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th:first-child, td:first-child { padding-left: 0; }
+    .note { margin-top: 20px; font-size: 12px; color: var(--muted); }
+    .palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 24px; }
+    .swatch { height: 48px; border: 1px solid rgba(25,28,38,.08); border-radius: 10px; margin-bottom: 8px; }
+    .color-name { font-size: 12px; }
+    .color-name code { float: right; color: var(--muted); }
+    .variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    .variant { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .variant-art { min-height: 130px; display: grid; place-items: center; background: white; }
+    .variant-art img, .variant-art svg { width: 116px; height: 116px; }
+    .variant-art.dark { background: var(--ink); }
+    .variant-art.current { color: var(--indigo); background: #eeeffd; }
+    .variant-copy { font-size: 12px; padding: 12px 15px; }
+    .variant-copy small { display: block; color: var(--muted); margin-top: 3px; }
+    .sizes { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 24px; }
+    .size { background: white; border: 1px solid var(--line); border-radius: 12px; text-align: center; }
+    .size-art { height: 104px; display: flex; justify-content: center; align-items: center; }
+    .size img { max-width: none; }
+    .size figcaption { padding: 0 0 12px; font-size: 11px; font-variant-numeric: tabular-nums; }
+    .assets td:first-child { width: 120px; font-weight: 600; }
+    .asset-links { display: flex; flex-wrap: wrap; gap: 3px 16px; }
+    .asset-detail { margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .composer { background: #f1f1ec; border-radius: 16px; padding: 22px 24px; margin-top: 24px; }
+    .composer p { font-size: 13px; color: #4c4e59; }
+    .composer .asset-links { font-size: 12px; margin-top: 12px; }
+    .checks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .checks span { color: #4b6554; background: #edf2ec; font-size: 11px; border-radius: 6px; padding: 4px 8px; }
+    pre { margin: 18px 0 12px; background: var(--ink); color: #f7f4ee; padding: 20px 22px; border-radius: 14px; font-size: 12px; line-height: 1.9; overflow-x: auto; }
+    details { font-size: 12px; color: var(--muted); margin-top: 16px; }
+    summary { cursor: pointer; }
+    details code { display: block; overflow-wrap: anywhere; margin-top: 10px; }
+    footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); padding-top: 22px; margin-top: 8px; color: var(--muted); font-size: 11px; }
+    footer .asset-links { justify-content: flex-end; }
+    @media (max-width: 720px) {
+      .page { padding: 26px 22px; }
+      .hero { grid-template-columns: 1fr; gap: 28px; padding: 38px 0; }
+      .hero-art { max-width: 360px; width: 100%; }
+      .split { gap: 12px; }
+      .palette { grid-template-columns: 1fr 1fr; }
+      .variants { gap: 9px; }
+      .variant-art { min-height: 104px; }
+      .variant-art img, .variant-art svg { width: 88px; height: 88px; }
+      .variant-copy { padding: 10px; }
+      .sizes { grid-template-columns: repeat(3, 1fr); }
+      footer { flex-direction: column; gap: 8px; }
+      footer .asset-links { justify-content: flex-start; }
+    }
+    @media print {
+      body { background: white; }
+      .page { padding: 0; }
+      section, figure, .composer { break-inside: avoid; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <div class="wordmark">Aster <span>星文 · 品牌图形</span></div>
+      <div class="status">交付资源 · 待接入</div>
+    </header>
+
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Asterisk &amp; period / 01</p>
+        <h1>星号，句点。</h1>
+        <p class="lead">以一个排印星号回应 Aster 的“星”，以一枚句点连接文字创作。两块实心图形，组成轻盈、清楚的写作工具标识。</p>
+        <div class="hero-links">
+          <a href="source/aster-master.svg">可编辑母版 SVG ↗</a>
+          <a href="geometry.json">几何参数 ↗</a>
+          <a href="export/manifest.json">导出清单 ↗</a>
+        </div>
+      </div>
+      <figure class="hero-art">
+        <img src="source/app-macos.svg" width="360" height="360" alt="纸白底板上的靛蓝六臂星号与右下句点">
+      </figure>
+    </div>
+
+    <section>
+      <div class="section-head"><span>01</span><h2>几何与光学校正</h2></div>
+      <p class="body-copy">相比等宽笔画，标准构造臂从中心内端112轻微增宽至外端118，使端部更有支撑感，中央与外围的视觉重量更协调。约5.4%的构造渐扩保留了排印星号的明确轮廓，因此采纳。这是在本方案比例与使用尺寸下作出的视觉选择，并非普遍数学规则。</p>
+      <div class="split">
+        <figure class="comparison">
+          <img src="review/mark-equal.png" width="512" height="512" alt="等宽星号与句点对照图" loading="lazy">
+          <figcaption>等宽对照 · 112 → 112</figcaption>
+        </figure>
+        <figure class="comparison selected">
+          <img src="review/mark-flared.png" width="512" height="512" alt="最终轻微外扩星号与句点对照图" loading="lazy">
+          <figcaption>最终采纳 · 112 → 118</figcaption>
+        </figure>
+      </div>
+      <p class="note"><a href="review/design-proof.png">查看完整视觉校对板 · PNG</a> · <a href="review/design-proof.svg">矢量校对板 · SVG</a></p>
+      <div class="table-wrap">
+        <table aria-label="标准版与小尺寸版几何参数">
+          <thead><tr><th>1024单位画布</th><th>标准版</th><th>小尺寸版 · ≤32px</th></tr></thead>
+          <tbody>
+            <tr><td>六臂结构</td><td colspan="2">相同臂形，每60°旋转一次；布尔合并为单一实心路径</td></tr>
+            <tr><td>构造内端 → 外端宽</td><td>112 → 118</td><td>136 → 143</td></tr>
+            <tr><td>合并后可见臂根宽</td><td>约114.32</td><td>约139.30</td></tr>
+            <tr><td>臂长 / 端部圆角</td><td>R256 / r12</td><td>R256 / r8</td></tr>
+            <tr><td>句点半径</td><td>r64</td><td>r72</td></tr>
+            <tr><td>标称水平间距</td><td>40</td><td>32</td></tr>
+            <tr><td>共同下基线</td><td colspan="2">句点下沿与星号竖臂下端对齐</td></tr>
+            <tr><td>平台构图</td><td colspan="2">通用底板内符号缩放0.90；macOS缩放0.86，底板内缩104、圆角182</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">112 / 136指联合路径内部的构造内端宽，实际露出臂段的渐扩更细微；40 / 32为按未圆角包络测量的标称水平间距。星号与句点的组合填充面积质心置于画布中心(512, 512)。它是面积加权的数学中心，与星号旋转中心、组合外接框中心不同，也不自动等于人的视觉中心；最终平衡由实际预览判断。<a href="source/computed-geometry.json">查看计算结果</a> · <a href="source/construction-standard.svg">标准构造</a> · <a href="source/construction-small.svg">小尺寸构造</a></p>
+      <div class="palette" aria-label="品牌颜色">
+        <div><div class="swatch" style="background:#4250dc"></div><div class="color-name">靛蓝 <code>#4250DC</code></div></div>
+        <div><div class="swatch" style="background:#f7f4ee"></div><div class="color-name">纸白 <code>#F7F4EE</code></div></div>
+        <div><div class="swatch" style="background:#191c26"></div><div class="color-name">墨黑 <code>#191C26</code></div></div>
+        <div><div class="swatch" style="background:#fff"></div><div class="color-name">纯白 <code>#FFFFFF</code></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span>02</span><h2>单色与真实尺寸</h2></div>
+      <p class="body-copy">单色版保持同一轮廓。<code>currentColor</code> 源文件用于内联 SVG，随应用的 <code>color</code> 着色；下方示例使用靛蓝。</p>
+      <div class="variants">
+        <div class="variant"><div class="variant-art"><img src="source/mark-ink.svg" width="116" height="116" alt="墨黑单色标识" loading="lazy"></div><div class="variant-copy"><a href="source/mark-ink.svg">墨黑 SVG</a><small><a href="source/mark-ink-small.svg">小尺寸版</a></small></div></div>
+        <div class="variant"><div class="variant-art dark"><img src="source/mark-inverse.svg" width="116" height="116" alt="纸白反色标识" loading="lazy"></div><div class="variant-copy"><a href="source/mark-inverse.svg">纸白 SVG</a><small><a href="source/mark-inverse-small.svg">小尺寸版</a></small></div></div>
+        <div class="variant"><div class="variant-art current">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="116" height="116" role="img" aria-label="继承当前文字色的星号句点标识" fill="currentColor">
+            <path d="M 435.81641 240.14844 A 12 12 0 0 0 423.81641 252.28906 L 425.51367 397.14453 L 300.91406 323.24609 A 12 12 0 0 0 284.40039 327.56836 L 237.54297 408.72852 A 12 12 0 0 0 242.05664 425.19141 L 368.35352 496.14844 L 242.05664 567.10547 A 12 12 0 0 0 237.54297 583.56836 L 284.40039 664.72852 A 12 12 0 0 0 300.91406 669.05078 L 425.51367 595.15234 L 423.81641 740.00781 A 12 12 0 0 0 435.81641 752.14844 L 529.5332 752.14844 A 12 12 0 0 0 541.53125 740.00781 L 539.83398 595.15234 L 664.43359 669.05078 A 12 12 0 0 0 680.94727 664.72852 L 727.80664 583.56836 A 12 12 0 0 0 723.29102 567.10547 L 596.99609 496.14844 L 723.29102 425.19141 A 12 12 0 0 0 727.80664 408.72852 L 680.94727 327.56836 A 12 12 0 0 0 664.43359 323.24609 L 539.83398 397.14453 L 541.53125 252.28906 A 12 12 0 0 0 529.5332 240.14844 L 435.81641 240.14844 z" />
+            <circle cx="837.87688184" cy="688.14842441" r="64" />
+          </svg>
+        </div><div class="variant-copy"><a href="source/mark-current.svg">currentColor SVG</a><small><a href="source/mark-current-small.svg">小尺寸版</a></small></div></div>
+      </div>
+      <div class="sizes" aria-label="按实际尺寸展示的PNG标识">
+        <figure class="size"><div class="size-art"><img src="export/in-app/mark-16.png" width="16" height="16" alt="16像素PNG"></div><figcaption>16px</figcaption></figure>
+        <figure class="size"><div class="size-art"><img src="export/in-app/mark-20.png" width="20" height="20" alt="20像素PNG"></div><figcaption>20px</figcaption></figure>
+        <figure class="size"><div class="size-art"><img src="export/in-app/mark-24.png" width="24" height="24" alt="24像素PNG"></div><figcaption>24px</figcaption></figure>
+        <figure class="size"><div class="size-art"><img src="export/in-app/mark-32.png" width="32" height="32" alt="32像素PNG"></div><figcaption>32px</figcaption></figure>
+        <figure class="size"><div class="size-art"><img src="export/in-app/mark-48.png" width="48" height="48" alt="48像素PNG"></div><figcaption>48px</figcaption></figure>
+        <figure class="size"><div class="size-art"><img src="export/in-app/mark-64.png" width="64" height="64" alt="64像素PNG"></div><figcaption>64px</figcaption></figure>
+      </div>
+      <p class="note">以上 PNG 按标注尺寸展示，页面未放大。≤32px使用独立加粗母版与较大句点；各尺寸直接从SVG渲染。靛蓝用于浅底，深底宜用纸白或浅色currentColor；校对板深底行仅展示同一PNG的对照效果。</p>
+    </section>
+
+    <section>
+      <div class="section-head"><span>03</span><h2>平台资源</h2></div>
+      <p class="body-copy">当前为独立交付目录，尚未替换项目现有 Tauri 图标。</p>
+      <div class="table-wrap">
+        <table class="assets" aria-label="各平台交付资源映射">
+          <thead><tr><th>用途</th><th>资源与构图</th></tr></thead>
+          <tbody>
+            <tr><td>macOS</td><td><div class="asset-links"><a href="export/macos/Aster.icns">Aster.icns</a><a href="export/macos/Aster.iconset/icon_512x512@2x.png">1024px PNG</a><a href="source/app-macos.svg">源 SVG</a></div><div class="asset-detail">传统10槽位：16、32、128、256、512各含1x / 2x。内缩圆角底板，外缘透明。</div></td></tr>
+            <tr><td>Windows</td><td><div class="asset-links"><a href="export/windows/Aster.ico">Aster.ico</a><a href="export/windows/png/icon-256.png">256px PNG</a><a href="source/app-square.svg">源 SVG</a></div><div class="asset-detail">ICO含16、20、24、32、40、48、64、128、256。完整不透明方形底板。</div></td></tr>
+            <tr><td>Web</td><td><div class="asset-links"><a href="export/web/favicon.svg">favicon.svg</a><a href="export/web/favicon.ico">favicon.ico</a><a href="export/web/favicon-96.png">96px PNG</a><a href="export/web/pwa-192.png">PWA 192</a><a href="export/web/pwa-512.png">PWA 512</a><a href="export/web/apple-touch-icon.png">Apple touch 180</a></div><div class="asset-detail">favicon为圆角底板；PWA与Apple touch为不透明方形资源。PWA maskable需另行配置与验收。</div></td></tr>
+            <tr><td>README</td><td><div class="asset-links"><a href="export/readme/mark.svg">透明标识 SVG</a><a href="export/readme/app-tile.svg">底板 SVG</a><a href="export/readme/mark-512.png">标识 PNG</a><a href="export/readme/app-tile-512.png">底板 PNG</a></div></td></tr>
+            <tr><td>应用内</td><td><div class="asset-links"><a href="export/in-app/mark.svg">标准 SVG</a><a href="export/in-app/mark-small.svg">小尺寸 SVG</a><a href="export/in-app/mark-32.png">32px PNG</a><a href="export/in-app/mark-64.png">64px PNG</a></div><div class="asset-detail">透明背景；16、20、24、32、48、64px PNG均已导出。</div></td></tr>
+            <tr><td>Tauri</td><td><div class="asset-links"><a href="export/tauri/icon.icns">icon.icns</a><a href="export/tauri/icon.ico">icon.ico</a><a href="export/tauri/32x32.png">32×32</a><a href="export/tauri/128x128.png">128×128</a><a href="export/tauri/128x128@2x.png">128×128@2x</a><a href="export/tauri/icon.png">icon.png · 1024</a></div><div class="asset-detail">静态打包资源已备；后续按项目配置接入。</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="composer">
+        <h3>Icon Composer · 分层素材已备</h3>
+        <p>背景、星号、句点已分为独立SVG，供后续导入Icon Composer。当前未创建原生 <code>.icon</code> 文件，新的外观模式尚未验收；传统ICNS不会保留Composer的分层与动态外观信息。</p>
+        <div class="asset-links"><a href="source/composer-background.svg">背景层</a><a href="source/composer-asterisk.svg">星号层</a><a href="source/composer-period.svg">句点层</a><a href="https://developer.apple.com/icon-composer/">Apple 官方说明 ↗</a></div>
+      </div>
+      <p class="note">Apple的Icon Composer工作流支持分层与外观模式，并可导出合成图用于宣传；Tauri常规桌面图标流程使用ICNS、ICO和PNG。两种交付方式分别准备。<a href="https://v2.tauri.app/develop/icons/">Tauri 官方图标说明 ↗</a></p>
+    </section>
+
+    <section>
+      <div class="section-head"><span>04</span><h2>验证与再导出</h2></div>
+      <p class="body-copy">导出清单记录了8个源SVG与59项交付资产，已通过尺寸、alpha、裁切、容器完整性及SVG自包含检查。使用Inkscape 1.4.4渲染，Apple <code>iconutil</code> 打包ICNS。</p>
+      <div class="checks"><span>8 源 SVG</span><span>59 交付资产</span><span>直接矢量渲染</span><span>完整 ICNS / ICO</span></div>
+      <p class="note">ICNS原生16px / 32px槽位的颜色回读存在转换与舍入差异，alpha逐像素精确一致；相应差异及深浅背景合成诊断已记录在 <a href="export/manifest.json">manifest.json</a>。这不代表所有RGB像素完全一致。</p>
+      <pre><code>python3 tools/build_brand_sources.py
+python3 tools/export_brand_icons.py --overwrite</code></pre>
+      <p class="note">在项目根目录运行。Python须提供Pillow；源构建需要Inkscape，完整macOS导出需要<code>iconutil</code>。参数源为<a href="geometry.json">geometry.json</a>，生成器为<a href="../../tools/build_brand_sources.py">build_brand_sources.py</a>与<a href="../../tools/export_brand_icons.py">export_brand_icons.py</a>。</p>
+      <p class="note">母版可在Inkscape中编辑独立路径与圆形；批量一致性以geometry.json为准，重建会覆盖派生SVG。若直接手改SVG，需同步各变体。</p>
+      <details>
+        <summary>Python</summary>
+        <code>python3</code>
+        <p>若默认python3缺少Pillow，可用此解释器替换命令中的python3。</p>
+      </details>
+    </section>
+
+    <footer>
+      <span>Aster / 星文 · 星号句点 · 2026.10</span>
+      <div class="asset-links"><a href="source/aster-master.svg">母版</a><a href="export/manifest.json">资产清单</a><a href="https://developer.apple.com/icon-composer/">Apple</a><a href="https://v2.tauri.app/develop/icons/">Tauri</a></div>
+    </footer>
+  </main>
+</body>
+</html>

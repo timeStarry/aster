@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1024" height="1024" viewBox="0 0 1024 1024" version="1.1">
+  <title>Aster — mark-ink-small</title>
+  <desc>Transparent monochrome mark.</desc>
+  <g id="mark" inkscape:groupmode="layer" inkscape:label="Mark — asterisk and period" fill="#191C26">
+    <path id="asterisk" d="M 416.11719 239.45898 A 8 8 0 0 0 408.11914 247.56836 L 409.85938 374.82422 L 300.52148 309.68945 A 8 8 0 0 0 289.5 312.5625 L 226.10938 422.35742 A 8 8 0 0 0 229.13281 433.33984 L 340.20703 495.45898 L 229.13281 557.58008 A 8 8 0 0 0 226.10938 568.5625 L 289.5 678.35742 A 8 8 0 0 0 300.52148 681.23047 L 409.85938 616.0957 L 408.11914 743.34961 A 8 8 0 0 0 416.11719 751.45898 L 542.89648 751.45898 A 8 8 0 0 0 550.89648 743.34961 L 549.15625 616.0957 L 658.49219 681.23047 A 8 8 0 0 0 669.51562 678.35742 L 732.9043 568.5625 A 8 8 0 0 0 729.88086 557.58008 L 618.80664 495.46094 L 729.88086 433.33984 A 8 8 0 0 0 732.9043 422.35742 L 669.51562 312.5625 A 8 8 0 0 0 658.49219 309.68945 L 549.15625 374.82422 L 550.89648 247.56836 A 8 8 0 0 0 542.89648 239.45898 L 416.11719 239.45898 z " transform="rotate(0 479.5074471 495.45943194)" inkscape:label="Asterisk — six-arm boolean union" />
+    <circle id="period" cx="840.95995047" cy="679.45943194" r="72" inkscape:label="Period — shared lower baseline" />
+  </g>
+</svg>

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1024" height="1024" viewBox="0 0 1024 1024" version="1.1">
+  <title>Aster / 星文 — mark</title>
+  <desc>Geometric six-arm asterisk and period. No raster images or font dependencies.</desc>
+  <g id="mark" inkscape:groupmode="layer" inkscape:label="Mark — asterisk and period" fill="#4250DC">
+    <path id="asterisk" d="M 435.81641 240.14844 A 12 12 0 0 0 423.81641 252.28906 L 425.51367 397.14453 L 300.91406 323.24609 A 12 12 0 0 0 284.40039 327.56836 L 237.54297 408.72852 A 12 12 0 0 0 242.05664 425.19141 L 368.35352 496.14844 L 242.05664 567.10547 A 12 12 0 0 0 237.54297 583.56836 L 284.40039 664.72852 A 12 12 0 0 0 300.91406 669.05078 L 425.51367 595.15234 L 423.81641 740.00781 A 12 12 0 0 0 435.81641 752.14844 L 529.5332 752.14844 A 12 12 0 0 0 541.53125 740.00781 L 539.83398 595.15234 L 664.43359 669.05078 A 12 12 0 0 0 680.94727 664.72852 L 727.80664 583.56836 A 12 12 0 0 0 723.29102 567.10547 L 596.99609 496.14844 L 723.29102 425.19141 A 12 12 0 0 0 727.80664 408.72852 L 680.94727 327.56836 A 12 12 0 0 0 664.43359 323.24609 L 539.83398 397.14453 L 541.53125 252.28906 A 12 12 0 0 0 529.5332 240.14844 L 435.81641 240.14844 z " transform="rotate(0 482.67437847 496.14842441)" inkscape:label="Asterisk — six-arm boolean union" />
+    <circle id="period" cx="837.87688184" cy="688.14842441" r="64" inkscape:label="Period — shared lower baseline" />
+  </g>
+</svg>

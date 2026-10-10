@@ -31,7 +31,7 @@ export function ConfirmModal(props: { req: ConfirmRequest }) {
     <div class="aster-modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) done(props.req.cancelId); }}>
       <div class="aster-modal" role="alertdialog" aria-modal="true" aria-labelledby="aster-confirm-title" aria-describedby="aster-confirm-msg">
         <h2 id="aster-confirm-title">{props.req.title}</h2>
-        <p id="aster-confirm-msg" style={{ 'font-size': '13px', color: 'var(--fg-muted)', 'line-height': '1.5' }}>{props.req.message}</p>
+        <p id="aster-confirm-msg" style={{ 'font-size': '13px', color: 'var(--fg-muted)', 'line-height': '1.5', 'white-space': 'pre-line' }}>{props.req.message}</p>
         <div class="aster-actions">
           <For each={props.req.buttons}>
             {(b) => (

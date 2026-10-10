@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1024" height="1024" viewBox="0 0 1024 1024" version="1.1">
+  <title>Aster asterisk construction</title>
+  <desc>Six linearly tapered arms, sixty-degree rotational spacing.</desc>
+  <g id="construction" inkscape:groupmode="layer" inkscape:label="Construction — six tapered arms">
+    <path id="arm-0" d="M 411.5074471 495.45943194 L 408.11831733 247.56879672 A 8 8 0 0 1 416.11756975 239.45943194 L 542.89732446 239.45943194 A 8 8 0 0 1 550.89657688 247.56879672 L 547.5074471 495.45943194 Z" fill="#4250DC" transform="rotate(0 479.5074471 495.45943194)" inkscape:label="Tapered arm 1 — 0°" />
+    <path id="arm-1" d="M 411.5074471 495.45943194 L 408.11831733 247.56879672 A 8 8 0 0 1 416.11756975 239.45943194 L 542.89732446 239.45943194 A 8 8 0 0 1 550.89657688 247.56879672 L 547.5074471 495.45943194 Z" fill="#4250DC" transform="rotate(60 479.5074471 495.45943194)" inkscape:label="Tapered arm 2 — 60°" />
+    <path id="arm-2" d="M 411.5074471 495.45943194 L 408.11831733 247.56879672 A 8 8 0 0 1 416.11756975 239.45943194 L 542.89732446 239.45943194 A 8 8 0 0 1 550.89657688 247.56879672 L 547.5074471 495.45943194 Z" fill="#4250DC" transform="rotate(120 479.5074471 495.45943194)" inkscape:label="Tapered arm 3 — 120°" />
+    <path id="arm-3" d="M 411.5074471 495.45943194 L 408.11831733 247.56879672 A 8 8 0 0 1 416.11756975 239.45943194 L 542.89732446 239.45943194 A 8 8 0 0 1 550.89657688 247.56879672 L 547.5074471 495.45943194 Z" fill="#4250DC" transform="rotate(180 479.5074471 495.45943194)" inkscape:label="Tapered arm 4 — 180°" />
+    <path id="arm-4" d="M 411.5074471 495.45943194 L 408.11831733 247.56879672 A 8 8 0 0 1 416.11756975 239.45943194 L 542.89732446 239.45943194 A 8 8 0 0 1 550.89657688 247.56879672 L 547.5074471 495.45943194 Z" fill="#4250DC" transform="rotate(240 479.5074471 495.45943194)" inkscape:label="Tapered arm 5 — 240°" />
+    <path id="arm-5" d="M 411.5074471 495.45943194 L 408.11831733 247.56879672 A 8 8 0 0 1 416.11756975 239.45943194 L 542.89732446 239.45943194 A 8 8 0 0 1 550.89657688 247.56879672 L 547.5074471 495.45943194 Z" fill="#4250DC" transform="rotate(300 479.5074471 495.45943194)" inkscape:label="Tapered arm 6 — 300°" />
+  </g>
+</svg>

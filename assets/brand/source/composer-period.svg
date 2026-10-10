@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1024" height="1024" viewBox="0 0 1024 1024" version="1.1">
+  <title>Aster Icon Composer layer — period</title>
+  <desc>1024-square unmasked foreground layer.</desc>
+  <g id="mark" inkscape:groupmode="layer" inkscape:label="Mark — asterisk and period" fill="#4250DC" transform="translate(512 512) scale(0.9) translate(-512 -512)">
+    <circle id="period" cx="837.87688184" cy="688.14842441" r="64" inkscape:label="Period — shared lower baseline" />
+  </g>
+</svg>

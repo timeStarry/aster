@@ -6,7 +6,7 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getVersion } from '@tauri-apps/api/app';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import type { EditorState } from '@codemirror/state';
-import { createEditor, openSearchPanel, refreshCodeBlocks, type AsterEditor } from '@aster/editor';
+import { createEditor, openSearchPanel, refreshCodeBlocks, outline, visibleRange, revealPos, type AsterEditor, type OutlineItem } from '@aster/editor';
 import { createDefaultPipeline } from '@aster/renderer';
 import { TabBar } from './TabBar';
 import { StatusBar } from './StatusBar';
@@ -16,10 +16,12 @@ import { ConfirmModal, type ConfirmRequest, type ConfirmButton } from './Confirm
 import { initPluginLoader, activateForTrigger, asterApi, type LoadablePlugin } from './plugin-loader';
 import {
   type Tab, type Settings, type EditorMode, type PluginTheme,
-  loadSettings, saveSettings, applySettings, makeTab, basename, dirname, wordCount, isMac, MOD, fileUrl,
+  loadSettings, saveSettings, applySettings, DEFAULT_SETTINGS, makeTab, basename, dirname, wordCount, isMac, MOD, fileUrl,
 } from './model';
 import { t, lang, applyLanguage, editorPhrases, WELCOME, type Lang } from './i18n';
 import { showEditorContextMenu } from './contextmenu';
+import { OutlineRail } from './OutlineRail';
+import { buildBackup, planImport, BackupError, SETTING_LABELS as SETTING_LABEL } from './backup';
 import './theme.css';
 
 const inTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
@@ -56,11 +58,20 @@ export default function App() {
   const [mode, setMode] = createSignal<EditorMode>('live');
   const [readOnly, setReadOnly] = createSignal(false);
   const [cursor, setCursor] = createSignal({ line: 1, col: 1 });
+  // Heading navigator state.
+  const [headings, setHeadings] = createSignal<OutlineItem[]>([]);
+  const [vis, setVis] = createSignal({ from: 0, to: 0 });
+  const [cursorPos, setCursorPos] = createSignal(0);
+  const [railIdle, setRailIdle] = createSignal(false);
+  let railTimer: number | undefined;
+  let outlineTimer: number | undefined;
   const [notice, setNotice] = createSignal<{ text: string; error?: boolean } | null>(null);
   const [settingsOpen, setSettingsOpen] = createSignal(false);
   const [version, setVersion] = createSignal('');
   const [inset, setInset] = createSignal(isMac && inTauri);
   const [confirmReq, setConfirmReq] = createSignal<ConfirmRequest | null>(null);
+  // Tabs restored from a session that ended abruptly; shown in a banner.
+  const [recoveredIds, setRecoveredIds] = createSignal<string[]>([]);
   const [plugins, setPlugins] = createSignal<PluginRow[]>([]);
   const [pluginThemes, setPluginThemes] = createSignal<PluginTheme[]>([]);
   // Installed fonts are scanned lazily the first time Settings opens.
@@ -118,6 +129,7 @@ export default function App() {
       editorDocId = id;
     }
     updateCursor(editor.view.state);
+    scheduleOutline();
     // The editor was hidden while Settings was shown; re-measure before focusing.
     editor.view.requestMeasure();
     editor.focus();
@@ -128,6 +140,29 @@ export default function App() {
     loadFonts();
     setSettingsOpen(true);
     activate(SETTINGS_ID);
+  }
+
+  // ── Crash recovery ─────────────────────────────────────────
+  // Every tab with unsaved changes (never-saved or edited) is snapshotted to
+  // ~/.aster/session a second after it changes. A clean quit deletes the
+  // snapshot, so finding one at startup means the last session crashed.
+  const unsaved = () => tabs().filter((tb) => tb.dirty);
+  let sessionTimer: number | undefined;
+  let sessionChain: Promise<void> = Promise.resolve();
+  function scheduleSession() {
+    if (!inTauri) return;
+    clearTimeout(sessionTimer);
+    sessionTimer = window.setTimeout(() => void saveSession(), 1000);
+  }
+  /** Write the snapshot now (an empty list deletes it). Writes are serialized. */
+  function saveSession(): Promise<void> {
+    if (!inTauri) return Promise.resolve();
+    clearTimeout(sessionTimer);
+    const list = unsaved().map((tb) => ({ title: tb.title, path: tb.path, content: tb.content, hash: tb.path ? tb.hash : null }));
+    sessionChain = sessionChain
+      .then(() => invoke('session_save', { snapshot: { version: 1, savedAt: Date.now(), tabs: list } }))
+      .then(() => {}, () => {});
+    return sessionChain;
   }
 
   function newTab() {
@@ -175,6 +210,8 @@ export default function App() {
     conflicted.delete(id);
     if (rest.length === 0) rest = [makeTab({}, [], t('tab.untitled'))];
     setTabs(rest);
+    setRecoveredIds((ids) => ids.filter((x) => x !== id));
+    scheduleSession();
     const next = rest[Math.min(idx, rest.length - 1)].id;
     if (activeId() === id) {
       setActiveId('');
@@ -232,6 +269,7 @@ export default function App() {
     if (!tb) return;
     updateTab(id, { path, title: basename(path), saved: content, hash, dirty: tb.content !== content });
     conflicted.delete(id);
+    scheduleSession();
   }
 
   /** Save a tab. Returns false if the user cancelled or the write failed. */
@@ -278,6 +316,30 @@ export default function App() {
         return false;
       }
     }
+  }
+
+  async function saveAllDirty(): Promise<boolean> {
+    for (const tb of tabs().filter((x) => x.dirty)) {
+      activate(tb.id);
+      if (!(await saveTab(tb.id))) return false;
+    }
+    return true;
+  }
+
+  /** Discard restored tabs without prompting (the user chose to throw them away). */
+  function discardRecovered() {
+    const ids = new Set(recoveredIds());
+    setRecoveredIds([]);
+    let rest = tabs().filter((tb) => !ids.has(tb.id));
+    ids.forEach((id) => states.delete(id));
+    if (rest.length === 0) rest = [makeTab({}, [], t('tab.untitled'))];
+    setTabs(rest);
+    if (ids.has(activeId()) || ids.has(editorDocId)) {
+      setActiveId('');
+      editorDocId = '';
+      activate(rest[0].id);
+    }
+    void saveSession();
   }
 
   async function reloadTab(id: string) {
@@ -367,8 +429,32 @@ export default function App() {
     editor?.view.requestMeasure();
   }
 
+  /** Recompute headings soon after edits; cheap enough to debounce lightly. */
+  function scheduleOutline() {
+    clearTimeout(outlineTimer);
+    outlineTimer = window.setTimeout(() => {
+      if (!editor) return;
+      setHeadings(outline(editor.view.state, 3));
+      updateVisible();
+    }, 120);
+  }
+  function updateVisible() {
+    if (!editor) return;
+    setVis(visibleRange(editor.view));
+  }
+  /** While typing, fade the rail after a pause; the pointer near it brings it back. */
+  function noteTyping() {
+    clearTimeout(railTimer);
+    railTimer = window.setTimeout(() => setRailIdle(true), 1500);
+  }
+  function wakeRail() {
+    clearTimeout(railTimer);
+    setRailIdle(false);
+  }
+
   function updateCursor(state: EditorState) {
     const head = state.selection.main.head;
+    setCursorPos(head);
     const line = state.doc.lineAt(head);
     setCursor({ line: line.number, col: head - line.from + 1 });
   }
@@ -413,6 +499,76 @@ export default function App() {
     const renderable = ['math', 'mermaid'].filter((l) => loadable.some((p) => p.activation.includes(`onCodeBlock:${l}`)));
     void showEditorContextMenu({ view, readOnly: readOnly(), renderable, x: e.clientX, y: e.clientY })
       .catch((err) => console.error('[aster] context menu failed:', err));
+  }
+
+  // ── Settings backup ────────────────────────────────────────
+  const settingsFilters = () => [{ name: t('dialog.settingsJson'), extensions: ['json'] }];
+
+  async function exportSettings(): Promise<boolean> {
+    const stamp = new Date().toISOString().slice(0, 10);
+    const path = await saveDialog({ defaultPath: `aster-settings-${stamp}.json`, filters: settingsFilters() });
+    if (!path) return false;
+    const text = buildBackup(settings(), plugins().map((p) => ({ id: p.id, version: p.version })), version());
+    try {
+      await invoke('settings_file_write', { path, contents: text });
+      flash(t('notice.exported', { name: basename(path) }));
+      return true;
+    } catch (e) {
+      flash(t('notice.saveFailed', { err: errText(e) }), true);
+      return false;
+    }
+  }
+
+  async function importSettings() {
+    const picked = await openDialog({ multiple: false, filters: settingsFilters() });
+    if (!picked || Array.isArray(picked)) return;
+    let plan;
+    try {
+      const text = await invoke<string>('settings_file_read', { path: picked });
+      plan = planImport(text, settings(), { plugins: plugins().map((p) => p.id), themes: pluginThemes().map((th) => th.id) });
+    } catch (e) {
+      flash(t('notice.importFailed', { err: e instanceof BackupError ? t(e.key) : errText(e) }), true);
+      return;
+    }
+    const lines: string[] = [];
+    if (plan.changed.length) {
+      lines.push(t('confirm.importChanges', { n: plan.changed.length, list: plan.changed.map((k) => t(SETTING_LABEL[k])).join('、') }));
+    } else {
+      lines.push(t('confirm.importNoChange'));
+    }
+    if (plan.dropped.length) lines.push(t('confirm.importDropped', { list: plan.dropped.join(', ') }));
+    if (plan.missingTheme) lines.push(t('confirm.importTheme', { name: plan.missingTheme }));
+    if (plan.missingPlugins.length) lines.push(t('confirm.importPlugins', { list: plan.missingPlugins.join(', ') }));
+    if (!plan.changed.length && lines.length === 1) { flash(t('confirm.importNoChange')); return; }
+    const choice = await ask(
+      t('confirm.importTitle', { name: basename(picked) }),
+      lines.join('\n'),
+      [
+        { id: 'cancel', label: t('confirm.cancel') },
+        { id: 'import', label: t('confirm.import'), kind: 'primary' },
+      ],
+      'cancel',
+    );
+    if (choice !== 'import') return;
+    changeSettings(plan.settings);
+    flash(t('notice.imported'));
+  }
+
+  async function resetSettings() {
+    const choice = await ask(
+      t('confirm.resetTitle'),
+      t('confirm.resetBody'),
+      [
+        { id: 'cancel', label: t('confirm.cancel') },
+        { id: 'export', label: t('confirm.resetExportFirst') },
+        { id: 'reset', label: t('confirm.reset'), kind: 'danger' },
+      ],
+      'cancel',
+    );
+    if (choice === 'cancel') return;
+    if (choice === 'export' && !(await exportSettings())) return;
+    changeSettings({ ...DEFAULT_SETTINGS, typography: { ...DEFAULT_SETTINGS.typography } });
+    flash(t('notice.reset'));
   }
 
   /** Live-preview hook: render ```lang blocks through a plugin renderer, if one exists. */
@@ -463,7 +619,7 @@ export default function App() {
       case 'settings': return openSettings();
       case 'find': if (editor) openSearchPanel(editor.view); return;
       case 'exportPdf': return void exportPdf();
-      case 'quit': return void getCurrentWindow().close();
+      case 'quit': return void getCurrentWindow().close(); // close handler clears the snapshot
     }
   }
 
@@ -506,12 +662,22 @@ export default function App() {
         if (!tb) return;
         updateTab(id, { content, dirty: content !== tb.saved });
         if (tb.path) scheduleAutoSave(id);
+        scheduleSession();
+        scheduleOutline();
+        noteTyping();
       },
       onSelectionChange: updateCursor,
     });
     editor.focus();
     window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('contextmenu', onContextMenu);
+    editor.view.scrollDOM.addEventListener('scroll', () => updateVisible(), { passive: true });
+    window.addEventListener('mousemove', (e) => {
+      // Pointer within 120px of the editor's right edge wakes the rail.
+      const r = host.getBoundingClientRect();
+      if (e.clientX > r.right - 120 && e.clientY > r.top && e.clientY < r.bottom) wakeRail();
+    }, { passive: true });
+    scheduleOutline();
 
     if (!inTauri) return;
     const unlisten: UnlistenFn[] = [];
@@ -537,6 +703,30 @@ export default function App() {
       for (const p of e.payload.paths) if (/\.(md|markdown|mdown|mkd|txt)$/i.test(p)) void openPath(p);
     }));
 
+    if (inTauri) {
+      try {
+        interface Snap { tabs: { title: string; path: string | null; content: string; hash: string | null }[] }
+        const snap = await invoke<Snap | null>('session_take');
+        if (snap && snap.tabs.length > 0) {
+          // A restored tab is always dirty: its saved baseline is unknown.
+          const UNKNOWN = '\u0000aster:unsaved';
+          const restored: Tab[] = snap.tabs.map((r) => {
+            const nt = makeTab({ path: r.path, hash: r.hash }, tabs(), t('tab.untitled'));
+            return { ...nt, title: r.title || nt.title, content: r.content, saved: UNKNOWN, dirty: true };
+          });
+          // Replace the untouched welcome tab; keep anything else.
+          setTabs((ts) => [...ts.filter((tb) => !isPristine(tb)), ...restored]);
+          editorDocId = '';
+          setActiveId('');
+          activate(restored[0].id);
+          setRecoveredIds(restored.map((r) => r.id));
+          void saveSession();
+        }
+      } catch (e) {
+        console.error('[aster] session restore failed:', e);
+      }
+    }
+
     const win = getCurrentWindow();
     void getVersion().then(setVersion).catch(() => {});
     void invoke('set_menu_language', { lang: lang() }).catch(() => {});
@@ -548,7 +738,13 @@ export default function App() {
     }
     unlisten.push(await win.onCloseRequested(async (event) => {
       const dirty = tabs().filter((tb) => tb.dirty);
-      if (dirty.length === 0) return;
+      if (dirty.length === 0) {
+        // Clean exit: make sure no snapshot survives to trigger recovery.
+        event.preventDefault();
+        await saveSession();
+        await win.destroy();
+        return;
+      }
       event.preventDefault();
       const choice = await ask(
         dirty.length === 1 ? t('confirm.saveTitle', { name: dirty[0].title }) : t('confirm.saveManyTitle', { n: dirty.length }),
@@ -562,11 +758,11 @@ export default function App() {
       );
       if (choice === 'cancel') return;
       if (choice === 'save') {
-        for (const tb of dirty) {
-          activate(tb.id);
-          if (!(await saveTab(tb.id))) return;
-        }
+        if (!(await saveAllDirty())) return;
       }
+      // "Don't Save" is an explicit choice: drop the snapshot too.
+      setTabs((ts) => ts.map((tb) => ({ ...tb, dirty: false })));
+      await saveSession();
       await win.destroy();
     }));
 
@@ -630,6 +826,16 @@ export default function App() {
           classList={{ 'is-readonly': readOnly() }}
           hidden={onSettings()}
         />
+        <Show when={!onSettings() && settings().outlineRail && headings().length > 0}>
+          <OutlineRail
+            items={headings()}
+            visFrom={vis().from}
+            visTo={vis().to}
+            cursor={cursorPos()}
+            hidden={railIdle()}
+            onJump={(from) => { if (editor) { revealPos(editor.view, from); updateVisible(); } }}
+          />
+        </Show>
         <Show when={onSettings()}>
           <SettingsPane
             settings={settings()}
@@ -638,6 +844,9 @@ export default function App() {
             fonts={fonts()}
             version={version()}
             onChange={changeSettings}
+            onExport={() => void exportSettings()}
+            onImport={() => void importSettings()}
+            onReset={() => void resetSettings()}
           />
         </Show>
       </div>
@@ -656,6 +865,13 @@ export default function App() {
         onSettings={openSettings}
         onCopyPath={() => void copyPath()}
       />
+      <Show when={recoveredIds().length > 0}>
+        <div class="aster-recovery" role="status">
+          <span class="aster-recovery-text">{t('recovery.text', { n: recoveredIds().length })}</span>
+          <button class="aster-btn" onClick={discardRecovered}>{t('recovery.discard')}</button>
+          <button class="aster-btn primary" onClick={() => setRecoveredIds([])}>{t('recovery.keep')}</button>
+        </div>
+      </Show>
       <Show when={confirmReq()}>
         {(req) => <ConfirmModal req={req()} />}
       </Show>

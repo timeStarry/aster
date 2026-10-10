@@ -1,15 +1,11 @@
 name: WASM Plugins
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'plugins-wasm/**'
-      - 'wit/**'
   pull_request:
     paths:
       - 'plugins-wasm/**'
       - 'wit/**'
+  workflow_dispatch:
 
 jobs:
   build-and-test:

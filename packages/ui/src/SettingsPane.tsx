@@ -3,6 +3,7 @@ import type { Settings, PluginTheme, FontChoice, FontStackId, FontPreset, Typogr
 import { MOD, ALT, SHIFT, FONT_STACKS, resolveFonts } from './model';
 import { t, pick, type Key } from './i18n';
 import { FontCombobox, type InstalledFont } from './FontCombobox';
+import { BrandMark } from './BrandMark';
 
 export interface PluginRow {
   id: string;
@@ -21,6 +22,9 @@ interface Props {
   fonts: InstalledFont[] | null;
   version: string;
   onChange: (s: Settings) => void;
+  onExport: () => void;
+  onImport: () => void;
+  onReset: () => void;
 }
 
 type Section = 'general' | 'appearance' | 'editor' | 'plugins' | 'shortcuts' | 'about';
@@ -252,6 +256,18 @@ export function SettingsPane(props: Props) {
                 <Toggle id="set-as" labelledBy="set-as-label" checked={props.settings.autoSave} onChange={(v) => set('autoSave', v)} />
               </Row>
             </div>
+            <h3>{t('set.backup')}</h3>
+            <div class="aster-set-group">
+              <Row id="set-export" label={t('set.export')} hint={t('set.exportHint')}>
+                <button class="aster-btn" onClick={() => props.onExport()}>{t('set.exportBtn')}</button>
+              </Row>
+              <Row id="set-import" label={t('set.import')} hint={t('set.importHint')}>
+                <button class="aster-btn" onClick={() => props.onImport()}>{t('set.importBtn')}</button>
+              </Row>
+              <Row id="set-reset" label={t('set.reset')} hint={t('set.resetHint')}>
+                <button class="aster-btn danger" onClick={() => props.onReset()}>{t('set.resetBtn')}</button>
+              </Row>
+            </div>
           </Show>
 
           <Show when={section() === 'appearance'}>
@@ -371,6 +387,9 @@ export function SettingsPane(props: Props) {
               <Row id="set-tw" label={t('set.typewriter')} hint={t('set.typewriterHint')}>
                 <Toggle id="set-tw" labelledBy="set-tw-label" checked={props.settings.typewriter} onChange={(v) => set('typewriter', v)} />
               </Row>
+              <Row id="set-rail" label={t('set.outlineRail')} hint={t('set.outlineRailHint')}>
+                <Toggle id="set-rail" labelledBy="set-rail-label" checked={props.settings.outlineRail} onChange={(v) => set('outlineRail', v)} />
+              </Row>
             </div>
           </Show>
 
@@ -421,10 +440,12 @@ export function SettingsPane(props: Props) {
 
           <Show when={section() === 'about'}>
             <h2>{t('set.about')}</h2>
-            <div class="aster-set-group">
-              <Row id="set-ver" label="Aster" hint={t('set.tagline')}>
-                <span class="aster-set-ver">{props.version}</span>
-              </Row>
+            <div class="aster-about">
+              <BrandMark size={72} class="aster-about-mark" title="Aster" />
+              <div class="aster-about-name">Aster <span class="aster-about-zh" lang="zh-CN">星文</span></div>
+              <div class="aster-about-tag">{t('set.tagline')}</div>
+              <div class="aster-set-ver aster-about-ver">{t('about.edition', { v: props.version || '—' })}</div>
+              <div class="aster-about-lic">{t('about.license')}</div>
             </div>
           </Show>
         </section>

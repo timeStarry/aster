@@ -395,3 +395,14 @@ describe('highlight colors', () => {
     ed.destroy();
   });
 });
+
+describe('outline', () => {
+  it('lists h1-h3 with markup stripped and ignores code blocks', async () => {
+    const { outline } = await import('../src/outline');
+    const doc = '# One **b**\n\ntext\n\n## Two `c`\n\n```\n# not a heading\n```\n\n### Three\n\n#### Four\n\nSet\n===\n';
+    const view = makeView(doc, 0);
+    expect(outline(view.state).map((h) => [h.level, h.text])).toEqual([
+      [1, 'One b'], [2, 'Two c'], [3, 'Three'], [1, 'Set'],
+    ]);
+  });
+});

@@ -1,9 +1,9 @@
 name: Release
 
+# Releases are built locally (scripts/stage-plugins.sh, docker/build-linux.sh).
+# This workflow only runs when started by hand.
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:

@@ -328,6 +328,14 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .aster-lp-rendered > .aster-lp-codeblock { text-align: left; }
 .aster-lp-render-error { color: var(--danger); font-size: 12px; text-align: left; font-family: var(--font-mono); }
 
+.aster-lp-table { margin: 10px 0; overflow-x: auto; }
+.aster-lp-table table { border-collapse: collapse; font-size: 0.95em; line-height: 1.5; }
+.aster-lp-table th, .aster-lp-table td { border: 1px solid var(--border); padding: 6px 12px; text-align: left; vertical-align: top; cursor: text; }
+.aster-lp-table th { background: var(--surface-2); font-weight: 600; }
+.aster-lp-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
+.aster-lp-table code { font-family: var(--font-mono); font-size: 0.88em; background: var(--code-inline-bg, var(--code-bg)); border-radius: 4px; padding: 0.1em 0.35em; }
+.aster-lp-table a { color: var(--accent); }
+
 .aster-lp-image img { max-width: 100%; border-radius: 6px; display: block; margin: 8px 0; }
 .aster-lp-image-broken { color: var(--fg-faint); font-size: 0.9em; }
 
@@ -585,3 +593,89 @@ button, [role="tab"], [role="menuitem"], [role="option"], .aster-tab, .aster-swa
 .aster-lp-codeblock .tok-tagName { color: var(--syn-tag, var(--syn-keyword)); }
 .aster-lp-codeblock .tok-operator, .aster-lp-codeblock .tok-punctuation { color: var(--fg-muted); }
 .aster-lp-codeblock .tok-invalid { color: var(--danger); }
+
+/* ── Scrollbars ─────────────────────────────────────────── */
+/* Thin and low-contrast; the thumb darkens only while hovered or dragged. */
+:root { --scrollbar: rgba(120, 120, 120, 0.22); --scrollbar-hover: rgba(120, 120, 120, 0.45); }
+* { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar);
+  border-radius: 8px;
+  /* Transparent border insets the thumb so it reads as ~4px wide. */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover, ::-webkit-scrollbar-thumb:active { background-color: var(--scrollbar-hover); }
+
+/* ── Heading navigator rail ─────────────────────────────── */
+.aster-main { position: relative; }
+.aster-rail {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 44px;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px; z-index: 5; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.aster-rail.is-hidden { opacity: 0; }
+.aster-rail-track {
+  position: relative; pointer-events: auto;
+  display: flex; flex-direction: column; align-items: flex-end;
+  max-height: 70%; overflow: hidden; padding: 4px 0;
+}
+.aster-rail-dash {
+  display: flex; justify-content: flex-end; align-items: center;
+  width: 28px; height: 9px; padding: 0; flex-shrink: 0;
+}
+.aster-rail-bar {
+  display: block; height: 2px; border-radius: 1px;
+  width: var(--w); background: var(--fg-faint); opacity: 0.45;
+  transform-origin: right center;
+  transition: transform 0.12s ease, background-color 0.12s, opacity 0.12s;
+}
+.aster-rail-dash.is-visible .aster-rail-bar { background: var(--fg-muted); opacity: 0.85; }
+.aster-rail-dash.is-current .aster-rail-bar { background: var(--fg); opacity: 1; height: 2.5px; }
+/* Fisheye: the hovered dash and its neighbours grow, tapering off. */
+.aster-rail-dash.is-near2 .aster-rail-bar { transform: scaleX(1.15); }
+.aster-rail-dash.is-near .aster-rail-bar { transform: scaleX(1.35); opacity: 0.9; }
+.aster-rail-dash.is-hover .aster-rail-bar { transform: scaleX(1.65) scaleY(1.4); background: var(--fg); opacity: 1; }
+.aster-rail-dash:focus-visible { outline: none; }
+.aster-rail-dash:focus-visible .aster-rail-bar { background: var(--accent); opacity: 1; }
+.aster-rail-tip {
+  position: absolute; right: 36px; transform: translateY(-50%);
+  max-width: 260px; padding: 6px 10px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  font-family: var(--font-ui); font-size: 12.5px; line-height: 1.5; text-align: right;
+  pointer-events: none; white-space: nowrap;
+}
+.aster-rail-tip > div { overflow: hidden; text-overflow: ellipsis; }
+.aster-rail-cur { color: var(--fg); font-weight: 500; }
+.aster-rail-nb { color: var(--fg-faint); font-size: 11.5px; }
+@media (prefers-reduced-motion: reduce) {
+  .aster-rail, .aster-rail-bar { transition: none; }
+}
+
+/* ── Recovery banner ────────────────────────────────────── */
+.aster-recovery {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  padding: 10px 14px;
+  font-size: 13px; color: var(--fg); z-index: 30;
+  max-width: calc(100vw - 40px);
+}
+.aster-recovery-text { flex: 1; line-height: 1.4; }
+
+/* ── About page ─────────────────────────────────────────── */
+.aster-about {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+  padding: 24px 0 32px;
+}
+.aster-about-mark { color: var(--accent); margin-bottom: 10px; }
+.aster-about-name { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.aster-about-zh { font-weight: 400; color: var(--fg-muted); }
+.aster-about-tag { font-size: 14px; color: var(--fg-muted); }
+.aster-about-ver { margin-top: 4px; }
+.aster-about-lic { font-size: 12.5px; color: var(--fg-faint); margin-top: 2px; }

@@ -178,3 +178,4 @@ export {
 } from './tables';
 export { openSearchPanel } from '@codemirror/search';
 export { refreshCodeBlocks, type CodeBlockRenderer } from './live-preview';
+export { outline, visibleRange, revealPos, type OutlineItem } from './outline';

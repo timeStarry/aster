@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::path::Path;
 use tauri::{State, Emitter, Listener};
 use serde_json::Value;
 use aster_core::{
@@ -9,7 +8,6 @@ use aster_core::{
     plugin::PluginHost,
     commands::register_core_commands,
 };
-use crate::recovery;
 
 pub struct CoreState {
     pub registry: std::sync::Mutex<CommandRegistry>,
@@ -36,8 +34,8 @@ pub fn dispatch(
     reg.dispatch(&id, params).map_err(|e| e.to_json())
 }
 
-/// Auto-save: write content to disk + keep a recovery copy.
-/// Called from the frontend after a 1-second debounce on content change.
+/// Save `content` to `path` (atomic, with an optional optimistic-lock hash).
+/// Unsaved work is protected separately by the session snapshot (recovery.rs).
 #[tauri::command]
 pub async fn auto_save(
     path: String,
@@ -45,13 +43,6 @@ pub async fn auto_save(
     expected_hash: Option<String>,
     state: State<'_, CoreState>,
 ) -> Result<Value, Value> {
-    // Write recovery copy in background (best-effort, don't block save)
-    let path_clone = path.clone();
-    let content_clone = content.clone();
-    tokio::spawn(async move {
-        recovery::write_recovery(Path::new(&path_clone), &content_clone).await;
-    });
-
     // Actual atomic save via registry
     let params = serde_json::json!({
         "path": path.clone(),
@@ -63,10 +54,6 @@ pub async fn auto_save(
             .map_err(|_| serde_json::json!({"code":"E_IO","message":"registry lock poisoned"}))?;
         reg.dispatch("doc.write", params).map_err(|e| e.to_json())?
     };
-
-    // Clean save succeeded — remove stale recovery file so crash-recovery
-    // doesn't restore an outdated version.
-    recovery::remove_recovery(Path::new(&path)).await;
 
     Ok(result)
 }

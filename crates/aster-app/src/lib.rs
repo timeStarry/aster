@@ -1,3 +1,4 @@
+mod backup;
 mod fonts;
 mod ipc;
 mod menu;
@@ -72,6 +73,11 @@ pub fn run() {
             ipc::editor_insert,
             menu::set_menu_language,
             fonts::fonts_list,
+            recovery::session_save,
+            recovery::session_take,
+            recovery::session_clear,
+            backup::settings_file_read,
+            backup::settings_file_write,
         ])
         .on_window_event(move |_window, event| {
             if let tauri::WindowEvent::Destroyed = event {

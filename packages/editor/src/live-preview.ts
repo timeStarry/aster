@@ -112,6 +112,14 @@ function build(state: EditorState): DecorationSet {
         return false;
       }
 
+      // ── Tables ─────────────────────────────────────────────────
+      if (name === 'Table') {
+        if (!touches(from, to)) {
+          out.push(Decoration.replace({ widget: new TableWidget(doc.sliceString(from, to), from), block: true }).range(from, to));
+        }
+        return false;
+      }
+
       // ── Quotes ─────────────────────────────────────────────────
       if (name === 'Blockquote') {
         for (let p = from; p <= to; ) {
@@ -201,6 +209,89 @@ function build(state: EditorState): DecorationSet {
   });
 
   return Decoration.set(out, true);
+}
+
+/** Minimal inline markdown for table cells: code, bold, italic, strike, links. Escapes everything else. */
+function inlineHtml(src: string): string {
+  const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const codes: string[] = [];
+  let s = src.replace(/\\\|/g, '|').replace(/`([^`]+)`/g, (_, c) => `\u0000${codes.push(c) - 1}\u0000`);
+  s = esc(s)
+    .replace(/\*\*(.+?)\*\*|__(.+?)__/g, (_, a, b) => `<strong>${a ?? b}</strong>`)
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, href) =>
+      /^(https?:|mailto:|#|\.{0,2}\/)/i.test(href) ? `<a href="${href}">${label}</a>` : label);
+  return s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${esc(codes[Number(i)])}</code>`);
+}
+
+function splitCells(line: string): string[] {
+  let t = line.trim();
+  if (t.startsWith('|')) t = t.slice(1);
+  if (t.endsWith('|') && !t.endsWith('\\|')) t = t.slice(0, -1);
+  const out: string[] = [];
+  let cur = '';
+  for (let i = 0; i < t.length; i++) {
+    if (t[i] === '\\' && t[i + 1] === '|') { cur += '\\|'; i++; continue; }
+    if (t[i] === '|') { out.push(cur.trim()); cur = ''; continue; }
+    cur += t[i];
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+/** GFM table rendered as a grid. Clicking a cell puts the cursor in that cell's source. */
+class TableWidget extends WidgetType {
+  constructor(readonly src: string, readonly pos: number) { super(); }
+  eq(o: TableWidget) { return o.src === this.src && o.pos === this.pos; }
+  toDOM(view: EditorView) {
+    const lines = this.src.split('\n');
+    const align = splitCells(lines[1] ?? '').map((c) => {
+      const l = c.startsWith(':'), r = c.endsWith(':');
+      return l && r ? 'center' : r ? 'right' : l ? 'left' : '';
+    });
+    const wrap = document.createElement('div');
+    wrap.className = 'aster-lp-table';
+    const table = document.createElement('table');
+    // Offset of each source line within the document, for click-to-edit.
+    const lineStarts: number[] = [];
+    let off = this.pos;
+    for (const l of lines) { lineStarts.push(off); off += l.length + 1; }
+    const cols = Math.max(...lines.filter((_, i) => i !== 1).map((l) => splitCells(l).length));
+    lines.forEach((line, li) => {
+      if (li === 1) return;
+      const tr = document.createElement('tr');
+      const cells = splitCells(line);
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement(li === 0 ? 'th' : 'td');
+        cell.innerHTML = inlineHtml(cells[c] ?? '');
+        if (align[c]) cell.style.textAlign = align[c];
+        cell.addEventListener('mousedown', (e) => {
+          if ((e.target as HTMLElement).closest('a')) return;
+          e.preventDefault();
+          // Find the c-th cell's content end on this source line.
+          const text = line;
+          let i = text.length - text.trimStart().length;
+          if (text[i] === '|') i++;
+          for (let k = 0; k < c && i < text.length; i++) {
+            if (text[i] === '\\') { i++; continue; }
+            if (text[i] === '|') k++;
+          }
+          let j = i;
+          while (j < text.length && !(text[j] === '|' && text[j - 1] !== '\\')) j++;
+          let end = j;
+          while (end > i && text[end - 1] === ' ') end--;
+          view.dispatch({ selection: { anchor: lineStarts[li] + Math.max(i, end) } });
+          view.focus();
+        });
+        tr.appendChild(cell);
+      }
+      (li === 0 ? (table.createTHead()) : (table.tBodies[0] ?? table.createTBody())).appendChild(tr);
+    });
+    wrap.appendChild(table);
+    return wrap;
+  }
+  ignoreEvent() { return true; }
 }
 
 class HrWidget extends WidgetType {

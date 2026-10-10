@@ -1,0 +1,38 @@
+{
+  "name": "Aster / 星文 — 星号句点",
+  "version": "1.0",
+  "canvas": 1024,
+  "colors": {
+    "indigo": "#4250DC",
+    "paper": "#F7F4EE",
+    "ink": "#191C26",
+    "white": "#FFFFFF"
+  },
+  "standard": {
+    "arm_radius": 256,
+    "stroke_width": 112,
+    "outer_width": 118,
+    "corner_radius": 12,
+    "period_radius": 64,
+    "horizontal_clearance": 40
+  },
+  "small": {
+    "arm_radius": 256,
+    "stroke_width": 136,
+    "outer_width": 143,
+    "corner_radius": 8,
+    "period_radius": 72,
+    "horizontal_clearance": 32
+  },
+  "arm_rotations_degrees": [0, 60, 120, 180, 240, 300],
+  "layout": {
+    "center_mode": "combined-filled-area-centroid",
+    "period_alignment": "bottom-aligned-to-vertical-arm",
+    "small_variant_max_pixels": 32,
+    "tile_symbol_scale": 0.9,
+    "macos_symbol_scale": 0.86,
+    "macos_tile_inset": 104,
+    "macos_tile_corner_radius": 182,
+    "web_tile_corner_radius": 224
+  }
+}

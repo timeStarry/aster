@@ -74,3 +74,21 @@ describe('tables', () => {
     expect(tableCommand('format')(view)).toBe(false);
   });
 });
+
+describe('table rendering', () => {
+  it('renders a table as a grid away from the cursor and as source on it', async () => {
+    const { createEditor } = await import('../src/index');
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const doc = 'x\n\n| A | **B** |\n| :-: | --: |\n| `1` | 2 |\n';
+    const ed = createEditor(el, { initialContent: doc });
+    const th = el.querySelectorAll('.aster-lp-table th');
+    expect([...th].map((c) => c.textContent)).toEqual(['A', 'B']);
+    expect(th[1].querySelector('strong')).not.toBeNull();
+    expect((th[0] as HTMLElement).style.textAlign).toBe('center');
+    expect(el.querySelector('.aster-lp-table td code')?.textContent).toBe('1');
+    ed.view.dispatch({ selection: { anchor: doc.indexOf('| A') + 2 } });
+    expect(el.querySelector('.aster-lp-table')).toBeNull();
+    ed.destroy();
+  });
+});

@@ -1,0 +1,3673 @@
+{
+  "schema_version": 1,
+  "generator": "tools/export_brand_icons.py",
+  "generated_at": "2026-10-10T07:59:11.769952+00:00",
+  "renderer": {
+    "name": "inkscape",
+    "executable": "inkscape",
+    "version": "Inkscape 1.4.4 (dcaf3e7, 2026-05-05)"
+  },
+  "iconutil": "/usr/bin/iconutil",
+  "complete": true,
+  "source_dir": "assets/brand/source",
+  "small_master_max_pixels": 32,
+  "policy": {
+    "raster_resampling": false,
+    "ico_payloads": "PNG",
+    "pwa_apple_windows": "opaque square; platform applies its own mask",
+    "macos": "transparent perimeter with rounded inset tile",
+    "favicon": "prerounded tile",
+    "in_app": "transparent mark"
+  },
+  "validation": {
+    "dimensions": "passed",
+    "alpha": "passed",
+    "clipping": "passed",
+    "container_integrity": "passed",
+    "svg_self_contained": "passed"
+  },
+  "masters": {
+    "mark": {
+      "file": "mark.svg",
+      "bytes": 1535,
+      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 890985,
+          "partial_pixels": 3478,
+          "opaque_pixels": 154113,
+          "visible_bbox": [
+            235,
+            240,
+            902,
+            753
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "mark-small": {
+      "file": "mark-small.svg",
+      "bytes": 1502,
+      "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 865710,
+          "partial_pixels": 3421,
+          "opaque_pixels": 179445,
+          "visible_bbox": [
+            225,
+            239,
+            913,
+            752
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-tile": {
+      "file": "app-tile.svg",
+      "bytes": 1782,
+      "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 42147,
+          "partial_pixels": 1652,
+          "opaque_pixels": 1004777,
+          "visible_bbox": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-tile-small": {
+      "file": "app-tile-small.svg",
+      "bytes": 1749,
+      "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 42147,
+          "partial_pixels": 1652,
+          "opaque_pixels": 1004777,
+          "visible_bbox": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-square": {
+      "file": "app-square.svg",
+      "bytes": 1782,
+      "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            255,
+            255
+          ],
+          "transparent_pixels": 0,
+          "partial_pixels": 0,
+          "opaque_pixels": 1048576,
+          "visible_bbox": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "corner_alpha": [
+            255,
+            255,
+            255,
+            255
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-square-small": {
+      "file": "app-square-small.svg",
+      "bytes": 1749,
+      "sha256": "11fd6f9d7067d1e476e0948ce8255b524825ff23fe1d05e6fac59c31a852dfb9",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            255,
+            255
+          ],
+          "transparent_pixels": 0,
+          "partial_pixels": 0,
+          "opaque_pixels": 1048576,
+          "visible_bbox": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "corner_alpha": [
+            255,
+            255,
+            255,
+            255
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-macos": {
+      "file": "app-macos.svg",
+      "bytes": 1786,
+      "sha256": "80a71aa143031a6eb9b85260d179c7110760b743403ed125462a93b0f4190308",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 410402,
+          "partial_pixels": 1372,
+          "opaque_pixels": 636802,
+          "visible_bbox": [
+            104,
+            104,
+            920,
+            920
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-macos-small": {
+      "file": "app-macos-small.svg",
+      "bytes": 1753,
+      "sha256": "ba8a6c8064a85abc40de5da0e5a73e0fa662d634e76b3304f719a97f67dd5f3f",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 410402,
+          "partial_pixels": 1372,
+          "opaque_pixels": 636802,
+          "visible_bbox": [
+            104,
+            104,
+            920,
+            920
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    }
+  },
+  "files": {
+    "in-app/mark-16.png": {
+      "bytes": 430,
+      "sha256": "b2d96cdc86165cb647d153dbf6e933d8e521c6bdca94beb6b27dede3f6c76aab",
+      "format": "PNG",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 186,
+        "partial_pixels": 50,
+        "opaque_pixels": 20,
+        "visible_bbox": [
+          3,
+          3,
+          15,
+          12
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark-small.svg",
+      "direct_svg_render": true
+    },
+    "in-app/mark-20.png": {
+      "bytes": 517,
+      "sha256": "df8066fb199d03ddae179c8f131c2e070c6e0a45afc7ff713040981d689cf300",
+      "format": "PNG",
+      "width": 20,
+      "height": 20,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 297,
+        "partial_pixels": 63,
+        "opaque_pixels": 40,
+        "visible_bbox": [
+          4,
+          4,
+          18,
+          15
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark-small.svg",
+      "direct_svg_render": true
+    },
+    "in-app/mark-24.png": {
+      "bytes": 575,
+      "sha256": "dfe3481fd06156b555bc705e11b2a992c9d1725eeafec9dfa8fe154b3807720e",
+      "format": "PNG",
+      "width": 24,
+      "height": 24,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 439,
+        "partial_pixels": 75,
+        "opaque_pixels": 62,
+        "visible_bbox": [
+          5,
+          5,
+          22,
+          18
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark-small.svg",
+      "direct_svg_render": true
+    },
+    "in-app/mark-32.png": {
+      "bytes": 734,
+      "sha256": "fa5c5dbdf2325c2877654e0612e0194aa4df331b86bcdc351dc7f878c2965004",
+      "format": "PNG",
+      "width": 32,
+      "height": 32,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 794,
+        "partial_pixels": 96,
+        "opaque_pixels": 134,
+        "visible_bbox": [
+          7,
+          7,
+          29,
+          24
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark-small.svg",
+      "direct_svg_render": true
+    },
+    "in-app/mark-48.png": {
+      "bytes": 1107,
+      "sha256": "cfbb57d4bf7fcff0660b8e1d7b645f1b117de88297f743fe395fbf37f2c66de5",
+      "format": "PNG",
+      "width": 48,
+      "height": 48,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1875,
+        "partial_pixels": 157,
+        "opaque_pixels": 272,
+        "visible_bbox": [
+          11,
+          11,
+          43,
+          36
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark.svg",
+      "direct_svg_render": true
+    },
+    "in-app/mark-64.png": {
+      "bytes": 1399,
+      "sha256": "f34f9a82ab13d01d6a6212f476d10069c8727eca246b14d4dbcc8cbf7a3b1e3b",
+      "format": "PNG",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 3395,
+        "partial_pixels": 200,
+        "opaque_pixels": 501,
+        "visible_bbox": [
+          14,
+          15,
+          57,
+          47
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark.svg",
+      "direct_svg_render": true
+    },
+    "in-app/mark-small.svg": {
+      "bytes": 1502,
+      "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "mark-small.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 865710,
+        "partial_pixels": 3421,
+        "opaque_pixels": 179445,
+        "visible_bbox": [
+          225,
+          239,
+          913,
+          752
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "in-app/mark.svg": {
+      "bytes": 1535,
+      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "mark.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 890985,
+        "partial_pixels": 3478,
+        "opaque_pixels": 154113,
+        "visible_bbox": [
+          235,
+          240,
+          902,
+          753
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "macos/Aster.icns": {
+      "bytes": 117027,
+      "sha256": "49db6aa486be0486e3b95ee19b33f8614a22bc78150e49f1284d42034755fbad",
+      "format": "ICNS",
+      "chunks": [
+        "ic12",
+        "ic07",
+        "ic13",
+        "ic08",
+        "ic04",
+        "ic14",
+        "ic09",
+        "ic05",
+        "ic10",
+        "ic11",
+        "info"
+      ],
+      "representations": [
+        {
+          "logical_width": 16,
+          "logical_height": 16,
+          "scale": 1,
+          "width": 16,
+          "height": 16,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 72,
+            "partial_pixels": 52,
+            "opaque_pixels": 132,
+            "visible_bbox": [
+              1,
+              1,
+              15,
+              15
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 255,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 20,
+          "roundtrip_composite_max_channel_difference": 9,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 9,
+              "mean_absolute_channel_difference": 0.757812
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 9,
+              "mean_absolute_channel_difference": 0.757812
+            }
+          ]
+        },
+        {
+          "logical_width": 16,
+          "logical_height": 16,
+          "scale": 2,
+          "width": 32,
+          "height": 32,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 368,
+            "partial_pixels": 100,
+            "opaque_pixels": 556,
+            "visible_bbox": [
+              3,
+              3,
+              29,
+              29
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 32,
+          "logical_height": 32,
+          "scale": 1,
+          "width": 32,
+          "height": 32,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 368,
+            "partial_pixels": 100,
+            "opaque_pixels": 556,
+            "visible_bbox": [
+              3,
+              3,
+              29,
+              29
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 255,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 18,
+          "roundtrip_composite_max_channel_difference": 13,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 13,
+              "mean_absolute_channel_difference": 0.682943
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 13,
+              "mean_absolute_channel_difference": 0.682943
+            }
+          ]
+        },
+        {
+          "logical_width": 32,
+          "logical_height": 32,
+          "scale": 2,
+          "width": 64,
+          "height": 64,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 1500,
+            "partial_pixels": 204,
+            "opaque_pixels": 2392,
+            "visible_bbox": [
+              6,
+              6,
+              58,
+              58
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 128,
+          "logical_height": 128,
+          "scale": 1,
+          "width": 128,
+          "height": 128,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 6348,
+            "partial_pixels": 172,
+            "opaque_pixels": 9864,
+            "visible_bbox": [
+              13,
+              13,
+              115,
+              115
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 128,
+          "logical_height": 128,
+          "scale": 2,
+          "width": 256,
+          "height": 256,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 25534,
+            "partial_pixels": 334,
+            "opaque_pixels": 39668,
+            "visible_bbox": [
+              26,
+              26,
+              230,
+              230
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 256,
+          "logical_height": 256,
+          "scale": 1,
+          "width": 256,
+          "height": 256,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 25534,
+            "partial_pixels": 334,
+            "opaque_pixels": 39668,
+            "visible_bbox": [
+              26,
+              26,
+              230,
+              230
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 256,
+          "logical_height": 256,
+          "scale": 2,
+          "width": 512,
+          "height": 512,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 102449,
+            "partial_pixels": 684,
+            "opaque_pixels": 159011,
+            "visible_bbox": [
+              52,
+              52,
+              460,
+              460
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 512,
+          "logical_height": 512,
+          "scale": 1,
+          "width": 512,
+          "height": 512,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 102449,
+            "partial_pixels": 684,
+            "opaque_pixels": 159011,
+            "visible_bbox": [
+              52,
+              52,
+              460,
+              460
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 512,
+          "logical_height": 512,
+          "scale": 2,
+          "width": 1024,
+          "height": 1024,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 410402,
+            "partial_pixels": 1372,
+            "opaque_pixels": 636802,
+            "visible_bbox": [
+              104,
+              104,
+              920,
+              920
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        }
+      ],
+      "container_validation": "passed",
+      "native_color_conversion_observed": true,
+      "packaged_by": "iconutil"
+    },
+    "macos/Aster.iconset/icon_128x128.png": {
+      "bytes": 3398,
+      "sha256": "15cefad43dbac03e095483a4ebd3ccf41d177abf5b170fc6f27a1aa93c7df4af",
+      "format": "PNG",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 6348,
+        "partial_pixels": 172,
+        "opaque_pixels": 9864,
+        "visible_bbox": [
+          13,
+          13,
+          115,
+          115
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_128x128@2x.png": {
+      "bytes": 6672,
+      "sha256": "bf4ccad17e1cce21a838cce5747d1e81f7b78a4e6d870723197011917d29949c",
+      "format": "PNG",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 25534,
+        "partial_pixels": 334,
+        "opaque_pixels": 39668,
+        "visible_bbox": [
+          26,
+          26,
+          230,
+          230
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_16x16.png": {
+      "bytes": 555,
+      "sha256": "d3070bf1b1b870c306b21ecb6d64a24a2229c21cf430f557597aef427311a316",
+      "format": "PNG",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 72,
+        "partial_pixels": 52,
+        "opaque_pixels": 132,
+        "visible_bbox": [
+          1,
+          1,
+          15,
+          15
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos-small.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_16x16@2x.png": {
+      "bytes": 960,
+      "sha256": "5dd4aa60e1071694ba21d2129652c3bf9b48a4b3ddb9eb5ddd23aeee2c7bbbbf",
+      "format": "PNG",
+      "width": 32,
+      "height": 32,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 368,
+        "partial_pixels": 100,
+        "opaque_pixels": 556,
+        "visible_bbox": [
+          3,
+          3,
+          29,
+          29
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos-small.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_256x256.png": {
+      "bytes": 6672,
+      "sha256": "bf4ccad17e1cce21a838cce5747d1e81f7b78a4e6d870723197011917d29949c",
+      "format": "PNG",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 25534,
+        "partial_pixels": 334,
+        "opaque_pixels": 39668,
+        "visible_bbox": [
+          26,
+          26,
+          230,
+          230
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_256x256@2x.png": {
+      "bytes": 14584,
+      "sha256": "8196b4cda430661510b783d9b4c35b3dbd6e86e9c9a8604ead6e1b7e2a3b0b45",
+      "format": "PNG",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 102449,
+        "partial_pixels": 684,
+        "opaque_pixels": 159011,
+        "visible_bbox": [
+          52,
+          52,
+          460,
+          460
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_32x32.png": {
+      "bytes": 960,
+      "sha256": "5dd4aa60e1071694ba21d2129652c3bf9b48a4b3ddb9eb5ddd23aeee2c7bbbbf",
+      "format": "PNG",
+      "width": 32,
+      "height": 32,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 368,
+        "partial_pixels": 100,
+        "opaque_pixels": 556,
+        "visible_bbox": [
+          3,
+          3,
+          29,
+          29
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos-small.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_32x32@2x.png": {
+      "bytes": 1819,
+      "sha256": "56f02c8da87889826aff810c603bebd77f722fdafaeeb2813c930e68eb0c1775",
+      "format": "PNG",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 1500,
+        "partial_pixels": 204,
+        "opaque_pixels": 2392,
+        "visible_bbox": [
+          6,
+          6,
+          58,
+          58
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_512x512.png": {
+      "bytes": 14584,
+      "sha256": "8196b4cda430661510b783d9b4c35b3dbd6e86e9c9a8604ead6e1b7e2a3b0b45",
+      "format": "PNG",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 102449,
+        "partial_pixels": 684,
+        "opaque_pixels": 159011,
+        "visible_bbox": [
+          52,
+          52,
+          460,
+          460
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos.svg",
+      "direct_svg_render": true
+    },
+    "macos/Aster.iconset/icon_512x512@2x.png": {
+      "bytes": 32690,
+      "sha256": "f3bb2f040985a8b329a1752b076eda7b0e51f6c84983462a105d54933512d110",
+      "format": "PNG",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 410402,
+        "partial_pixels": 1372,
+        "opaque_pixels": 636802,
+        "visible_bbox": [
+          104,
+          104,
+          920,
+          920
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-macos.svg",
+      "direct_svg_render": true
+    },
+    "readme/app-tile-256.png": {
+      "bytes": 7084,
+      "sha256": "c078e7ed13db51e8a03ae5b220f5f5f41036879f6a8b8c6e2c849f9a3dbf7e34",
+      "format": "PNG",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 2497,
+        "partial_pixels": 416,
+        "opaque_pixels": 62623,
+        "visible_bbox": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-tile.svg",
+      "direct_svg_render": true
+    },
+    "readme/app-tile-512.png": {
+      "bytes": 15749,
+      "sha256": "21ac9deb0a48640677f62342cf04f0ed0fc5850cdb07597eb30e084063ca1c70",
+      "format": "PNG",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 10328,
+        "partial_pixels": 845,
+        "opaque_pixels": 250971,
+        "visible_bbox": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-tile.svg",
+      "direct_svg_render": true
+    },
+    "readme/app-tile.svg": {
+      "bytes": 1782,
+      "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-tile.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 42147,
+        "partial_pixels": 1652,
+        "opaque_pixels": 1004777,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "readme/mark-256.png": {
+      "bytes": 5658,
+      "sha256": "2975c7afcfbaf7ca331e01cb715b7ab40d2b8491c750226ddbda3b2130e977a1",
+      "format": "PNG",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 55370,
+        "partial_pixels": 865,
+        "opaque_pixels": 9301,
+        "visible_bbox": [
+          59,
+          60,
+          226,
+          189
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark.svg",
+      "direct_svg_render": true
+    },
+    "readme/mark-512.png": {
+      "bytes": 12295,
+      "sha256": "0f28d5b4fb6afce926a0f973084f21e10101788a85e437a3a8d6c405e019c953",
+      "format": "PNG",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 222317,
+        "partial_pixels": 1736,
+        "opaque_pixels": 38091,
+        "visible_bbox": [
+          117,
+          120,
+          451,
+          377
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "mark.svg",
+      "direct_svg_render": true
+    },
+    "readme/mark.svg": {
+      "bytes": 1535,
+      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "mark.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 890985,
+        "partial_pixels": 3478,
+        "opaque_pixels": 154113,
+        "visible_bbox": [
+          235,
+          240,
+          902,
+          753
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "svg/app-macos-small.svg": {
+      "bytes": 1753,
+      "sha256": "ba8a6c8064a85abc40de5da0e5a73e0fa662d634e76b3304f719a97f67dd5f3f",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-macos-small.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 410402,
+        "partial_pixels": 1372,
+        "opaque_pixels": 636802,
+        "visible_bbox": [
+          104,
+          104,
+          920,
+          920
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "svg/app-macos.svg": {
+      "bytes": 1786,
+      "sha256": "80a71aa143031a6eb9b85260d179c7110760b743403ed125462a93b0f4190308",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-macos.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 410402,
+        "partial_pixels": 1372,
+        "opaque_pixels": 636802,
+        "visible_bbox": [
+          104,
+          104,
+          920,
+          920
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "svg/app-square-small.svg": {
+      "bytes": 1749,
+      "sha256": "11fd6f9d7067d1e476e0948ce8255b524825ff23fe1d05e6fac59c31a852dfb9",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-square-small.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 1048576,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      }
+    },
+    "svg/app-square.svg": {
+      "bytes": 1782,
+      "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-square.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 1048576,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      }
+    },
+    "svg/app-tile-small.svg": {
+      "bytes": 1749,
+      "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-tile-small.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 42147,
+        "partial_pixels": 1652,
+        "opaque_pixels": 1004777,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "svg/app-tile.svg": {
+      "bytes": 1782,
+      "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-tile.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 42147,
+        "partial_pixels": 1652,
+        "opaque_pixels": 1004777,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "svg/mark-small.svg": {
+      "bytes": 1502,
+      "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "mark-small.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 865710,
+        "partial_pixels": 3421,
+        "opaque_pixels": 179445,
+        "visible_bbox": [
+          225,
+          239,
+          913,
+          752
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "svg/mark.svg": {
+      "bytes": 1535,
+      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "mark.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 890985,
+        "partial_pixels": 3478,
+        "opaque_pixels": 154113,
+        "visible_bbox": [
+          235,
+          240,
+          902,
+          753
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "tauri/128x128.png": {
+      "bytes": 2535,
+      "sha256": "93771ad02f298592bccf0046f563577e89dbc1d8b454ff493edf6f417584321d",
+      "format": "PNG",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 16384,
+        "visible_bbox": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "tauri/128x128@2x.png": {
+      "bytes": 4984,
+      "sha256": "454d47d0eac0f3574786e5342f8dd329feb12988c493e5de897b34b6a7a4cff7",
+      "format": "PNG",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 65536,
+        "visible_bbox": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "tauri/256x256.png": {
+      "bytes": 4984,
+      "sha256": "454d47d0eac0f3574786e5342f8dd329feb12988c493e5de897b34b6a7a4cff7",
+      "format": "PNG",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 65536,
+        "visible_bbox": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "tauri/32x32.png": {
+      "bytes": 703,
+      "sha256": "ad46835aa1d04c738bc9d508883cd95e27c546bd73b06d502bd617c04e8619ef",
+      "format": "PNG",
+      "width": 32,
+      "height": 32,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 1024,
+        "visible_bbox": [
+          0,
+          0,
+          32,
+          32
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square-small.svg",
+      "direct_svg_render": true
+    },
+    "tauri/512x512.png": {
+      "bytes": 11106,
+      "sha256": "1c84abfcb06808447819a01adc78dc59c76cf5c5c5a3a13733458c76d7e2fae1",
+      "format": "PNG",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 262144,
+        "visible_bbox": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "tauri/64x64.png": {
+      "bytes": 1342,
+      "sha256": "5ae608fbdfeb730c47a7f79211b25c560ad2e89aa7aa2b8f809a0c4e3466d2de",
+      "format": "PNG",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 4096,
+        "visible_bbox": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "tauri/icon.icns": {
+      "bytes": 117027,
+      "sha256": "49db6aa486be0486e3b95ee19b33f8614a22bc78150e49f1284d42034755fbad",
+      "format": "ICNS",
+      "chunks": [
+        "ic12",
+        "ic07",
+        "ic13",
+        "ic08",
+        "ic04",
+        "ic14",
+        "ic09",
+        "ic05",
+        "ic10",
+        "ic11",
+        "info"
+      ],
+      "representations": [
+        {
+          "logical_width": 16,
+          "logical_height": 16,
+          "scale": 1,
+          "width": 16,
+          "height": 16,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 72,
+            "partial_pixels": 52,
+            "opaque_pixels": 132,
+            "visible_bbox": [
+              1,
+              1,
+              15,
+              15
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 255,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 20,
+          "roundtrip_composite_max_channel_difference": 9,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 9,
+              "mean_absolute_channel_difference": 0.757812
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 9,
+              "mean_absolute_channel_difference": 0.757812
+            }
+          ]
+        },
+        {
+          "logical_width": 16,
+          "logical_height": 16,
+          "scale": 2,
+          "width": 32,
+          "height": 32,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 368,
+            "partial_pixels": 100,
+            "opaque_pixels": 556,
+            "visible_bbox": [
+              3,
+              3,
+              29,
+              29
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 32,
+          "logical_height": 32,
+          "scale": 1,
+          "width": 32,
+          "height": 32,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 368,
+            "partial_pixels": 100,
+            "opaque_pixels": 556,
+            "visible_bbox": [
+              3,
+              3,
+              29,
+              29
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 255,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 18,
+          "roundtrip_composite_max_channel_difference": 13,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 13,
+              "mean_absolute_channel_difference": 0.682943
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 13,
+              "mean_absolute_channel_difference": 0.682943
+            }
+          ]
+        },
+        {
+          "logical_width": 32,
+          "logical_height": 32,
+          "scale": 2,
+          "width": 64,
+          "height": 64,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 1500,
+            "partial_pixels": 204,
+            "opaque_pixels": 2392,
+            "visible_bbox": [
+              6,
+              6,
+              58,
+              58
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 128,
+          "logical_height": 128,
+          "scale": 1,
+          "width": 128,
+          "height": 128,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 6348,
+            "partial_pixels": 172,
+            "opaque_pixels": 9864,
+            "visible_bbox": [
+              13,
+              13,
+              115,
+              115
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 128,
+          "logical_height": 128,
+          "scale": 2,
+          "width": 256,
+          "height": 256,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 25534,
+            "partial_pixels": 334,
+            "opaque_pixels": 39668,
+            "visible_bbox": [
+              26,
+              26,
+              230,
+              230
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 256,
+          "logical_height": 256,
+          "scale": 1,
+          "width": 256,
+          "height": 256,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 25534,
+            "partial_pixels": 334,
+            "opaque_pixels": 39668,
+            "visible_bbox": [
+              26,
+              26,
+              230,
+              230
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 256,
+          "logical_height": 256,
+          "scale": 2,
+          "width": 512,
+          "height": 512,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 102449,
+            "partial_pixels": 684,
+            "opaque_pixels": 159011,
+            "visible_bbox": [
+              52,
+              52,
+              460,
+              460
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 512,
+          "logical_height": 512,
+          "scale": 1,
+          "width": 512,
+          "height": 512,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 102449,
+            "partial_pixels": 684,
+            "opaque_pixels": 159011,
+            "visible_bbox": [
+              52,
+              52,
+              460,
+              460
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        },
+        {
+          "logical_width": 512,
+          "logical_height": 512,
+          "scale": 2,
+          "width": 1024,
+          "height": 1024,
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 410402,
+            "partial_pixels": 1372,
+            "opaque_pixels": 636802,
+            "visible_bbox": [
+              104,
+              104,
+              920,
+              920
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "roundtrip_alpha_exact": true,
+          "roundtrip_raw_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_raw_visible_unassociated_rgb_max_channel_difference": 0,
+          "roundtrip_composite_max_channel_difference": 0,
+          "roundtrip_composite_diagnostics": [
+            {
+              "background": "#000000",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            },
+            {
+              "background": "#ffffff",
+              "max_channel_difference": 0,
+              "mean_absolute_channel_difference": 0.0
+            }
+          ]
+        }
+      ],
+      "container_validation": "passed",
+      "native_color_conversion_observed": true,
+      "packaged_by": "iconutil",
+      "copied_from": "macos/Aster.icns"
+    },
+    "tauri/icon.ico": {
+      "bytes": 12023,
+      "sha256": "e0ebf3e12aff67eb234fc3ba1eeb22cf35037e3b322536066da5d5ef166133ed",
+      "format": "ICO",
+      "representations": [
+        {
+          "width": 16,
+          "height": 16,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 256,
+            "visible_bbox": [
+              0,
+              0,
+              16,
+              16
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 20,
+          "height": 20,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 400,
+            "visible_bbox": [
+              0,
+              0,
+              20,
+              20
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 24,
+          "height": 24,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 576,
+            "visible_bbox": [
+              0,
+              0,
+              24,
+              24
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 1024,
+            "visible_bbox": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 1600,
+            "visible_bbox": [
+              0,
+              0,
+              40,
+              40
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 48,
+          "height": 48,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 2304,
+            "visible_bbox": [
+              0,
+              0,
+              48,
+              48
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 64,
+          "height": 64,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 4096,
+            "visible_bbox": [
+              0,
+              0,
+              64,
+              64
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 16384,
+            "visible_bbox": [
+              0,
+              0,
+              128,
+              128
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 256,
+          "height": 256,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 65536,
+            "visible_bbox": [
+              0,
+              0,
+              256,
+              256
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        }
+      ],
+      "container_validation": "passed",
+      "copied_from": "windows/Aster.ico"
+    },
+    "tauri/icon.png": {
+      "bytes": 24781,
+      "sha256": "0c445bc75d810b8ca2424d53bc847be376d524250a41017e811d47e7ffa959ad",
+      "format": "PNG",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 1048576,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "web/app-icon.svg": {
+      "bytes": 1782,
+      "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-square.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 1048576,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      }
+    },
+    "web/apple-touch-icon.png": {
+      "bytes": 3512,
+      "sha256": "1fc7835d1b759cbf14aeb0256ae908536deb817745511a83e6c03f3c22a3447c",
+      "format": "PNG",
+      "width": 180,
+      "height": 180,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 32400,
+        "visible_bbox": [
+          0,
+          0,
+          180,
+          180
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "web/favicon-16.png": {
+      "bytes": 503,
+      "sha256": "d25480c1457634770e9da5676543a9b2a97522c7a6d3d97322387e331e027f88",
+      "format": "PNG",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 4,
+        "partial_pixels": 24,
+        "opaque_pixels": 228,
+        "visible_bbox": [
+          0,
+          0,
+          16,
+          16
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-tile-small.svg",
+      "direct_svg_render": true
+    },
+    "web/favicon-32.png": {
+      "bytes": 937,
+      "sha256": "73477ac22a6cb932276a4885b00930339f64752daeff7c0b0cd54a69627881c3",
+      "format": "PNG",
+      "width": 32,
+      "height": 32,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 24,
+        "partial_pixels": 52,
+        "opaque_pixels": 948,
+        "visible_bbox": [
+          0,
+          0,
+          32,
+          32
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-tile-small.svg",
+      "direct_svg_render": true
+    },
+    "web/favicon-48.png": {
+      "bytes": 1378,
+      "sha256": "1046ee4df2a67ab12e436ab3d527a8474f16372e8bd906f7f38a7ef10c7bdb1b",
+      "format": "PNG",
+      "width": 48,
+      "height": 48,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 68,
+        "partial_pixels": 76,
+        "opaque_pixels": 2160,
+        "visible_bbox": [
+          0,
+          0,
+          48,
+          48
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-tile.svg",
+      "direct_svg_render": true
+    },
+    "web/favicon-96.png": {
+      "bytes": 2658,
+      "sha256": "325dcab36ae7c6c3641c90e45e00e83b66807ce9047d96c28e9fcb238c5e6b6c",
+      "format": "PNG",
+      "width": 96,
+      "height": 96,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 312,
+        "partial_pixels": 156,
+        "opaque_pixels": 8748,
+        "visible_bbox": [
+          0,
+          0,
+          96,
+          96
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "source": "app-tile.svg",
+      "direct_svg_render": true
+    },
+    "web/favicon.ico": {
+      "bytes": 2606,
+      "sha256": "12c647d6aeff357e4943b4249cbbb0ef2b7bb407620a0037de35ca0f4fe913e1",
+      "format": "ICO",
+      "representations": [
+        {
+          "width": 16,
+          "height": 16,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 4,
+            "partial_pixels": 24,
+            "opaque_pixels": 228,
+            "visible_bbox": [
+              0,
+              0,
+              16,
+              16
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 24,
+            "partial_pixels": 52,
+            "opaque_pixels": 948,
+            "visible_bbox": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "width": 48,
+          "height": 48,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              0,
+              255
+            ],
+            "transparent_pixels": 68,
+            "partial_pixels": 76,
+            "opaque_pixels": 2160,
+            "visible_bbox": [
+              0,
+              0,
+              48,
+              48
+            ],
+            "corner_alpha": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "container_validation": "passed"
+    },
+    "web/favicon.svg": {
+      "bytes": 1749,
+      "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-tile-small.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 42147,
+        "partial_pixels": 1652,
+        "opaque_pixels": 1004777,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "web/pwa-192.png": {
+      "bytes": 3777,
+      "sha256": "31fce040db5fd7009611678992a45512ced74788c290a17ffa2dcf1743eea5cc",
+      "format": "PNG",
+      "width": 192,
+      "height": 192,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 36864,
+        "visible_bbox": [
+          0,
+          0,
+          192,
+          192
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "web/pwa-512.png": {
+      "bytes": 11106,
+      "sha256": "1c84abfcb06808447819a01adc78dc59c76cf5c5c5a3a13733458c76d7e2fae1",
+      "format": "PNG",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 262144,
+        "visible_bbox": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "windows/Aster.ico": {
+      "bytes": 12023,
+      "sha256": "e0ebf3e12aff67eb234fc3ba1eeb22cf35037e3b322536066da5d5ef166133ed",
+      "format": "ICO",
+      "representations": [
+        {
+          "width": 16,
+          "height": 16,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 256,
+            "visible_bbox": [
+              0,
+              0,
+              16,
+              16
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 20,
+          "height": 20,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 400,
+            "visible_bbox": [
+              0,
+              0,
+              20,
+              20
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 24,
+          "height": 24,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 576,
+            "visible_bbox": [
+              0,
+              0,
+              24,
+              24
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 1024,
+            "visible_bbox": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 40,
+          "height": 40,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 1600,
+            "visible_bbox": [
+              0,
+              0,
+              40,
+              40
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 48,
+          "height": 48,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 2304,
+            "visible_bbox": [
+              0,
+              0,
+              48,
+              48
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 64,
+          "height": 64,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 4096,
+            "visible_bbox": [
+              0,
+              0,
+              64,
+              64
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 128,
+          "height": 128,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 16384,
+            "visible_bbox": [
+              0,
+              0,
+              128,
+              128
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        },
+        {
+          "width": 256,
+          "height": 256,
+          "bits": 32,
+          "payload": "PNG",
+          "alpha": {
+            "extrema": [
+              255,
+              255
+            ],
+            "transparent_pixels": 0,
+            "partial_pixels": 0,
+            "opaque_pixels": 65536,
+            "visible_bbox": [
+              0,
+              0,
+              256,
+              256
+            ],
+            "corner_alpha": [
+              255,
+              255,
+              255,
+              255
+            ]
+          }
+        }
+      ],
+      "container_validation": "passed"
+    },
+    "windows/png/icon-128.png": {
+      "bytes": 2535,
+      "sha256": "93771ad02f298592bccf0046f563577e89dbc1d8b454ff493edf6f417584321d",
+      "format": "PNG",
+      "width": 128,
+      "height": 128,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 16384,
+        "visible_bbox": [
+          0,
+          0,
+          128,
+          128
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-16.png": {
+      "bytes": 405,
+      "sha256": "3842233021a53c8e1a38972fcc0973ac51624d7169b934cddc04518bdc721e42",
+      "format": "PNG",
+      "width": 16,
+      "height": 16,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 256,
+        "visible_bbox": [
+          0,
+          0,
+          16,
+          16
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square-small.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-20.png": {
+      "bytes": 488,
+      "sha256": "c85e9a890bdd6430221960b484b8ed1b7fd7ccb174fbbd969ec470c135f781cf",
+      "format": "PNG",
+      "width": 20,
+      "height": 20,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 400,
+        "visible_bbox": [
+          0,
+          0,
+          20,
+          20
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square-small.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-24.png": {
+      "bytes": 579,
+      "sha256": "f784c7f48bdd4a42700682bced4f0e1580371025e6a538630180cb5c7113599d",
+      "format": "PNG",
+      "width": 24,
+      "height": 24,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 576,
+        "visible_bbox": [
+          0,
+          0,
+          24,
+          24
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square-small.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-256.png": {
+      "bytes": 4984,
+      "sha256": "454d47d0eac0f3574786e5342f8dd329feb12988c493e5de897b34b6a7a4cff7",
+      "format": "PNG",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 65536,
+        "visible_bbox": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-32.png": {
+      "bytes": 703,
+      "sha256": "ad46835aa1d04c738bc9d508883cd95e27c546bd73b06d502bd617c04e8619ef",
+      "format": "PNG",
+      "width": 32,
+      "height": 32,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 1024,
+        "visible_bbox": [
+          0,
+          0,
+          32,
+          32
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square-small.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-40.png": {
+      "bytes": 857,
+      "sha256": "1f14c7493c75c42a87436de506cb1de823c7819ca377188074ff3f985a00d708",
+      "format": "PNG",
+      "width": 40,
+      "height": 40,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 1600,
+        "visible_bbox": [
+          0,
+          0,
+          40,
+          40
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-48.png": {
+      "bytes": 1033,
+      "sha256": "b51f973554d998e93ec30bc2932b11b2f06e50dceb1eae23ea0bfdc4b4ceef0f",
+      "format": "PNG",
+      "width": 48,
+      "height": 48,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 2304,
+        "visible_bbox": [
+          0,
+          0,
+          48,
+          48
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    },
+    "windows/png/icon-64.png": {
+      "bytes": 1342,
+      "sha256": "5ae608fbdfeb730c47a7f79211b25c560ad2e89aa7aa2b8f809a0c4e3466d2de",
+      "format": "PNG",
+      "width": 64,
+      "height": 64,
+      "mode": "RGBA",
+      "alpha": {
+        "extrema": [
+          255,
+          255
+        ],
+        "transparent_pixels": 0,
+        "partial_pixels": 0,
+        "opaque_pixels": 4096,
+        "visible_bbox": [
+          0,
+          0,
+          64,
+          64
+        ],
+        "corner_alpha": [
+          255,
+          255,
+          255,
+          255
+        ]
+      },
+      "source": "app-square.svg",
+      "direct_svg_render": true
+    }
+  }
+}

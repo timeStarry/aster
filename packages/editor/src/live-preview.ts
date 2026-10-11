@@ -1,6 +1,6 @@
 import { EditorState, Extension, StateField, StateEffect, Range } from '@codemirror/state';
 import { EditorView, Decoration, DecorationSet, WidgetType, GutterMarker, gutterLineClass } from '@codemirror/view';
-import { RangeSetBuilder } from '@codemirror/state';
+import { RangeSet } from '@codemirror/state';
 import { syntaxTree, ensureSyntaxTree } from '@codemirror/language';
 import { LanguageDescription } from '@codemirror/language';
 import { languages } from '@codemirror/language-data';
@@ -395,7 +395,10 @@ function highlightedCode(body: string, parser: import('@lezer/common').Parser): 
     if (cls) span.className = cls;
     span.textContent = text;
     ensure().appendChild(span);
-  }, () => { line = null; });
+  }, () => {
+    code.appendChild(document.createTextNode('\n'));
+    line = null;
+  });
   return code;
 }
 
@@ -501,13 +504,15 @@ class HeadingGutter extends GutterMarker {
 const HEADING_GUTTER = new HeadingGutter();
 
 function headingGutterClasses(set: DecorationSet) {
-  const b = new RangeSetBuilder<GutterMarker>();
+  // DecorationSet.between visits overlapping layers, not globally sorted ranges.
+  // A heading has both line and mark decorations; emit one sorted gutter marker.
+  const positions = new Set<number>();
   set.between(0, 1e9, (from, _to, deco) => {
     const spec = deco.spec as { class?: string };
     if (!spec.class || !spec.class.includes('aster-lp-heading')) return;
-    b.add(from, from, HEADING_GUTTER);
+    positions.add(from);
   });
-  return b.finish();
+  return RangeSet.of([...positions].map((from) => HEADING_GUTTER.range(from)), true);
 }
 
 export interface LivePreviewOptions {

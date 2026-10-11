@@ -15,6 +15,8 @@ interface Props {
   onNew: () => void;
   onOpen: () => void;
   onSettings: () => void;
+  /** Keep PDF reachable when the Windows native menu row is hidden. */
+  onExportPdf?: () => void;
 }
 
 const GearIcon = () => (
@@ -34,16 +36,17 @@ function findTab(root: ParentNode | undefined, id: string): HTMLElement | undefi
 
 /**
  * "+" opens a blank tab in one click; the chevron next to it opens a menu with
- * the other ways to start (open a file, settings). A click-to-open menu rather
+ * other actions (open a file, PDF export, settings). A click-to-open menu rather
  * than hover: hover menus pop up on fly-overs and can't be reached by keyboard.
  */
-function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: () => void }) {
+function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: () => void; onExportPdf?: () => void }) {
   const [open, setOpen] = createSignal(false);
   let root!: HTMLDivElement;
   let toggle!: HTMLButtonElement;
   const items = () => [
     { id: 'new', label: t('tab.menuNew'), key: `${MOD}N`, run: p.onNew },
     { id: 'open', label: t('tab.menuOpen'), key: `${MOD}O`, run: p.onOpen },
+    ...(p.onExportPdf ? [{ id: 'exportPdf', label: t('tab.menuExportPdf'), key: '', run: p.onExportPdf }] : []),
     { id: 'settings', label: t('tab.menuSettings'), key: `${MOD},`, run: p.onSettings },
   ];
   const focusItem = (i: number) => root.querySelectorAll<HTMLElement>('[role="menuitem"]')[i]?.focus();
@@ -100,7 +103,7 @@ function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: ()
                 onClick={() => { hide(false); it().run(); }}
               >
                 <span>{it().label}</span>
-                <kbd>{it().key}</kbd>
+                <Show when={it().key}><kbd>{it().key}</kbd></Show>
               </button>
             )}
           </Index>
@@ -202,7 +205,7 @@ export function TabBar(props: Props) {
           {(id) => tabEl(id, () => t('tab.settings'), () => `${t('tab.settings')} (${MOD},)`, () => false, GearIcon)}
         </Show>
       </div>
-      <NewTabButton onNew={props.onNew} onOpen={props.onOpen} onSettings={props.onSettings} />
+      <NewTabButton onNew={props.onNew} onOpen={props.onOpen} onSettings={props.onSettings} onExportPdf={props.onExportPdf} />
       <div class="aster-tabs-spacer" {...drag} onDblClick={() => { if (!isMac) props.onNew(); }} />
     </div>
   );

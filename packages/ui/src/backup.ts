@@ -34,6 +34,7 @@ export class BackupError extends Error {
 export const SETTING_LABELS: Record<keyof Settings, Key> = {
   language: 'set.language',
   theme: 'set.theme',
+  showMenuBar: 'set.showMenuBar',
   typography: 'set.typography',
   fontSize: 'set.fontSize',
   lineHeight: 'set.lineHeight',

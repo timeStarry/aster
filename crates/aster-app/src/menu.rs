@@ -170,11 +170,20 @@ pub fn forward<R: Runtime>(app: &AppHandle<R>, id: &str) {
     let _ = app.emit("aster://menu", id);
 }
 
-/// Rebuild the native menu in `lang` (an IETF tag such as "zh-CN" or "en").
+/// Rebuild the native menu and restore its Windows visibility in one command.
+/// Hidden menus retain their accelerators; macOS and Linux keep native behavior.
 #[tauri::command]
-pub fn set_menu_language(app: AppHandle, lang: String) -> Result<(), String> {
+pub fn set_menu_language(app: AppHandle, lang: String, visible: Option<bool>) -> Result<(), String> {
     let menu = build(&app, Lang::parse(&lang)).map_err(|e| e.to_string())?;
     app.set_menu(menu).map_err(|e| e.to_string())?;
+    #[cfg(target_os = "windows")]
+    if visible.unwrap_or(false) {
+        app.show_menu().map_err(|e| e.to_string())?;
+    } else {
+        app.hide_menu().map_err(|e| e.to_string())?;
+    }
+    #[cfg(not(target_os = "windows"))]
+    let _ = visible;
     Ok(())
 }
 

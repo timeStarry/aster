@@ -1,6 +1,6 @@
 import { For, Show, createSignal, type JSX } from 'solid-js';
 import type { Settings, PluginTheme, FontChoice, FontStackId, FontPreset, Typography } from './model';
-import { MOD, ALT, SHIFT, FONT_STACKS, resolveFonts } from './model';
+import { MOD, ALT, SHIFT, FONT_STACKS, resolveFonts, isWindows } from './model';
 import { t, pick, type Key } from './i18n';
 import { FontCombobox, type InstalledFont } from './FontCombobox';
 import { BrandMark } from './BrandMark';
@@ -296,6 +296,11 @@ export function SettingsPane(props: Props) {
                   </For>
                 </div>
               </div>
+              <Show when={isWindows}>
+                <Row id="set-menu-bar" label={t('set.showMenuBar')} hint={t('set.showMenuBarHint')}>
+                  <Toggle id="set-menu-bar" labelledBy="set-menu-bar-label" checked={props.settings.showMenuBar} onChange={(v) => set('showMenuBar', v)} />
+                </Row>
+              </Show>
             </div>
           </Show>
 

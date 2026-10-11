@@ -6,9 +6,10 @@ Examples:
     python3 tools/export_brand_icons.py --renderer inkscape \
         --renderer-path /Applications/Inkscape.app/Contents/MacOS/inkscape
     python3 tools/export_brand_icons.py --output-dir /tmp/aster-icons
+    python3 tools/export_brand_icons.py --windows-only --renderer sharp --overwrite
 
 Requires Pillow for PNG inspection and ICO packaging. SVG rasterization uses
-Inkscape, rsvg-convert, or resvg; macOS ICNS packaging uses Apple's iconutil.
+Inkscape, rsvg-convert, resvg, or Node.js with Sharp; macOS ICNS packaging uses Apple's iconutil.
 The default destination is assets/brand/export, never the existing Tauri icons.
 """
 
@@ -43,7 +44,7 @@ ET.register_namespace("", SVG_NS)
 ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
 MASTER_NAMES = (
     "mark", "mark-small", "app-tile", "app-tile-small", "app-square",
-    "app-square-small", "app-macos", "app-macos-small",
+    "app-square-small", "app-windows", "app-windows-small", "app-macos", "app-macos-small",
 )
 WINDOWS_SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
 FAVICON_SIZES = (16, 32, 48)
@@ -87,6 +88,20 @@ class Renderer:
                 self.executable, "--format", "png", "--width", str(pixels),
                 "--height", str(pixels), "--output", str(destination), str(source),
             ]
+        elif self.name == "sharp":
+            # Set the SVG viewport before rasterizing; never resize a raster.
+            script = """
+const fs = require('node:fs');
+const sharp = require('sharp');
+const [source, destination, pixels] = process.argv.slice(1);
+const svg = fs.readFileSync(source, 'utf8').replace(/<svg\\b[^>]*>/, tag =>
+  tag.replace(/\\bwidth="[^"]*"/, `width="${pixels}"`)
+     .replace(/\\bheight="[^"]*"/, `height="${pixels}"`));
+sharp(Buffer.from(svg)).png().toFile(destination).catch(error => {
+  process.stderr.write(String(error)); process.exitCode = 1;
+});
+"""
+            command = [self.executable, "-e", script, str(source), str(destination), str(pixels)]
         else:
             command = [
                 self.executable, "--width", str(pixels), "--height", str(pixels),
@@ -107,14 +122,20 @@ def find_renderer(requested: str, explicit: str | None) -> Renderer:
         "inkscape": ("inkscape", "/Applications/Inkscape.app/Contents/MacOS/inkscape"),
         "rsvg": ("rsvg-convert",),
         "resvg": ("resvg",),
+        "sharp": ("node",),
     }
-    names = tuple(candidates) if requested == "auto" else (requested,)
+    names = tuple(name for name in candidates if name != "sharp") if requested == "auto" else (requested,)
     for name in names:
         options = (explicit,) if explicit else candidates[name]
         for option in options:
             executable = shutil.which(option)
             if executable:
-                return Renderer(name, executable, run([executable, "--version"]))
+                if name == "sharp":
+                    script = "process.stdout.write('Sharp ' + require('sharp').versions.sharp + '; librsvg ' + require('sharp').versions.rsvg)"
+                    version = run([executable, "-e", script])
+                else:
+                    version = run([executable, "--version"])
+                return Renderer(name, executable, version)
     raise ExportError(
         "No SVG renderer found. Install Inkscape (preferred), rsvg-convert, or resvg, "
         "or supply --renderer and --renderer-path."
@@ -195,7 +216,7 @@ def check_alpha(alpha: dict[str, Any], pixels: int, master: str, label: str) -> 
     if master.startswith("app-square"):
         if alpha["extrema"] != [255, 255]:
             raise ExportError(f"{label}: square artwork must fill the canvas with an opaque background")
-    elif master.startswith("app-tile"):
+    elif master.startswith(("app-tile", "app-windows")):
         # A small rounded corner can partially cover its outermost pixel even
         # though the vector corner is transparent. Keep this antialiasing.
         if any(value == 255 for value in alpha["corner_alpha"]):
@@ -267,7 +288,7 @@ def export_plan() -> tuple[list[RasterJob], dict[str, str]]:
         jobs.append(RasterJob(f"macos/Aster.iconset/icon_{width}x{width}{suffix}.png",
                               optical_master("app-macos", pixels), pixels))
     for pixels in WINDOWS_SIZES:
-        jobs.append(RasterJob(f"windows/png/icon-{pixels}.png", optical_master("app-square", pixels), pixels))
+        jobs.append(RasterJob(f"windows/png/icon-{pixels}.png", optical_master("app-windows", pixels), pixels))
     for pixels in FAVICON_SIZES:
         jobs.append(RasterJob(f"web/favicon-{pixels}.png", optical_master("app-tile", pixels), pixels))
     jobs.append(RasterJob("web/favicon-96.png", "app-tile", 96))
@@ -439,14 +460,117 @@ def publish(stage: Path, output: Path, overwrite: bool) -> None:
         shutil.rmtree(backup)
 
 
+def export_windows(renderer: Renderer, source_dir: Path, output: Path, overwrite: bool) -> int:
+    """Refresh Windows only, preserving every other platform's validated bytes."""
+    output.parent.mkdir(parents=True, exist_ok=True)
+    stage = Path(tempfile.mkdtemp(prefix=f".{output.name}-stage-", dir=output.parent))
+    try:
+        previous = {}
+        reconciled = []
+        source_reconciled = []
+        if output.exists() and any(output.iterdir()):
+            manifest_path = output / "manifest.json"
+            if not manifest_path.is_file():
+                raise ExportError("Windows-only refresh requires the existing export manifest.")
+            previous = json.loads(manifest_path.read_text(encoding="utf-8"))
+            old_windows_export = previous.get("windows_export", {})
+            reconciled = list(old_windows_export.get("preserved_svg_hash_reconciliation", []))
+            source_reconciled = list(old_windows_export.get("preserved_source_hash_reconciliation", []))
+            files = previous.get("files", {})
+            actual = {path.relative_to(output).as_posix() for path in output.rglob("*")
+                      if path.is_file() and path != manifest_path}
+            if actual != set(files):
+                raise ExportError("Existing export manifest does not cover every file.")
+            for relative, info in files.items():
+                actual_info = file_info(output / relative)
+                expected_info = {key: info[key] for key in ("bytes", "sha256")}
+                if actual_info != expected_info:
+                    if Path(relative).suffix != ".svg":
+                        raise ExportError(f"Existing exported asset changed outside its manifest: {relative}")
+                    # Text masters can have been edited or normalized by Git.
+                    # Retain their bytes and disclose the old manifest mismatch.
+                    read_master(output / relative)
+                    reconciled.append({"file": relative, "previous": expected_info, "retained": actual_info})
+                    files[relative] = {**info, **actual_info}
+            shutil.copytree(output, stage, dirs_exist_ok=True)
+            (stage / "manifest.json").unlink()
+        masters = {name: source_dir / f"{name}.svg" for name in ("app-windows", "app-windows-small")}
+        work = stage / ".validation"
+        work.mkdir()
+        source_manifest = validate_master_geometry(renderer, masters, work)
+        files = dict(previous.get("files", {}))
+        for pixels in WINDOWS_SIZES:
+            master = optical_master("app-windows", pixels)
+            relative = f"windows/png/icon-{pixels}.png"
+            destination = stage / relative
+            renderer.render(masters[master], destination, pixels)
+            files[relative] = {**file_info(destination), **inspect_png(destination, pixels, master),
+                               "source": f"{master}.svg", "direct_svg_render": True}
+            print(f"Rendered: {relative} ({pixels}×{pixels})", flush=True)
+        for master, source in masters.items():
+            relative = f"svg/{master}.svg"
+            destination = stage / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination)
+            files[relative] = {**file_info(destination), "format": "SVG", "viewBox": [0, 0, 1024, 1024],
+                               "source": source.name, "self_contained": True,
+                               "alpha": source_manifest[master]["validation_raster"]["alpha"]}
+        pngs = {size: stage / f"windows/png/icon-{size}.png" for size in WINDOWS_SIZES}
+        destination = stage / "windows/Aster.ico"
+        pack_ico(destination, pngs)
+        files["windows/Aster.ico"] = {**file_info(destination), **inspect_ico(destination, pngs)}
+        copied = stage / "tauri/icon.ico"
+        copied.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(destination, copied)
+        files["tauri/icon.ico"] = {**files["windows/Aster.ico"], "copied_from": "windows/Aster.ico"}
+        shutil.rmtree(work)
+        if {path.relative_to(stage).as_posix() for path in stage.rglob("*") if path.is_file()} != set(files):
+            raise ExportError("Export manifest does not cover every generated file.")
+        policy = dict(previous.get("policy", {}))
+        policy.pop("pwa_apple_windows", None)
+        policy.update({"raster_resampling": False, "ico_payloads": "PNG",
+                       "pwa_apple": "opaque square; platform applies its own mask",
+                       "windows": "rounded tile with transparent outer corners"})
+        retained_masters = dict(previous.get("masters", {}))
+        for name, info in retained_masters.items():
+            source = source_dir / info["file"]
+            read_master(source)
+            actual_info = file_info(source)
+            expected_info = {key: info[key] for key in ("bytes", "sha256")}
+            if actual_info != expected_info:
+                source_reconciled.append({"file": info["file"], "previous": expected_info, "retained": actual_info})
+                retained_masters[name] = {**info, **actual_info}
+        timestamp = datetime.now(timezone.utc).isoformat()
+        manifest = {**previous, "schema_version": 1, "generator": "tools/export_brand_icons.py",
+                    "generated_at": timestamp, "complete": previous.get("complete", False),
+                    "small_master_max_pixels": 32, "policy": policy,
+                    "windows_export": {"generated_at": timestamp, "scope": "windows-only",
+                                       "renderer": {"name": renderer.name,
+                                                    "executable": Path(renderer.executable).name,
+                                                    "version": renderer.version},
+                                       "preserved_svg_hash_reconciliation": reconciled,
+                                       "preserved_source_hash_reconciliation": source_reconciled},
+                    "masters": {**retained_masters, **source_manifest},
+                    "files": dict(sorted(files.items()))}
+        (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        publish(stage, output, overwrite)
+        print(f"Refreshed and validated Windows assets; preserved all other platform assets: {output}")
+        return 0
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--source-dir", type=Path, default=ROOT / "assets/brand/source")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "assets/brand/export")
-    parser.add_argument("--renderer", choices=("auto", "inkscape", "rsvg", "resvg"), default="auto")
+    parser.add_argument("--renderer", choices=("auto", "inkscape", "rsvg", "resvg", "sharp"), default="auto")
     parser.add_argument("--renderer-path", help="Executable path; with auto, its name must identify the renderer.")
     parser.add_argument("--iconutil-path", help="Apple iconutil executable path.")
     parser.add_argument("--skip-icns", action="store_true", help="Export the iconset without ICNS (for non-macOS hosts).")
+    parser.add_argument("--windows-only", action="store_true",
+                        help="Refresh Windows PNG/ICO and vector copies while preserving all existing non-Windows assets. Sharp requires Node.js with the sharp package available.")
     parser.add_argument("--check-deps", action="store_true", help="Check dependencies only, without reading or writing assets.")
     parser.add_argument("--overwrite", action="store_true", help="Replace the dedicated export directory after all checks pass.")
     return parser.parse_args()
@@ -457,8 +581,8 @@ def main() -> int:
     if Image is None:
         raise ExportError("Pillow is required for container packaging/inspection. Run with a Python that provides Pillow.")
     renderer = find_renderer(args.renderer, args.renderer_path)
-    iconutil = None if args.skip_icns else shutil.which(args.iconutil_path or "iconutil")
-    if not args.skip_icns and not iconutil:
+    iconutil = None if args.skip_icns or args.windows_only else shutil.which(args.iconutil_path or "iconutil")
+    if not args.skip_icns and not args.windows_only and not iconutil:
         raise ExportError("Apple iconutil is required for ICNS. Use --skip-icns only for an intentionally incomplete cross-platform export.")
     print(f"Renderer: {renderer.name} ({renderer.version})", flush=True)
     if args.check_deps:
@@ -472,6 +596,8 @@ def main() -> int:
         raise ExportError("Choose an output directory separate from the source masters and existing Tauri icons.")
     if output.exists() and (not output.is_dir() or (any(output.iterdir()) and not args.overwrite)):
         raise ExportError(f"Output already exists: {output}. Use --overwrite to replace a dedicated export directory.")
+    if args.windows_only:
+        return export_windows(renderer, source_dir, output, args.overwrite)
     masters = {name: source_dir / f"{name}.svg" for name in MASTER_NAMES}
     for path in masters.values():
         read_master(path)
@@ -521,7 +647,7 @@ def main() -> int:
                     "copied_from": source_relative,
                 }
         shutil.rmtree(work)
-        actual_files = {str(path.relative_to(stage)) for path in stage.rglob("*") if path.is_file()}
+        actual_files = {path.relative_to(stage).as_posix() for path in stage.rglob("*") if path.is_file()}
         if actual_files != set(files):
             raise ExportError("Export manifest does not cover every generated file.")
         manifest = {
@@ -531,7 +657,8 @@ def main() -> int:
             "iconutil": iconutil, "complete": not args.skip_icns,
             "source_dir": source_dir.resolve().relative_to(ROOT).as_posix() if source_dir.resolve().is_relative_to(ROOT) else source_dir.name, "small_master_max_pixels": 32,
             "policy": {"raster_resampling": False, "ico_payloads": "PNG",
-                       "pwa_apple_windows": "opaque square; platform applies its own mask",
+                       "pwa_apple": "opaque square; platform applies its own mask",
+                       "windows": "rounded tile with transparent outer corners",
                        "macos": "transparent perimeter with rounded inset tile",
                        "favicon": "prerounded tile", "in_app": "transparent mark"},
             "validation": {"dimensions": "passed", "alpha": "passed", "clipping": "passed",

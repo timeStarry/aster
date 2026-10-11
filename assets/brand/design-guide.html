@@ -193,7 +193,7 @@
           <thead><tr><th>用途</th><th>资源与构图</th></tr></thead>
           <tbody>
             <tr><td>macOS</td><td><div class="asset-links"><a href="export/macos/Aster.icns">Aster.icns</a><a href="export/macos/Aster.iconset/icon_512x512@2x.png">1024px PNG</a><a href="source/app-macos.svg">源 SVG</a></div><div class="asset-detail">传统10槽位：16、32、128、256、512各含1x / 2x。内缩圆角底板，外缘透明。</div></td></tr>
-            <tr><td>Windows</td><td><div class="asset-links"><a href="export/windows/Aster.ico">Aster.ico</a><a href="export/windows/png/icon-256.png">256px PNG</a><a href="source/app-square.svg">源 SVG</a></div><div class="asset-detail">ICO含16、20、24、32、40、48、64、128、256。完整不透明方形底板。</div></td></tr>
+            <tr><td>Windows</td><td><div class="asset-links"><a href="export/windows/Aster.ico">Aster.ico</a><a href="export/windows/png/icon-256.png">256px PNG</a><a href="source/app-windows.svg">源 SVG</a></div><div class="asset-detail">ICO含16、20、24、32、40、48、64、128、256。圆角底板，外角透明；圆角半径为画布的224/1024，32px及以下采用加粗星号小尺寸母版。</div></td></tr>
             <tr><td>Web</td><td><div class="asset-links"><a href="export/web/favicon.svg">favicon.svg</a><a href="export/web/favicon.ico">favicon.ico</a><a href="export/web/favicon-96.png">96px PNG</a><a href="export/web/pwa-192.png">PWA 192</a><a href="export/web/pwa-512.png">PWA 512</a><a href="export/web/apple-touch-icon.png">Apple touch 180</a></div><div class="asset-detail">favicon为圆角底板；PWA与Apple touch为不透明方形资源。PWA maskable需另行配置与验收。</div></td></tr>
             <tr><td>README</td><td><div class="asset-links"><a href="export/readme/mark.svg">透明标识 SVG</a><a href="export/readme/app-tile.svg">底板 SVG</a><a href="export/readme/mark-512.png">标识 PNG</a><a href="export/readme/app-tile-512.png">底板 PNG</a></div></td></tr>
             <tr><td>应用内</td><td><div class="asset-links"><a href="export/in-app/mark.svg">标准 SVG</a><a href="export/in-app/mark-small.svg">小尺寸 SVG</a><a href="export/in-app/mark-32.png">32px PNG</a><a href="export/in-app/mark-64.png">64px PNG</a></div><div class="asset-detail">透明背景；16、20、24、32、48、64px PNG均已导出。</div></td></tr>
@@ -217,6 +217,7 @@
       <pre><code>python3 tools/build_brand_sources.py
 python3 tools/export_brand_icons.py --overwrite</code></pre>
       <p class="note">在项目根目录运行。Python须提供Pillow；源构建需要Inkscape，完整macOS导出需要<code>iconutil</code>。参数源为<a href="geometry.json">geometry.json</a>，生成器为<a href="../../tools/build_brand_sources.py">build_brand_sources.py</a>与<a href="../../tools/export_brand_icons.py">export_brand_icons.py</a>。</p>
+      <p class="note">仅更新Windows外轮廓时，可运行<code>python3 tools/build_brand_sources.py --windows-only</code>和<code>python3 tools/export_brand_icons.py --windows-only --overwrite</code>。这会复用现有星号矢量几何并保留其他平台资产。Windows导出也支持<code>--renderer sharp</code>（Node.js须能加载Sharp），直接按目标尺寸栅格化SVG。打包前只需将<code>export/tauri/icon.ico</code>复制到<code>crates/aster-app/icons/icon.ico</code>，通用PNG与macOS ICNS保持原样。</p>
       <p class="note">母版可在Inkscape中编辑独立路径与圆形；批量一致性以geometry.json为准，重建会覆盖派生SVG。若直接手改SVG，需同步各变体。</p>
     </section>
 

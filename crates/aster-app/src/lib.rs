@@ -17,6 +17,16 @@ use aster_core::{
 };
 
 pub fn run() {
+    let context = tauri::generate_context!();
+    #[cfg(target_os = "windows")]
+    let context = {
+        let mut context = context;
+        // Hide the menu before the Windows window is first shown.
+        if let Some(main) = context.config_mut().app.windows.iter_mut().find(|w| w.label == "main") {
+            main.visible = false;
+        }
+        context
+    };
     // Build shared PluginHost, loading builtin and user plugins
     let plugin_host = {
         let mut h = PluginHost::new().expect("wasmtime init failed");
@@ -51,6 +61,16 @@ pub fn run() {
         .menu(|app| menu::build(app, menu::Lang::En))
         .on_menu_event(|app, event| menu::forward(app, event.id().as_ref()))
         .setup(move |_app| {
+            // Start Windows without an extra menu row; the frontend restores
+            // the persisted preference after reading its settings.
+            #[cfg(target_os = "windows")]
+            {
+                use tauri::Manager;
+                _app.hide_menu()?;
+                if let Some(main) = _app.get_webview_window("main") {
+                    main.show()?;
+                }
+            }
             #[cfg(feature = "bundled-plugins")]
             {
                 use tauri::Manager;
@@ -87,7 +107,7 @@ pub fn run() {
                 let _ = std::fs::remove_file(&sock);
             }
         })
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 
     drop(rpc_handle);

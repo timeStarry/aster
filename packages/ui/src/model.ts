@@ -1,5 +1,8 @@
 import type { LangSetting } from './i18n';
 
+export const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+export const isWindows = typeof navigator !== 'undefined' && /Win/.test(navigator.platform);
+
 export type EditorMode = 'live' | 'source';
 
 export interface Tab {
@@ -77,6 +80,8 @@ export interface Settings {
   language: LangSetting;
   /** 'system' | 'light' | 'dark', or a plugin theme id. */
   theme: string;
+  /** Windows native menu row; other platforms retain their native menu. */
+  showMenuBar: boolean;
   typography: Typography;
   fontSize: number;
   lineHeight: number;
@@ -91,6 +96,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   language: 'system',
   theme: 'system',
+  showMenuBar: !isWindows,
   typography: {
     followTheme: true,
     preset: 'serif',
@@ -128,6 +134,7 @@ export function normalizeSettings(raw: unknown): Settings {
   return {
     language: r.language === 'zh' || r.language === 'en' ? r.language : 'system',
     theme: typeof r.theme === 'string' && r.theme ? r.theme : d.theme,
+    showMenuBar: typeof r.showMenuBar === 'boolean' ? r.showMenuBar : d.showMenuBar,
     typography: {
       followTheme: typeof ty.followTheme === 'boolean' ? ty.followTheme : d.typography.followTheme,
       preset: ty.preset === 'sans' || ty.preset === 'custom' || ty.preset === 'serif' ? ty.preset : d.typography.preset,
@@ -245,7 +252,6 @@ export function fileUrl(path: string, base: string): string {
   return base + (p.startsWith('/') ? '%2F' + encoded.slice(1) : encoded);
 }
 
-export const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 export const MOD = isMac ? '⌘' : 'Ctrl+';
 export const ALT = isMac ? '⌥' : 'Alt+';
 export const SHIFT = isMac ? '⇧' : 'Shift+';

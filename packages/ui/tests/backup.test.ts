@@ -25,6 +25,37 @@ describe('settings backup', () => {
     expect(plan.dropped.sort()).toEqual(['evil', 'lineHeight']);
   });
 
+  it.each([true, false])('exports and imports an explicit menu preference %s', (showMenuBar) => {
+    const current = { ...DEFAULT_SETTINGS, showMenuBar: !showMenuBar };
+    const text = buildBackup({ ...current, showMenuBar }, [], '0.1.0-alpha.7');
+    expect(JSON.parse(text).settings.showMenuBar).toBe(showMenuBar);
+    const plan = planImport(text, current, installed);
+    expect(plan.settings.showMenuBar).toBe(showMenuBar);
+    expect(plan.changed).toEqual(['showMenuBar']);
+    expect(plan.dropped).toEqual([]);
+  });
+
+  it.each([true, false])('preserves the current menu preference %s when importing an older backup', (showMenuBar) => {
+    const current = { ...DEFAULT_SETTINGS, showMenuBar };
+    const file = JSON.parse(buildBackup({ ...current, fontSize: 18 }, [], '0.1.0-alpha.6'));
+    delete file.settings.showMenuBar;
+    const plan = planImport(JSON.stringify(file), current, installed);
+    expect(plan.settings.showMenuBar).toBe(showMenuBar);
+    expect(plan.settings.fontSize).toBe(18);
+    expect(plan.changed).toEqual(['fontSize']);
+    expect(plan.dropped).toEqual([]);
+  });
+
+  it.each(['false', 'true', 0, 1, null])('reports invalid menu preference %j and retains the current value', (showMenuBar) => {
+    const current = { ...DEFAULT_SETTINGS, showMenuBar: true };
+    const file = JSON.parse(buildBackup(current, [], 'x'));
+    file.settings.showMenuBar = showMenuBar;
+    const plan = planImport(JSON.stringify(file), current, installed);
+    expect(plan.settings.showMenuBar).toBe(true);
+    expect(plan.changed).toEqual([]);
+    expect(plan.dropped).toEqual(['showMenuBar']);
+  });
+
   it('reports plugins and plugin themes that are not installed, and never installs them', () => {
     const file = JSON.parse(buildBackup({ ...DEFAULT_SETTINGS, theme: 'acme.solar' }, [{ id: 'acme.solar', version: '1' }], 'x'));
     const plan = planImport(JSON.stringify(file), DEFAULT_SETTINGS, installed);

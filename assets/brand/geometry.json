@@ -33,6 +33,7 @@
     "macos_symbol_scale": 0.86,
     "macos_tile_inset": 104,
     "macos_tile_corner_radius": 182,
-    "web_tile_corner_radius": 224
+    "web_tile_corner_radius": 224,
+    "windows_tile_corner_radius": 224
   }
 }

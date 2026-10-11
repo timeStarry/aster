@@ -1,16 +1,15 @@
-use std::sync::{Arc, Mutex};
+use aster_core::{
+    commands::register_core_commands, document::DocumentService, plugin::PluginHost,
+    registry::CommandRegistry, workspace::WorkspaceService,
+};
+use aster_rpc::{RpcClient, RpcServer};
+use serde_json::json;
+use std::future::Future;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use tempfile::TempDir;
 use tokio::sync::Mutex as TokioMutex;
-use serde_json::json;
-use aster_core::{
-    document::DocumentService,
-    workspace::WorkspaceService,
-    plugin::PluginHost,
-    registry::CommandRegistry,
-    commands::register_core_commands,
-};
-use aster_rpc::{RpcServer, RpcClient};
 
 fn make_registry() -> Arc<TokioMutex<CommandRegistry>> {
     let mut reg = CommandRegistry::new();
@@ -22,7 +21,24 @@ fn make_registry() -> Arc<TokioMutex<CommandRegistry>> {
 }
 
 fn sock_path(dir: &TempDir) -> PathBuf {
-    dir.path().join("test.sock")
+    #[cfg(unix)]
+    {
+        dir.path().join("test.sock")
+    }
+    #[cfg(windows)]
+    {
+        PathBuf::from(format!(
+            r"\\.\pipe\aster-rpc-test-{}-{}",
+            std::process::id(),
+            dir.path().file_name().unwrap().to_string_lossy()
+        ))
+    }
+}
+
+async fn within<T>(future: impl Future<Output = T>) -> T {
+    tokio::time::timeout(Duration::from_secs(5), future)
+        .await
+        .expect("RPC operation should finish within five seconds")
 }
 
 #[tokio::test]
@@ -35,12 +51,16 @@ async fn test_rpc_doc_read() {
     let reg = make_registry();
     let server = RpcServer::start(&sock, reg).await.unwrap();
 
-    let mut client = RpcClient::connect(&sock).await.expect("should connect");
-    let result = client.call("doc.read", json!({"path": md.to_str().unwrap()})).await.unwrap();
+    let mut client = within(RpcClient::connect(&sock))
+        .await
+        .expect("should connect");
+    let result = within(client.call("doc.read", json!({"path": md.to_str().unwrap()})))
+        .await
+        .unwrap();
     assert_eq!(result["content"], "# Hello\n");
     assert!(result["hash"].as_str().unwrap().len() == 64);
 
-    server.stop().await;
+    within(server.stop()).await;
 }
 
 #[tokio::test]
@@ -50,14 +70,23 @@ async fn test_rpc_unknown_method() {
     let reg = make_registry();
     let server = RpcServer::start(&sock, reg).await.unwrap();
 
-    let mut client = RpcClient::connect(&sock).await.expect("should connect");
-    let err = client.call("no.such.command", json!({})).await.unwrap_err();
+    let mut client = within(RpcClient::connect(&sock))
+        .await
+        .expect("should connect");
+    let err = within(client.call("no.such.command", json!({})))
+        .await
+        .unwrap_err();
     assert_eq!(err.code(), "E_NOT_FOUND");
 
-    server.stop().await;
+    // An application error must not close a healthy transport.
+    let err = within(client.call("no.such.command.again", json!({})))
+        .await
+        .unwrap_err();
+    assert_eq!(err.code(), "E_NOT_FOUND");
+    within(server.stop()).await;
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn test_rpc_concurrent_requests() {
     let dir = TempDir::new().unwrap();
     let md = dir.path().join("c.md");
@@ -69,18 +98,60 @@ async fn test_rpc_concurrent_requests() {
 
     // 10 concurrent clients each call doc.read
     let mut handles = Vec::new();
+    let barrier = Arc::new(tokio::sync::Barrier::new(10));
     for _ in 0..10 {
         let sock2 = sock.clone();
         let md2 = md.clone();
+        let barrier = Arc::clone(&barrier);
         handles.push(tokio::spawn(async move {
-            let mut c = RpcClient::connect(&sock2).await.expect("connect");
-            c.call("doc.read", json!({"path": md2.to_str().unwrap()})).await.unwrap()
+            barrier.wait().await;
+            let mut c = within(RpcClient::connect(&sock2)).await.expect("connect");
+            for _ in 0..3 {
+                let result = within(c.call("doc.read", json!({"path": md2.to_str().unwrap()})))
+                    .await
+                    .unwrap();
+                assert_eq!(result["content"], "concurrent\n");
+            }
         }));
     }
     for h in handles {
-        let result = h.await.unwrap();
-        assert_eq!(result["content"], "concurrent\n");
+        within(h).await.unwrap();
     }
 
-    server.stop().await;
+    within(server.stop()).await;
+}
+
+#[tokio::test]
+async fn test_rpc_stop_closes_clients_and_allows_restart() {
+    let dir = TempDir::new().unwrap();
+    let sock = sock_path(&dir);
+    let server = RpcServer::start(&sock, make_registry()).await.unwrap();
+    let mut client = within(RpcClient::connect(&sock)).await.expect("connect");
+    let err = within(client.call("no.such.command", json!({})))
+        .await
+        .unwrap_err();
+    assert_eq!(err.code(), "E_NOT_FOUND");
+
+    within(server.stop()).await;
+    let err = within(client.call("no.such.command", json!({})))
+        .await
+        .unwrap_err();
+    assert_eq!(err.code(), "E_IO");
+    assert!(within(RpcClient::connect(&sock)).await.is_none());
+
+    let server = RpcServer::start(&sock, make_registry())
+        .await
+        .expect("restart");
+    let mut client = within(RpcClient::connect(&sock)).await.expect("reconnect");
+    let err = within(client.call("no.such.command", json!({})))
+        .await
+        .unwrap_err();
+    assert_eq!(err.code(), "E_NOT_FOUND");
+    within(server.stop()).await;
+}
+
+#[tokio::test]
+async fn test_rpc_missing_endpoint_returns_none() {
+    let dir = TempDir::new().unwrap();
+    assert!(within(RpcClient::connect(&sock_path(&dir))).await.is_none());
 }

@@ -16,12 +16,13 @@ import { ConfirmModal, type ConfirmRequest, type ConfirmButton } from './Confirm
 import { initPluginLoader, activateForTrigger, asterApi, type LoadablePlugin } from './plugin-loader';
 import {
   type Tab, type Settings, type EditorMode, type PluginTheme,
-  loadSettings, saveSettings, applySettings, DEFAULT_SETTINGS, makeTab, basename, dirname, wordCount, isMac, MOD, fileUrl,
+  loadSettings, saveSettings, applySettings, DEFAULT_SETTINGS, makeTab, basename, dirname, wordCount, isMac, isWindows, MOD, fileUrl,
 } from './model';
 import { t, lang, applyLanguage, editorPhrases, WELCOME, type Lang } from './i18n';
 import { showEditorContextMenu } from './contextmenu';
 import { OutlineRail } from './OutlineRail';
 import { buildBackup, planImport, BackupError, SETTING_LABELS as SETTING_LABEL } from './backup';
+import { shortcutAction } from './shortcuts';
 import './theme.css';
 
 const inTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
@@ -394,7 +395,7 @@ export default function App() {
   /** Push the current language to the parts that don't read `t()` reactively. */
   function syncLanguage(l: Lang) {
     editor?.setPhrases(editorPhrases(l));
-    if (inTauri) void invoke('set_menu_language', { lang: l }).catch(() => {});
+    syncNativeMenu(l);
     // Untouched welcome tab: show it in the new language too.
     const w = tabs().find((tb) => !tb.path && !tb.dirty && (tb.content === welcomeText('en') || tb.content === welcomeText('zh')));
     if (w && w.content !== welcomeText(l)) {
@@ -414,13 +415,20 @@ export default function App() {
       : tb)));
   }
 
+  function syncNativeMenu(l = lang()) {
+    if (inTauri) void invoke('set_menu_language', { lang: l, visible: settings().showMenuBar })
+      .catch((error) => console.error('[aster] menu preferences failed:', error));
+  }
+
   function changeSettings(s: Settings) {
     const themeChanged = s.theme !== settings().theme;
     const langChanged = s.language !== settings().language;
+    const menuChanged = s.showMenuBar !== settings().showMenuBar;
     setSettingsSig(s);
     saveSettings(s);
     const applied = applySettings(s, pluginThemes());
     if (langChanged) syncLanguage(applyLanguage(s.language));
+    else if (menuChanged) syncNativeMenu();
     // Diagrams pick colors from the theme at render time.
     // Diagrams read theme colors at render time: re-render once the new
     // palette (including a plugin stylesheet) is actually applied.
@@ -624,20 +632,7 @@ export default function App() {
   }
 
   function onKeyDown(e: KeyboardEvent) {
-    const mod = isMac ? e.metaKey : e.ctrlKey;
-    let action: string | null = null;
-    if (e.ctrlKey && e.code === 'Tab') action = e.shiftKey ? 'prevTab' : 'nextTab';
-    else if (mod && !e.altKey) {
-      switch (e.code) {
-        case 'KeyN': action = 'new'; break;
-        case 'KeyO': action = 'open'; break;
-        case 'KeyS': action = e.shiftKey ? 'saveAs' : 'save'; break;
-        case 'KeyW': action = 'close'; break;
-        case 'Slash': action = 'toggleMode'; break;
-        case 'Comma': action = 'settings'; break;
-        case 'KeyF': action = 'find'; break;
-      }
-    } else if (mod && e.altKey && e.code === 'KeyL') action = 'toggleLock';
+    const action = shortcutAction(e, isMac);
     if (!action) return;
     if (confirmReq()) return;
     e.preventDefault();
@@ -729,7 +724,7 @@ export default function App() {
 
     const win = getCurrentWindow();
     void getVersion().then(setVersion).catch(() => {});
-    void invoke('set_menu_language', { lang: lang() }).catch(() => {});
+    syncNativeMenu();
     if (isMac) {
       // Traffic lights disappear in fullscreen; reclaim their space.
       const syncInset = async () => setInset(!(await win.isFullscreen().catch(() => false)));
@@ -816,6 +811,7 @@ export default function App() {
         onNew={newTab}
         onOpen={() => void openFiles()}
         onSettings={openSettings}
+        onExportPdf={isWindows && !onSettings() ? () => void exportPdf() : undefined}
       />
       <div class="aster-main">
         {/* The editor stays mounted while Settings is shown, so undo history,

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "tools/export_brand_icons.py",
-  "generated_at": "2026-10-10T07:59:11.769952+00:00",
+  "generated_at": "2026-10-11T04:17:36.326653+00:00",
   "renderer": {
     "name": "inkscape",
     "executable": "inkscape",
@@ -14,10 +14,11 @@
   "policy": {
     "raster_resampling": false,
     "ico_payloads": "PNG",
-    "pwa_apple_windows": "opaque square; platform applies its own mask",
     "macos": "transparent perimeter with rounded inset tile",
     "favicon": "prerounded tile",
-    "in_app": "transparent mark"
+    "in_app": "transparent mark",
+    "pwa_apple": "opaque square; platform applies its own mask",
+    "windows": "rounded tile with transparent outer corners"
   },
   "validation": {
     "dimensions": "passed",
@@ -29,8 +30,8 @@
   "masters": {
     "mark": {
       "file": "mark.svg",
-      "bytes": 1535,
-      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "bytes": 1534,
+      "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee",
       "viewBox": [
         0,
         0,
@@ -68,8 +69,8 @@
     },
     "mark-small": {
       "file": "mark-small.svg",
-      "bytes": 1502,
-      "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128",
+      "bytes": 1501,
+      "sha256": "708765e399a3982d08cf9aeaea6f959dcdf2cffccf3692340e927eeb90d65a9e",
       "viewBox": [
         0,
         0,
@@ -107,8 +108,8 @@
     },
     "app-tile": {
       "file": "app-tile.svg",
-      "bytes": 1782,
-      "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e",
+      "bytes": 1784,
+      "sha256": "70b65457b83de5d907a93d6935854c51ef90994deaec52f160ce31a1d5eba9da",
       "viewBox": [
         0,
         0,
@@ -146,8 +147,8 @@
     },
     "app-tile-small": {
       "file": "app-tile-small.svg",
-      "bytes": 1749,
-      "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556",
+      "bytes": 1751,
+      "sha256": "b9e130aeb745c9aaf57184d0bd545be65bb2073d0456fc6c94c0bf5c55e1eeb1",
       "viewBox": [
         0,
         0,
@@ -185,8 +186,8 @@
     },
     "app-square": {
       "file": "app-square.svg",
-      "bytes": 1782,
-      "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27",
+      "bytes": 1784,
+      "sha256": "f6a10e590da2486bb552db9d601ac51c96c81a4ffddeff00623557877d08d59e",
       "viewBox": [
         0,
         0,
@@ -224,8 +225,8 @@
     },
     "app-square-small": {
       "file": "app-square-small.svg",
-      "bytes": 1749,
-      "sha256": "11fd6f9d7067d1e476e0948ce8255b524825ff23fe1d05e6fac59c31a852dfb9",
+      "bytes": 1751,
+      "sha256": "86c4932aed3c4a4fe7b0637df99d769191d581c18ab41492e7201d7c1b97a760",
       "viewBox": [
         0,
         0,
@@ -263,8 +264,8 @@
     },
     "app-macos": {
       "file": "app-macos.svg",
-      "bytes": 1786,
-      "sha256": "80a71aa143031a6eb9b85260d179c7110760b743403ed125462a93b0f4190308",
+      "bytes": 1788,
+      "sha256": "df4dde11ea9681cc61ab3ac61c7e3f99e67ac0131f4a1323d0b7a978ecdd8cd7",
       "viewBox": [
         0,
         0,
@@ -302,8 +303,8 @@
     },
     "app-macos-small": {
       "file": "app-macos-small.svg",
-      "bytes": 1753,
-      "sha256": "ba8a6c8064a85abc40de5da0e5a73e0fa662d634e76b3304f719a97f67dd5f3f",
+      "bytes": 1755,
+      "sha256": "6c3a2c33d65d969f801bbbaf3153cae6846abe86bbf4ba53c659418ccba0551b",
       "viewBox": [
         0,
         0,
@@ -328,6 +329,84 @@
             104,
             920,
             920
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-windows": {
+      "file": "app-windows.svg",
+      "bytes": 1787,
+      "sha256": "0c84f39e76c42462ce06c19377f004d079383d5dae43b26797c283b7674e7f3d",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 42277,
+          "partial_pixels": 1702,
+          "opaque_pixels": 1004597,
+          "visible_bbox": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "corner_alpha": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "overflow_check": "passed"
+    },
+    "app-windows-small": {
+      "file": "app-windows-small.svg",
+      "bytes": 1754,
+      "sha256": "e38711c07dfff4f5e159be324dff6062f27f46e72db887958cb8e9f9f247338d",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "validation_raster": {
+        "format": "PNG",
+        "width": 1024,
+        "height": 1024,
+        "mode": "RGBA",
+        "alpha": {
+          "extrema": [
+            0,
+            255
+          ],
+          "transparent_pixels": 42277,
+          "partial_pixels": 1702,
+          "opaque_pixels": 1004597,
+          "visible_bbox": [
+            0,
+            0,
+            1024,
+            1024
           ],
           "corner_alpha": [
             0,
@@ -528,8 +607,8 @@
       "direct_svg_render": true
     },
     "in-app/mark-small.svg": {
-      "bytes": 1502,
-      "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128",
+      "bytes": 1501,
+      "sha256": "708765e399a3982d08cf9aeaea6f959dcdf2cffccf3692340e927eeb90d65a9e",
       "format": "SVG",
       "viewBox": [
         0,
@@ -562,8 +641,8 @@
       }
     },
     "in-app/mark.svg": {
-      "bytes": 1535,
-      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "bytes": 1534,
+      "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1431,8 +1510,8 @@
       "direct_svg_render": true
     },
     "readme/app-tile.svg": {
-      "bytes": 1782,
-      "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e",
+      "bytes": 1784,
+      "sha256": "70b65457b83de5d907a93d6935854c51ef90994deaec52f160ce31a1d5eba9da",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1527,8 +1606,8 @@
       "direct_svg_render": true
     },
     "readme/mark.svg": {
-      "bytes": 1535,
-      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "bytes": 1534,
+      "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1561,8 +1640,8 @@
       }
     },
     "svg/app-macos-small.svg": {
-      "bytes": 1753,
-      "sha256": "ba8a6c8064a85abc40de5da0e5a73e0fa662d634e76b3304f719a97f67dd5f3f",
+      "bytes": 1755,
+      "sha256": "6c3a2c33d65d969f801bbbaf3153cae6846abe86bbf4ba53c659418ccba0551b",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1595,8 +1674,8 @@
       }
     },
     "svg/app-macos.svg": {
-      "bytes": 1786,
-      "sha256": "80a71aa143031a6eb9b85260d179c7110760b743403ed125462a93b0f4190308",
+      "bytes": 1788,
+      "sha256": "df4dde11ea9681cc61ab3ac61c7e3f99e67ac0131f4a1323d0b7a978ecdd8cd7",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1629,8 +1708,8 @@
       }
     },
     "svg/app-square-small.svg": {
-      "bytes": 1749,
-      "sha256": "11fd6f9d7067d1e476e0948ce8255b524825ff23fe1d05e6fac59c31a852dfb9",
+      "bytes": 1751,
+      "sha256": "86c4932aed3c4a4fe7b0637df99d769191d581c18ab41492e7201d7c1b97a760",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1663,8 +1742,8 @@
       }
     },
     "svg/app-square.svg": {
-      "bytes": 1782,
-      "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27",
+      "bytes": 1784,
+      "sha256": "f6a10e590da2486bb552db9d601ac51c96c81a4ffddeff00623557877d08d59e",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1697,8 +1776,8 @@
       }
     },
     "svg/app-tile-small.svg": {
-      "bytes": 1749,
-      "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556",
+      "bytes": 1751,
+      "sha256": "b9e130aeb745c9aaf57184d0bd545be65bb2073d0456fc6c94c0bf5c55e1eeb1",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1731,8 +1810,8 @@
       }
     },
     "svg/app-tile.svg": {
-      "bytes": 1782,
-      "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e",
+      "bytes": 1784,
+      "sha256": "70b65457b83de5d907a93d6935854c51ef90994deaec52f160ce31a1d5eba9da",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1764,9 +1843,77 @@
         ]
       }
     },
+    "svg/app-windows-small.svg": {
+      "bytes": 1754,
+      "sha256": "e38711c07dfff4f5e159be324dff6062f27f46e72db887958cb8e9f9f247338d",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-windows-small.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 42277,
+        "partial_pixels": 1702,
+        "opaque_pixels": 1004597,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "svg/app-windows.svg": {
+      "bytes": 1787,
+      "sha256": "0c84f39e76c42462ce06c19377f004d079383d5dae43b26797c283b7674e7f3d",
+      "format": "SVG",
+      "viewBox": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "source": "app-windows.svg",
+      "self_contained": true,
+      "alpha": {
+        "extrema": [
+          0,
+          255
+        ],
+        "transparent_pixels": 42277,
+        "partial_pixels": 1702,
+        "opaque_pixels": 1004597,
+        "visible_bbox": [
+          0,
+          0,
+          1024,
+          1024
+        ],
+        "corner_alpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
     "svg/mark-small.svg": {
-      "bytes": 1502,
-      "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128",
+      "bytes": 1501,
+      "sha256": "708765e399a3982d08cf9aeaea6f959dcdf2cffccf3692340e927eeb90d65a9e",
       "format": "SVG",
       "viewBox": [
         0,
@@ -1799,8 +1946,8 @@
       }
     },
     "svg/mark.svg": {
-      "bytes": 1535,
-      "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00",
+      "bytes": 1534,
+      "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee",
       "format": "SVG",
       "viewBox": [
         0,
@@ -2483,8 +2630,8 @@
       "copied_from": "macos/Aster.icns"
     },
     "tauri/icon.ico": {
-      "bytes": 12023,
-      "sha256": "e0ebf3e12aff67eb234fc3ba1eeb22cf35037e3b322536066da5d5ef166133ed",
+      "bytes": 17702,
+      "sha256": "ceb741ca11c555f6382dec1a4eac3398cdf469308fd9c39286273536c17d5bd5",
       "format": "ICO",
       "representations": [
         {
@@ -2494,12 +2641,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 256,
+            "transparent_pixels": 4,
+            "partial_pixels": 24,
+            "opaque_pixels": 228,
             "visible_bbox": [
               0,
               0,
@@ -2507,10 +2654,10 @@
               16
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2521,12 +2668,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 400,
+            "transparent_pixels": 4,
+            "partial_pixels": 36,
+            "opaque_pixels": 360,
             "visible_bbox": [
               0,
               0,
@@ -2534,10 +2681,10 @@
               20
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2548,12 +2695,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 576,
+            "transparent_pixels": 12,
+            "partial_pixels": 40,
+            "opaque_pixels": 524,
             "visible_bbox": [
               0,
               0,
@@ -2561,10 +2708,10 @@
               24
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2575,12 +2722,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 1024,
+            "transparent_pixels": 24,
+            "partial_pixels": 52,
+            "opaque_pixels": 948,
             "visible_bbox": [
               0,
               0,
@@ -2588,10 +2735,10 @@
               32
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2602,12 +2749,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 1600,
+            "transparent_pixels": 40,
+            "partial_pixels": 68,
+            "opaque_pixels": 1492,
             "visible_bbox": [
               0,
               0,
@@ -2615,10 +2762,10 @@
               40
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2629,12 +2776,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 2304,
+            "transparent_pixels": 68,
+            "partial_pixels": 80,
+            "opaque_pixels": 2156,
             "visible_bbox": [
               0,
               0,
@@ -2642,10 +2789,10 @@
               48
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2656,12 +2803,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 4096,
+            "transparent_pixels": 126,
+            "partial_pixels": 102,
+            "opaque_pixels": 3868,
             "visible_bbox": [
               0,
               0,
@@ -2669,10 +2816,10 @@
               64
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2683,12 +2830,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 16384,
+            "transparent_pixels": 576,
+            "partial_pixels": 212,
+            "opaque_pixels": 15596,
             "visible_bbox": [
               0,
               0,
@@ -2696,10 +2843,10 @@
               128
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -2710,12 +2857,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 65536,
+            "transparent_pixels": 2514,
+            "partial_pixels": 410,
+            "opaque_pixels": 62612,
             "visible_bbox": [
               0,
               0,
@@ -2723,10 +2870,10 @@
               256
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         }
@@ -2766,8 +2913,8 @@
       "direct_svg_render": true
     },
     "web/app-icon.svg": {
-      "bytes": 1782,
-      "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27",
+      "bytes": 1784,
+      "sha256": "f6a10e590da2486bb552db9d601ac51c96c81a4ffddeff00623557877d08d59e",
       "format": "SVG",
       "viewBox": [
         0,
@@ -3044,8 +3191,8 @@
       "container_validation": "passed"
     },
     "web/favicon.svg": {
-      "bytes": 1749,
-      "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556",
+      "bytes": 1751,
+      "sha256": "b9e130aeb745c9aaf57184d0bd545be65bb2073d0456fc6c94c0bf5c55e1eeb1",
       "format": "SVG",
       "viewBox": [
         0,
@@ -3140,8 +3287,8 @@
       "direct_svg_render": true
     },
     "windows/Aster.ico": {
-      "bytes": 12023,
-      "sha256": "e0ebf3e12aff67eb234fc3ba1eeb22cf35037e3b322536066da5d5ef166133ed",
+      "bytes": 17702,
+      "sha256": "ceb741ca11c555f6382dec1a4eac3398cdf469308fd9c39286273536c17d5bd5",
       "format": "ICO",
       "representations": [
         {
@@ -3151,12 +3298,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 256,
+            "transparent_pixels": 4,
+            "partial_pixels": 24,
+            "opaque_pixels": 228,
             "visible_bbox": [
               0,
               0,
@@ -3164,10 +3311,10 @@
               16
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3178,12 +3325,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 400,
+            "transparent_pixels": 4,
+            "partial_pixels": 36,
+            "opaque_pixels": 360,
             "visible_bbox": [
               0,
               0,
@@ -3191,10 +3338,10 @@
               20
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3205,12 +3352,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 576,
+            "transparent_pixels": 12,
+            "partial_pixels": 40,
+            "opaque_pixels": 524,
             "visible_bbox": [
               0,
               0,
@@ -3218,10 +3365,10 @@
               24
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3232,12 +3379,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 1024,
+            "transparent_pixels": 24,
+            "partial_pixels": 52,
+            "opaque_pixels": 948,
             "visible_bbox": [
               0,
               0,
@@ -3245,10 +3392,10 @@
               32
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3259,12 +3406,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 1600,
+            "transparent_pixels": 40,
+            "partial_pixels": 68,
+            "opaque_pixels": 1492,
             "visible_bbox": [
               0,
               0,
@@ -3272,10 +3419,10 @@
               40
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3286,12 +3433,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 2304,
+            "transparent_pixels": 68,
+            "partial_pixels": 80,
+            "opaque_pixels": 2156,
             "visible_bbox": [
               0,
               0,
@@ -3299,10 +3446,10 @@
               48
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3313,12 +3460,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 4096,
+            "transparent_pixels": 126,
+            "partial_pixels": 102,
+            "opaque_pixels": 3868,
             "visible_bbox": [
               0,
               0,
@@ -3326,10 +3473,10 @@
               64
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3340,12 +3487,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 16384,
+            "transparent_pixels": 576,
+            "partial_pixels": 212,
+            "opaque_pixels": 15596,
             "visible_bbox": [
               0,
               0,
@@ -3353,10 +3500,10 @@
               128
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         },
@@ -3367,12 +3514,12 @@
           "payload": "PNG",
           "alpha": {
             "extrema": [
-              255,
+              0,
               255
             ],
-            "transparent_pixels": 0,
-            "partial_pixels": 0,
-            "opaque_pixels": 65536,
+            "transparent_pixels": 2514,
+            "partial_pixels": 410,
+            "opaque_pixels": 62612,
             "visible_bbox": [
               0,
               0,
@@ -3380,10 +3527,10 @@
               256
             ],
             "corner_alpha": [
-              255,
-              255,
-              255,
-              255
+              0,
+              0,
+              0,
+              0
             ]
           }
         }
@@ -3391,20 +3538,20 @@
       "container_validation": "passed"
     },
     "windows/png/icon-128.png": {
-      "bytes": 2535,
-      "sha256": "93771ad02f298592bccf0046f563577e89dbc1d8b454ff493edf6f417584321d",
+      "bytes": 2810,
+      "sha256": "33bc5361a4861e72e40f79ec9b8be6d17d1f98a029ba3916bf9ba332668b602f",
       "format": "PNG",
       "width": 128,
       "height": 128,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 16384,
+        "transparent_pixels": 576,
+        "partial_pixels": 212,
+        "opaque_pixels": 15596,
         "visible_bbox": [
           0,
           0,
@@ -3412,30 +3559,30 @@
           128
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square.svg",
+      "source": "app-windows.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-16.png": {
-      "bytes": 405,
-      "sha256": "3842233021a53c8e1a38972fcc0973ac51624d7169b934cddc04518bdc721e42",
+      "bytes": 394,
+      "sha256": "bd9f2b366710cf013d775b0bd43647ab1a2fb9ddd95b5414d7d5fbc69f9e9ca4",
       "format": "PNG",
       "width": 16,
       "height": 16,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 256,
+        "transparent_pixels": 4,
+        "partial_pixels": 24,
+        "opaque_pixels": 228,
         "visible_bbox": [
           0,
           0,
@@ -3443,30 +3590,30 @@
           16
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square-small.svg",
+      "source": "app-windows-small.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-20.png": {
-      "bytes": 488,
-      "sha256": "c85e9a890bdd6430221960b484b8ed1b7fd7ccb174fbbd969ec470c135f781cf",
+      "bytes": 481,
+      "sha256": "4d454b6de46b126fc79b763c6e9078235b7b2f64c2f6545c4f5c587983aa14b9",
       "format": "PNG",
       "width": 20,
       "height": 20,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 400,
+        "transparent_pixels": 4,
+        "partial_pixels": 36,
+        "opaque_pixels": 360,
         "visible_bbox": [
           0,
           0,
@@ -3474,30 +3621,30 @@
           20
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square-small.svg",
+      "source": "app-windows-small.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-24.png": {
-      "bytes": 579,
-      "sha256": "f784c7f48bdd4a42700682bced4f0e1580371025e6a538630180cb5c7113599d",
+      "bytes": 546,
+      "sha256": "c99894b2a52638b6d187b1e7ab7b9557e955e139a8fc393e122b1a197d2787d1",
       "format": "PNG",
       "width": 24,
       "height": 24,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 576,
+        "transparent_pixels": 12,
+        "partial_pixels": 40,
+        "opaque_pixels": 524,
         "visible_bbox": [
           0,
           0,
@@ -3505,30 +3652,30 @@
           24
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square-small.svg",
+      "source": "app-windows-small.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-256.png": {
-      "bytes": 4984,
-      "sha256": "454d47d0eac0f3574786e5342f8dd329feb12988c493e5de897b34b6a7a4cff7",
+      "bytes": 6252,
+      "sha256": "d2adb00828531b403a595a81199eda355c21c0b59609c5e927f0a5787099ea7c",
       "format": "PNG",
       "width": 256,
       "height": 256,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 65536,
+        "transparent_pixels": 2514,
+        "partial_pixels": 410,
+        "opaque_pixels": 62612,
         "visible_bbox": [
           0,
           0,
@@ -3536,30 +3683,30 @@
           256
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square.svg",
+      "source": "app-windows.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-32.png": {
-      "bytes": 703,
-      "sha256": "ad46835aa1d04c738bc9d508883cd95e27c546bd73b06d502bd617c04e8619ef",
+      "bytes": 670,
+      "sha256": "9e39baf7dee3630981fcff8140526ba29b6e8e61ed423d25cfa87bc00404ce82",
       "format": "PNG",
       "width": 32,
       "height": 32,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 1024,
+        "transparent_pixels": 24,
+        "partial_pixels": 52,
+        "opaque_pixels": 948,
         "visible_bbox": [
           0,
           0,
@@ -3567,30 +3714,30 @@
           32
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square-small.svg",
+      "source": "app-windows-small.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-40.png": {
-      "bytes": 857,
-      "sha256": "1f14c7493c75c42a87436de506cb1de823c7819ca377188074ff3f985a00d708",
+      "bytes": 823,
+      "sha256": "6af5ce3b74b038a90dfb3d30b6d17fa6a7b395f4c36942ff57ba7bbe4a0831af",
       "format": "PNG",
       "width": 40,
       "height": 40,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 1600,
+        "transparent_pixels": 40,
+        "partial_pixels": 68,
+        "opaque_pixels": 1492,
         "visible_bbox": [
           0,
           0,
@@ -3598,30 +3745,30 @@
           40
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square.svg",
+      "source": "app-windows.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-48.png": {
-      "bytes": 1033,
-      "sha256": "b51f973554d998e93ec30bc2932b11b2f06e50dceb1eae23ea0bfdc4b4ceef0f",
+      "bytes": 1022,
+      "sha256": "6b802fc4458a309c1501c99d7cd76683078a9b1ebd9294fdd266a5241888f0d6",
       "format": "PNG",
       "width": 48,
       "height": 48,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 2304,
+        "transparent_pixels": 68,
+        "partial_pixels": 80,
+        "opaque_pixels": 2156,
         "visible_bbox": [
           0,
           0,
@@ -3629,30 +3776,30 @@
           48
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square.svg",
+      "source": "app-windows.svg",
       "direct_svg_render": true
     },
     "windows/png/icon-64.png": {
-      "bytes": 1342,
-      "sha256": "5ae608fbdfeb730c47a7f79211b25c560ad2e89aa7aa2b8f809a0c4e3466d2de",
+      "bytes": 1309,
+      "sha256": "06ccd85eef13b52b3796d6973088950c5dbad6f215e3731eb3c9174a0f3ca20e",
       "format": "PNG",
       "width": 64,
       "height": 64,
       "mode": "RGBA",
       "alpha": {
         "extrema": [
-          255,
+          0,
           255
         ],
-        "transparent_pixels": 0,
-        "partial_pixels": 0,
-        "opaque_pixels": 4096,
+        "transparent_pixels": 126,
+        "partial_pixels": 102,
+        "opaque_pixels": 3868,
         "visible_bbox": [
           0,
           0,
@@ -3660,14 +3807,269 @@
           64
         ],
         "corner_alpha": [
-          255,
-          255,
-          255,
-          255
+          0,
+          0,
+          0,
+          0
         ]
       },
-      "source": "app-square.svg",
+      "source": "app-windows.svg",
       "direct_svg_render": true
     }
+  },
+  "windows_export": {
+    "generated_at": "2026-10-11T04:17:36.326653+00:00",
+    "scope": "windows-only",
+    "renderer": {
+      "name": "sharp",
+      "executable": "node.EXE",
+      "version": "Sharp 0.35.5; librsvg 2.63.2"
+    },
+    "preserved_svg_hash_reconciliation": [
+      {
+        "file": "in-app/mark-small.svg",
+        "previous": {
+          "bytes": 1502,
+          "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128"
+        },
+        "retained": {
+          "bytes": 1501,
+          "sha256": "708765e399a3982d08cf9aeaea6f959dcdf2cffccf3692340e927eeb90d65a9e"
+        }
+      },
+      {
+        "file": "in-app/mark.svg",
+        "previous": {
+          "bytes": 1535,
+          "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00"
+        },
+        "retained": {
+          "bytes": 1534,
+          "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee"
+        }
+      },
+      {
+        "file": "readme/app-tile.svg",
+        "previous": {
+          "bytes": 1782,
+          "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e"
+        },
+        "retained": {
+          "bytes": 1784,
+          "sha256": "70b65457b83de5d907a93d6935854c51ef90994deaec52f160ce31a1d5eba9da"
+        }
+      },
+      {
+        "file": "readme/mark.svg",
+        "previous": {
+          "bytes": 1535,
+          "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00"
+        },
+        "retained": {
+          "bytes": 1534,
+          "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee"
+        }
+      },
+      {
+        "file": "svg/app-macos-small.svg",
+        "previous": {
+          "bytes": 1753,
+          "sha256": "ba8a6c8064a85abc40de5da0e5a73e0fa662d634e76b3304f719a97f67dd5f3f"
+        },
+        "retained": {
+          "bytes": 1755,
+          "sha256": "6c3a2c33d65d969f801bbbaf3153cae6846abe86bbf4ba53c659418ccba0551b"
+        }
+      },
+      {
+        "file": "svg/app-macos.svg",
+        "previous": {
+          "bytes": 1786,
+          "sha256": "80a71aa143031a6eb9b85260d179c7110760b743403ed125462a93b0f4190308"
+        },
+        "retained": {
+          "bytes": 1788,
+          "sha256": "df4dde11ea9681cc61ab3ac61c7e3f99e67ac0131f4a1323d0b7a978ecdd8cd7"
+        }
+      },
+      {
+        "file": "svg/app-square-small.svg",
+        "previous": {
+          "bytes": 1749,
+          "sha256": "11fd6f9d7067d1e476e0948ce8255b524825ff23fe1d05e6fac59c31a852dfb9"
+        },
+        "retained": {
+          "bytes": 1751,
+          "sha256": "86c4932aed3c4a4fe7b0637df99d769191d581c18ab41492e7201d7c1b97a760"
+        }
+      },
+      {
+        "file": "svg/app-square.svg",
+        "previous": {
+          "bytes": 1782,
+          "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27"
+        },
+        "retained": {
+          "bytes": 1784,
+          "sha256": "f6a10e590da2486bb552db9d601ac51c96c81a4ffddeff00623557877d08d59e"
+        }
+      },
+      {
+        "file": "svg/app-tile-small.svg",
+        "previous": {
+          "bytes": 1749,
+          "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556"
+        },
+        "retained": {
+          "bytes": 1751,
+          "sha256": "b9e130aeb745c9aaf57184d0bd545be65bb2073d0456fc6c94c0bf5c55e1eeb1"
+        }
+      },
+      {
+        "file": "svg/app-tile.svg",
+        "previous": {
+          "bytes": 1782,
+          "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e"
+        },
+        "retained": {
+          "bytes": 1784,
+          "sha256": "70b65457b83de5d907a93d6935854c51ef90994deaec52f160ce31a1d5eba9da"
+        }
+      },
+      {
+        "file": "svg/mark-small.svg",
+        "previous": {
+          "bytes": 1502,
+          "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128"
+        },
+        "retained": {
+          "bytes": 1501,
+          "sha256": "708765e399a3982d08cf9aeaea6f959dcdf2cffccf3692340e927eeb90d65a9e"
+        }
+      },
+      {
+        "file": "svg/mark.svg",
+        "previous": {
+          "bytes": 1535,
+          "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00"
+        },
+        "retained": {
+          "bytes": 1534,
+          "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee"
+        }
+      },
+      {
+        "file": "web/app-icon.svg",
+        "previous": {
+          "bytes": 1782,
+          "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27"
+        },
+        "retained": {
+          "bytes": 1784,
+          "sha256": "f6a10e590da2486bb552db9d601ac51c96c81a4ffddeff00623557877d08d59e"
+        }
+      },
+      {
+        "file": "web/favicon.svg",
+        "previous": {
+          "bytes": 1749,
+          "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556"
+        },
+        "retained": {
+          "bytes": 1751,
+          "sha256": "b9e130aeb745c9aaf57184d0bd545be65bb2073d0456fc6c94c0bf5c55e1eeb1"
+        }
+      }
+    ],
+    "preserved_source_hash_reconciliation": [
+      {
+        "file": "mark.svg",
+        "previous": {
+          "bytes": 1535,
+          "sha256": "8c45ded7ba91c6f0bad97e61bb009d73267289746c80066e7d1dea95eb7aca00"
+        },
+        "retained": {
+          "bytes": 1534,
+          "sha256": "042881cde4719aa6ab510a66910d6400fcf41308796612e6828df8bec78393ee"
+        }
+      },
+      {
+        "file": "mark-small.svg",
+        "previous": {
+          "bytes": 1502,
+          "sha256": "74818622211c4e1b351cd3bdbd8f11d61416637102ab35d4e160c9662193b128"
+        },
+        "retained": {
+          "bytes": 1501,
+          "sha256": "708765e399a3982d08cf9aeaea6f959dcdf2cffccf3692340e927eeb90d65a9e"
+        }
+      },
+      {
+        "file": "app-tile.svg",
+        "previous": {
+          "bytes": 1782,
+          "sha256": "d0b1bd0e3d03f0ba794d9de46ddd4a47ee8063d702ccf8bf8e94faa4ab1d446e"
+        },
+        "retained": {
+          "bytes": 1784,
+          "sha256": "70b65457b83de5d907a93d6935854c51ef90994deaec52f160ce31a1d5eba9da"
+        }
+      },
+      {
+        "file": "app-tile-small.svg",
+        "previous": {
+          "bytes": 1749,
+          "sha256": "4c2bac82eb7cbbb7c000374b553013a774fa9273f9d6acaf84a8dd1fcadc6556"
+        },
+        "retained": {
+          "bytes": 1751,
+          "sha256": "b9e130aeb745c9aaf57184d0bd545be65bb2073d0456fc6c94c0bf5c55e1eeb1"
+        }
+      },
+      {
+        "file": "app-square.svg",
+        "previous": {
+          "bytes": 1782,
+          "sha256": "30727f38e36e9e0b19b11b642d2181f6d1341c0b78798f6a07fd0853a4470b27"
+        },
+        "retained": {
+          "bytes": 1784,
+          "sha256": "f6a10e590da2486bb552db9d601ac51c96c81a4ffddeff00623557877d08d59e"
+        }
+      },
+      {
+        "file": "app-square-small.svg",
+        "previous": {
+          "bytes": 1749,
+          "sha256": "11fd6f9d7067d1e476e0948ce8255b524825ff23fe1d05e6fac59c31a852dfb9"
+        },
+        "retained": {
+          "bytes": 1751,
+          "sha256": "86c4932aed3c4a4fe7b0637df99d769191d581c18ab41492e7201d7c1b97a760"
+        }
+      },
+      {
+        "file": "app-macos.svg",
+        "previous": {
+          "bytes": 1786,
+          "sha256": "80a71aa143031a6eb9b85260d179c7110760b743403ed125462a93b0f4190308"
+        },
+        "retained": {
+          "bytes": 1788,
+          "sha256": "df4dde11ea9681cc61ab3ac61c7e3f99e67ac0131f4a1323d0b7a978ecdd8cd7"
+        }
+      },
+      {
+        "file": "app-macos-small.svg",
+        "previous": {
+          "bytes": 1753,
+          "sha256": "ba8a6c8064a85abc40de5da0e5a73e0fa662d634e76b3304f719a97f67dd5f3f"
+        },
+        "retained": {
+          "bytes": 1755,
+          "sha256": "6c3a2c33d65d969f801bbbaf3153cae6846abe86bbf4ba53c659418ccba0551b"
+        }
+      }
+    ]
   }
 }

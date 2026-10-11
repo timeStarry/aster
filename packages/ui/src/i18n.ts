@@ -13,10 +13,11 @@ const en = {
   'tab.unsaved': ' (unsaved changes)',
   'tab.list': 'Open documents',
   'tab.settings': 'Settings',
-  'tab.moreNew': 'More ways to open a tab',
+  'tab.moreNew': 'More actions',
   'tab.menuNew': 'New blank tab',
   'tab.menuOpen': 'Open file…',
   'tab.menuSettings': 'Settings',
+  'tab.menuExportPdf': 'Export as PDF…',
 
   // Status bar
   'status.notSaved': 'Not saved yet',
@@ -140,6 +141,8 @@ const en = {
 
   // Editor: layout
   'set.layout': 'Layout',
+  'set.showMenuBar': 'Show menu bar',
+  'set.showMenuBarHint': 'Show File, Edit, View and Window below the title bar. Shortcuts and the tab menu remain available when hidden.',
   'set.fontSize': 'Font size',
   'set.lineHeight': 'Line height',
   'set.lineWidth': 'Line width',
@@ -246,10 +249,11 @@ const zh: Record<Key, string> = {
   'tab.unsaved': '（有未保存的更改）',
   'tab.list': '已打开的文档',
   'tab.settings': '设置',
-  'tab.moreNew': '更多打开方式',
+  'tab.moreNew': '更多操作',
   'tab.menuNew': '新建空白页',
   'tab.menuOpen': '打开文件…',
   'tab.menuSettings': '设置',
+  'tab.menuExportPdf': '导出为 PDF…',
 
   'status.notSaved': '尚未保存',
   'status.words': '{n} 字',
@@ -365,6 +369,8 @@ const zh: Record<Key, string> = {
   'set.previewBody': '好的排版让文字更易读。Typography shapes how a page reads.',
 
   'set.layout': '版式',
+  'set.showMenuBar': '显示菜单栏',
+  'set.showMenuBarHint': '在标题栏下显示“文件、编辑、显示、窗口”。隐藏时仍可使用快捷键和标签栏的更多操作。',
   'set.fontSize': '字号',
   'set.lineHeight': '行高',
   'set.lineWidth': '行宽',

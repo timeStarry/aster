@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { fileUrl, normalizeSettings, resolveFonts, wordCount, DEFAULT_SETTINGS } from '../src/model';
 import { t, applyLanguage } from '../src/i18n';
 
@@ -42,6 +42,15 @@ describe('settings', () => {
     expect(s.theme).toBe('dark');
     expect(s.fontSize).toBe(18);
     expect(s.typography.followTheme).toBe(true);
+    expect(s.showMenuBar).toBe(DEFAULT_SETTINGS.showMenuBar);
+  });
+
+  it.each([true, false])('retains the explicit menu preference %s', (showMenuBar) => {
+    expect(normalizeSettings({ showMenuBar }).showMenuBar).toBe(showMenuBar);
+  });
+
+  it.each(['false', 'true', 0, 1, null, {}, []])('does not coerce invalid menu preference %j', (showMenuBar) => {
+    expect(normalizeSettings({ showMenuBar }).showMenuBar).toBe(DEFAULT_SETTINGS.showMenuBar);
   });
 
   it('resolves fonts from presets and custom picks', () => {
@@ -51,6 +60,27 @@ describe('settings', () => {
     const custom = resolveFonts({ ...base, followTheme: false, preset: 'custom', body: { family: 'My "Font"; x' }, code: { stack: 'mono' } })!;
     expect(custom.body.startsWith('"My Font x"')).toBe(true); // quotes/semicolons stripped
     expect(custom.code).toContain('monospace');
+  });
+});
+
+describe('platform menu defaults', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it.each([
+    ['Win32', false],
+    ['MacIntel', true],
+    ['Linux x86_64', true],
+  ])('migrates older settings on %s without changing editor preferences', async (platform, visible) => {
+    vi.stubGlobal('navigator', { platform });
+    vi.resetModules();
+    const model = await import('../src/model');
+    expect(model.DEFAULT_SETTINGS.showMenuBar).toBe(visible);
+    const migrated = model.normalizeSettings({ theme: 'dark', fontSize: 18, lineNumbers: true });
+    expect(migrated.showMenuBar).toBe(visible);
+    expect(migrated.theme).toBe('dark');
+    expect(migrated.fontSize).toBe(18);
+    expect(migrated.lineNumbers).toBe(true);
+    expect(model.normalizeSettings({ showMenuBar: !visible }).showMenuBar).toBe(!visible);
   });
 });
 

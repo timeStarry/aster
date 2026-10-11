@@ -173,7 +173,7 @@ def guides(g: dict, scale: float) -> ET.Element:
 def write_family(out: Path, variant: str, g: dict, united: ET.Element, cfg: dict) -> None:
     suffix = "-small" if variant == "small" else ""
     palette, layout = cfg["colors"], cfg["layout"]
-    for kind in ("mark", "app-tile", "app-square", "app-macos"):
+    for kind in ("mark", "app-tile", "app-square", "app-windows", "app-macos"):
         root = document(f"Aster — {kind}{suffix}",
                         "Geometric six-arm asterisk and period. No raster images or font dependencies.")
         scale = 1
@@ -185,8 +185,10 @@ def write_family(out: Path, variant: str, g: dict, united: ET.Element, cfg: dict
                              height=1024 - inset * 2, rx=layout["macos_tile_corner_radius"], fill=palette["paper"]))
                 scale = layout["macos_symbol_scale"]
             else:
+                corner = {"app-tile": layout["web_tile_corner_radius"],
+                          "app-windows": layout["windows_tile_corner_radius"]}.get(kind, 0)
                 bg.append(el("rect", id="tile", x=0, y=0, width=1024, height=1024,
-                             rx=layout["web_tile_corner_radius"] if kind == "app-tile" else 0, fill=palette["paper"]))
+                             rx=corner, fill=palette["paper"]))
                 scale = layout["tile_symbol_scale"]
             root.append(bg)
         root.append(mark(united, g, palette["indigo"], scale))
@@ -197,17 +199,36 @@ def write_family(out: Path, variant: str, g: dict, united: ET.Element, cfg: dict
         save(root, out / f"{name}{suffix}.svg")
 
 
+def write_windows_sources(out: Path, cfg: dict) -> None:
+    """Reuse the exact union geometry; changing tile corners needs no new union."""
+    for suffix in ("", "-small"):
+        root = ET.parse(out / f"app-square{suffix}.svg").getroot()
+        title = root.find(f"{{{SVG}}}title")
+        tile = root.find(f".//{{{SVG}}}rect[@id='tile']")
+        if title is None or tile is None:
+            raise ValueError("The existing square master must contain its title and background tile.")
+        title.text = f"Aster — app-windows{suffix}"
+        tile.set("rx", str(cfg["layout"]["windows_tile_corner_radius"]))
+        save(root, out / f"app-windows{suffix}.svg")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--inkscape", default=shutil.which("inkscape"))
     parser.add_argument("--geometry-json", type=Path, default=ROOT / "assets/brand/geometry.json")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "assets/brand/source")
+    parser.add_argument("--windows-only", action="store_true",
+                        help="Derive rounded Windows masters from the existing square masters without regenerating other sources.")
     args = parser.parse_args()
-    if not args.inkscape:
-        parser.error("Inkscape is required; supply --inkscape /path/to/inkscape.")
-    cfg = json.loads(args.geometry_json.read_text())
+    cfg = json.loads(args.geometry_json.read_text(encoding="utf-8"))
     out = args.output_dir.resolve()
     out.mkdir(parents=True, exist_ok=True)
+    if args.windows_only:
+        write_windows_sources(out, cfg)
+        print(f"Built editable Windows vector sources: {out}")
+        return
+    if not args.inkscape:
+        parser.error("Inkscape is required; supply --inkscape /path/to/inkscape.")
     computed = {}
     with tempfile.TemporaryDirectory(prefix="aster-vector-") as folder:
         for variant in ("standard", "small"):

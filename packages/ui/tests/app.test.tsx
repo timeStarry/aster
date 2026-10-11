@@ -3,6 +3,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'solid-js/web';
 import { EditorView } from '@codemirror/view';
 import App from '../src/App';
+import { isWindows } from '../src/model';
 
 let dispose: (() => void) | null = null;
 afterEach(() => {
@@ -46,6 +47,27 @@ describe('App shell', () => {
     (root.querySelectorAll('.aster-tab-close')[2] as HTMLButtonElement).click();
     await Promise.resolve();
     expect(root.querySelectorAll('.aster-tab')).toHaveLength(2);
+  });
+
+  it('handles key-only new, settings and tab navigation without throttling keys', () => {
+    const root = mount();
+    expect(key('', { key: 'n', ...mod })).toBe(false);
+    expect(key('', { key: 'N', ...mod })).toBe(false);
+    expect(root.querySelectorAll('.aster-tab')).toHaveLength(3);
+    expect(key('', { key: ',', ...mod })).toBe(false);
+    expect(root.querySelector('.aster-tab-settings')!.getAttribute('aria-selected')).toBe('true');
+    expect(key('', { key: 'Tab', ctrlKey: true })).toBe(false);
+    expect(root.querySelectorAll('.aster-tab')[0].getAttribute('aria-selected')).toBe('true');
+    expect(key('', { key: 'Tab', ctrlKey: true, shiftKey: true })).toBe(false);
+    expect(root.querySelector('.aster-tab-settings')!.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('does not cancel ordinary input or IME keys', () => {
+    const root = mount();
+    expect(key('', { key: 'n' })).toBe(true);
+    expect(key('', { key: 'n', isComposing: true, ...mod })).toBe(true);
+    expect(key('KeyN', { key: 'n', keyCode: 229, ...mod })).toBe(true);
+    expect(root.querySelectorAll('.aster-tab')).toHaveLength(1);
   });
 
   it('lock is independent of live/source', () => {
@@ -103,6 +125,7 @@ describe('App shell', () => {
     dark.click();
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     expect(dark.getAttribute('aria-checked')).toBe('true');
+    expect(root.querySelector('#set-menu-bar') !== null).toBe(isWindows);
     (root.querySelector('#aster-set-nav-editor') as HTMLButtonElement).click();
     const ln = root.querySelector('#set-ln') as HTMLButtonElement;
     expect(ln.getAttribute('aria-checked')).toBe('false');
@@ -178,9 +201,9 @@ describe('App shell', () => {
     const more = root.querySelector('.aster-tab-more') as HTMLButtonElement;
     more.click();
     const items = [...root.querySelectorAll('[role="menuitem"]')].map((x) => x.querySelector('span')!.textContent);
-    expect(items).toEqual(['New blank tab', 'Open file…', 'Settings']);
+    expect(items).toEqual(['New blank tab', 'Open file…', ...(isWindows ? ['Export as PDF…'] : []), 'Settings']);
     expect(more.getAttribute('aria-expanded')).toBe('true');
-    (root.querySelectorAll('[role="menuitem"]')[2] as HTMLButtonElement).click();
+    (root.querySelectorAll('[role="menuitem"]')[items.length - 1] as HTMLButtonElement).click();
     expect(root.querySelector('.aster-tab-settings')).not.toBeNull();
     expect(root.querySelector('[role="menu"]')).toBeNull();
     // The + itself still creates a blank tab in one click.

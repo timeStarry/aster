@@ -3,14 +3,24 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   rust:
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ci-${{ runner.os }}
       - name: Install macOS WebKit deps
+        if: runner.os == 'macOS'
         run: brew install pkg-config
       - uses: pnpm/action-setup@v4
         with:
@@ -19,18 +29,21 @@ jobs:
         with:
           node-version: '22'
           cache: 'pnpm'
-      - name: Install tauri-cli
-        run: cargo install tauri-cli --version "^2" --locked
+      - run: pnpm install --frozen-lockfile
       - name: Run Rust tests
-        run: cargo test --workspace
+        run: cargo test --workspace --locked
       - name: Build CLI release
-        run: cargo build -p aster-cli --release
-      - name: Install JS deps and build Tauri app (debug)
-        run: |
-          pnpm install
-          cd crates/aster-app
-          cargo tauri build --debug
+        run: cargo build -p aster-cli --release --locked
+      - name: Build Tauri app (debug, macOS)
+        if: runner.os == 'macOS'
+        working-directory: crates/aster-app
+        run: pnpm dlx @tauri-apps/cli@2.12.1 build --debug --ci -- --locked
+      - name: Build Tauri app (debug, Windows)
+        if: runner.os == 'Windows'
+        working-directory: crates/aster-app
+        run: pnpm dlx '@tauri-apps/cli@2.12.1' build --debug --no-bundle --ci -- --locked
       - name: Bench CLI latency (doc.read < 50ms user time)
+        if: runner.os == 'macOS'
         run: |
           echo "# bench" > /tmp/bench.md
           # Measure user time only (excludes OS process-spawn overhead)
@@ -48,7 +61,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'pnpm'
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - name: Test frontend packages
         run: pnpm -r test
       - name: Build UI

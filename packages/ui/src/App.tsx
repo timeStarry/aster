@@ -23,7 +23,9 @@ import { showEditorContextMenu } from './contextmenu';
 import { OutlineRail } from './OutlineRail';
 import { buildBackup, planImport, BackupError, SETTING_LABELS as SETTING_LABEL } from './backup';
 import { shortcutAction } from './shortcuts';
+import { createPlatformShell } from './platform-shell';
 import './theme.css';
+import './platform.css';
 
 const inTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 const MD_EXTS = ['md', 'markdown', 'mdown', 'mkd', 'txt'];
@@ -50,7 +52,9 @@ function assetBase(): string {
 export default function App() {
   const [settings, setSettingsSig] = createSignal<Settings>(loadSettings());
   applyLanguage(settings().language);
-  applySettings(settings());
+  const initialAppearance = applySettings(settings());
+  const shell = createPlatformShell(inTauri);
+  onCleanup(() => shell.dispose());
 
   const welcomeText = (l: Lang) => WELCOME[l](MOD);
   const first = makeTab({ content: welcomeText(lang()) }, [], t('tab.untitled'));
@@ -427,6 +431,12 @@ export default function App() {
     setSettingsSig(s);
     saveSettings(s);
     const applied = applySettings(s, pluginThemes());
+    if (themeChanged) {
+      // Native chrome must update even when WKWebView pauses animation frames
+      // in an inactive window. The later sync also covers loaded plugin CSS.
+      void shell.syncTheme();
+      void applied.then(() => shell.syncTheme());
+    }
     if (langChanged) syncLanguage(applyLanguage(s.language));
     else if (menuChanged) syncNativeMenu();
     // Diagrams pick colors from the theme at render time.
@@ -643,6 +653,8 @@ export default function App() {
 
   // ── Lifecycle ──────────────────────────────────────────────
   onMount(async () => {
+    shell.mount();
+    void initialAppearance.then(() => shell.syncTheme());
     editor = createEditor(host, {
       initialContent: first.content,
       mode: mode(),
@@ -723,6 +735,10 @@ export default function App() {
     }
 
     const win = getCurrentWindow();
+    // A WKWebView can keep DOM focus while its native window is inactive.
+    // Native focus also lets the shell end paused CSS color transitions.
+    void win.isFocused().then((active) => shell.setWindowActive(active)).catch(() => {});
+    unlisten.push(await win.onFocusChanged(({ payload }) => shell.setWindowActive(payload)).catch(() => () => {}));
     void getVersion().then(setVersion).catch(() => {});
     syncNativeMenu();
     if (isMac) {
@@ -770,7 +786,12 @@ export default function App() {
       await initPluginLoader(loadable, pluginUrl);
       if (asterApi) {
         setPluginThemes(asterApi.themes.list());
-        void applySettings(settings(), pluginThemes()).then(() => editor && refreshCodeBlocks(editor.view, { clearCache: true }));
+        const applied = applySettings(settings(), pluginThemes());
+        void shell.syncTheme();
+        void applied.then(() => {
+          void shell.syncTheme();
+          if (editor) refreshCodeBlocks(editor.view, { clearCache: true });
+        });
         asterApi.editor = {
           getContent: () => editor?.getContent() ?? '',
           getHtml: () => pipeline.render(editor?.getContent() ?? ''),

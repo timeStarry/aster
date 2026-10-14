@@ -41,16 +41,30 @@ function findTab(root: ParentNode | undefined, id: string): HTMLElement | undefi
  */
 function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: () => void; onExportPdf?: () => void }) {
   const [open, setOpen] = createSignal(false);
+  const [menuLeft, setMenuLeft] = createSignal(0);
   let root!: HTMLDivElement;
   let toggle!: HTMLButtonElement;
+  let menu: HTMLDivElement | undefined;
   const items = () => [
     { id: 'new', label: t('tab.menuNew'), key: `${MOD}N`, run: p.onNew },
     { id: 'open', label: t('tab.menuOpen'), key: `${MOD}O`, run: p.onOpen },
     ...(p.onExportPdf ? [{ id: 'exportPdf', label: t('tab.menuExportPdf'), key: '', run: p.onExportPdf }] : []),
     { id: 'settings', label: t('tab.menuSettings'), key: `${MOD},`, run: p.onSettings },
   ];
+  const positionMenu = () => {
+    if (!open() || !menu) return;
+    const anchor = root.getBoundingClientRect();
+    const width = menu.getBoundingClientRect().width;
+    // Many tabs push the split button to the right edge. Keep its menu
+    // inside the viewport, including after resizing an open menu.
+    const left = Math.max(8, Math.min(anchor.left, window.innerWidth - width - 8));
+    setMenuLeft(left - anchor.left);
+  };
   const focusItem = (i: number) => root.querySelectorAll<HTMLElement>('[role="menuitem"]')[i]?.focus();
-  const show = (focusFirst = true) => { setOpen(true); if (focusFirst) queueMicrotask(() => focusItem(0)); };
+  const show = (focusFirst = true) => {
+    setOpen(true);
+    queueMicrotask(() => { positionMenu(); if (focusFirst) focusItem(0); });
+  };
   const hide = (refocus = true) => { setOpen(false); if (refocus) toggle.focus(); };
   const onMenuKey = (e: KeyboardEvent) => {
     const els = [...root.querySelectorAll<HTMLElement>('[role="menuitem"]')];
@@ -63,8 +77,14 @@ function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: ()
     else if (e.key === 'Tab') hide(false);
   };
   const onDocDown = (e: MouseEvent) => { if (open() && !root.contains(e.target as Node)) hide(false); };
-  onMount(() => document.addEventListener('mousedown', onDocDown, true));
-  onCleanup(() => document.removeEventListener('mousedown', onDocDown, true));
+  onMount(() => {
+    document.addEventListener('mousedown', onDocDown, true);
+    window.addEventListener('resize', positionMenu);
+  });
+  onCleanup(() => {
+    document.removeEventListener('mousedown', onDocDown, true);
+    window.removeEventListener('resize', positionMenu);
+  });
 
   return (
     <div class="aster-tab-new" ref={root}>
@@ -93,7 +113,7 @@ function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: ()
         </svg>
       </button>
       <Show when={open()}>
-        <div class="aster-menu" role="menu" aria-label={t('tab.moreNew')} onKeyDown={onMenuKey}>
+        <div ref={menu} class="aster-menu" style={{ left: `${menuLeft()}px` }} role="menu" aria-label={t('tab.moreNew')} onKeyDown={onMenuKey}>
           <Index each={items()}>
             {(it) => (
               <button

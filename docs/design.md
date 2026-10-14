@@ -54,6 +54,12 @@ Aster 是一个跨平台桌面 Markdown 编辑器。
 | WASM 运行时（M4） | wasmtime + Component Model（WIT） | 强隔离，宿主函数可按权限授予 |
 | 外部接口 | JSON-RPC 2.0 over Unix socket / Windows named pipe；MCP | Agent 生态原生接入 |
 
+桌面界面共用 SolidJS 外壳和 CodeMirror 编辑器，按平台应用外观：macOS 使用 Liquid Glass，Windows 使用 Fluent。原生材质由 `aster-app` 管理，平台样式由 `packages/ui` 管理；文档、设置、插件和编辑器状态保持共享。
+
+- **macOS**：macOS 26 及以上使用原生玻璃视图，旧版回退到 Vibrancy；材质不可用时使用实色背景。
+- **Windows**：优先使用 Mica，失败时尝试 Acrylic，再回退到实色背景。保留原生标题栏和窗口控制。
+- **阅读与主题**：玻璃材质用于标签栏、状态栏和设置导航，正文与设置内容保持实色。明暗主题及主题插件的 `color-scheme` 同步到原生窗口；减少透明度和高对比度模式使用实色外观。
+
 ## 4. 整体架构
 
 ```

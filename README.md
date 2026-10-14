@@ -18,6 +18,7 @@ Aster is a cross-platform Markdown editor for people and agents: a desktop app w
 - **Core, interface, plugins.** The core is Rust: a small command registry that owns document and workspace operations. The Tauri GUI, the CLI, and the MCP server are three faces of the same commands. Plugins extend it in two layers — JavaScript in the webview for rendering and themes, WebAssembly components for backend logic.
 - **Live preview that hides markup.** Live preview renders the document and hides markdown syntax; source is revealed under the cursor so it stays editable. Everything else — bold, code, links, images, quotes, lists, tasks, math, diagrams — reads as rendered.
 - **Local and offline.** Documents and settings stay on your disk; nothing is uploaded. Chinese and English interface. Builds are published for macOS (Apple Silicon), Linux (x86_64), and Windows (x64).
+- **Platform appearance.** macOS uses Liquid Glass on macOS 26 and newer, with Vibrancy on older versions. Windows uses Fluent styling over Mica, with Acrylic or an opaque background as fallbacks. Both share the same editor and core; document content stays on an opaque reading surface. The shell follows the selected light, dark, or plugin theme and respects reduced transparency.
 - **Safe by default.** Plugins are checked against an Ed25519 signature: tampered plugins are refused, unsigned ones are marked as such. Unsaved work survives a crash, and a file changed on disk is never overwritten without asking.
 
 ## Two editions

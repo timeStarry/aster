@@ -5,6 +5,7 @@ mod ipc;
 mod menu;
 mod recovery;
 mod rpc;
+mod shell;
 use ipc::CoreState;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -17,13 +18,20 @@ use aster_core::{
 };
 
 pub fn run() {
-    let context = tauri::generate_context!();
-    #[cfg(target_os = "windows")]
     let context = {
-        let mut context = context;
-        // Hide the menu before the Windows window is first shown.
+        let mut context = tauri::generate_context!();
+        // Configure native material before the first frame is shown. Only the
+        // native desktop platforms use transparency; Linux keeps its solid shell.
         if let Some(main) = context.config_mut().app.windows.iter_mut().find(|w| w.label == "main") {
             main.visible = false;
+            #[cfg(any(target_os = "macos", target_os = "windows"))]
+            {
+                main.transparent = true;
+            }
+            #[cfg(target_os = "windows")]
+            {
+                main.no_redirection_bitmap = true;
+            }
         }
         context
     };
@@ -65,10 +73,12 @@ pub fn run() {
             // the persisted preference after reading its settings.
             #[cfg(target_os = "windows")]
             {
-                use tauri::Manager;
                 _app.hide_menu()?;
+            }
+            {
+                use tauri::Manager;
                 if let Some(main) = _app.get_webview_window("main") {
-                    main.show()?;
+                    shell::initialize(main)?;
                 }
             }
             #[cfg(feature = "bundled-plugins")]
@@ -100,6 +110,7 @@ pub fn run() {
             recovery::session_clear,
             backup::settings_file_read,
             backup::settings_file_write,
+            shell::configure_shell,
         ])
         .on_window_event(move |_window, event| {
             if let tauri::WindowEvent::Destroyed = event {

@@ -1,0 +1,636 @@
+/* Platform chrome shares the editor, application state and theme palette.
+   Native materials are only exposed behind translucent shell regions; the
+   document and settings content always have an opaque reading surface. */
+:root {
+  --shell-bg: var(--tab-bg);
+  --shell-status-bg: var(--status-bg);
+  --shell-nav-bg: var(--tab-bg);
+  --shell-float-bg: var(--surface);
+  --shell-control-bg: var(--surface);
+  --shell-hover: color-mix(in srgb, var(--fg) 7%, transparent);
+  --shell-pressed: color-mix(in srgb, var(--fg) 12%, transparent);
+  --shell-border: color-mix(in srgb, var(--fg) 12%, transparent);
+  --shell-separator: color-mix(in srgb, var(--fg) 9%, transparent);
+  --shell-highlight: color-mix(in srgb, var(--surface) 70%, transparent);
+  --shell-shadow: color-mix(in srgb, var(--fg) 12%, transparent);
+  --shell-focus: var(--accent);
+  --shell-float-blur: none;
+  --shell-duration: 140ms;
+}
+
+:root[data-platform="macos"] {
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  --shell-radius: 10px;
+  --shell-menu-radius: 16px;
+  --shell-dialog-radius: 20px;
+  --shell-control-bg: color-mix(in srgb, var(--surface) 88%, var(--bg));
+  --shell-highlight: color-mix(in srgb, white 38%, transparent);
+}
+
+:root[data-platform="windows"] {
+  --font-ui: 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+  --shell-radius: 8px;
+  --shell-menu-radius: 8px;
+  --shell-dialog-radius: 8px;
+  --shell-control-bg: var(--surface);
+  --shell-highlight: color-mix(in srgb, white 22%, transparent);
+  --shell-duration: 120ms;
+}
+
+/* These attributes describe the effect that was actually applied by the
+   native host. A web preview and any failed/unsupported effect stay opaque. */
+:root[data-native="true"][data-platform="macos"][data-material="liquid-glass"] {
+  --shell-bg: color-mix(in srgb, var(--surface) 20%, transparent);
+  --shell-status-bg: color-mix(in srgb, var(--surface) 38%, transparent);
+  --shell-nav-bg: color-mix(in srgb, var(--surface) 22%, transparent);
+  --shell-float-bg: color-mix(in srgb, var(--surface) 86%, transparent);
+  --shell-float-blur: blur(14px) saturate(1.12);
+}
+
+:root[data-native="true"][data-platform="macos"][data-material="vibrancy"] {
+  --shell-bg: color-mix(in srgb, var(--surface) 42%, transparent);
+  --shell-status-bg: color-mix(in srgb, var(--surface) 52%, transparent);
+  --shell-nav-bg: color-mix(in srgb, var(--surface) 42%, transparent);
+  --shell-float-bg: color-mix(in srgb, var(--surface) 92%, transparent);
+  --shell-float-blur: blur(12px);
+}
+
+:root[data-native="true"][data-platform="windows"][data-material="mica"] {
+  --shell-bg: color-mix(in srgb, var(--bg) 22%, transparent);
+  --shell-status-bg: color-mix(in srgb, var(--bg) 36%, transparent);
+  --shell-nav-bg: color-mix(in srgb, var(--bg) 22%, transparent);
+}
+
+:root[data-native="true"][data-platform="windows"][data-material="acrylic"] {
+  --shell-bg: color-mix(in srgb, var(--bg) 48%, transparent);
+  --shell-status-bg: color-mix(in srgb, var(--bg) 60%, transparent);
+  --shell-nav-bg: color-mix(in srgb, var(--bg) 48%, transparent);
+  --shell-float-bg: color-mix(in srgb, var(--surface) 94%, transparent);
+  --shell-float-blur: blur(12px);
+}
+
+:root[data-native="true"]:is(
+  [data-platform="macos"][data-material="liquid-glass"],
+  [data-platform="macos"][data-material="vibrancy"],
+  [data-platform="windows"][data-material="mica"],
+  [data-platform="windows"][data-material="acrylic"]
+) :is(body, .aster-app) {
+  background: transparent;
+}
+
+:root[data-platform] .aster-editor-host {
+  background: var(--bg);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-tabs {
+  background: var(--shell-bg);
+  border-bottom-color: var(--shell-separator);
+  padding-right: 12px;
+  gap: 6px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-tabs-scroll {
+  gap: 5px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-status {
+  background: var(--shell-status-bg);
+  border-top-color: var(--shell-separator);
+  padding: 0 12px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(
+  .aster-tab, .aster-tab-close, .aster-tab-add, .aster-tab-more,
+  .aster-icon-btn, .aster-seg button, .aster-set-nav button,
+  .aster-btn, .aster-menu-item, .aster-combo-button, .aster-combo-opt,
+  .aster-theme-card, .aster-about-link
+) {
+  transition: background-color var(--shell-duration) ease, color var(--shell-duration) ease,
+    box-shadow var(--shell-duration) ease, border-color var(--shell-duration) ease;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(
+  .aster-icon-btn, .aster-tab-close, .aster-tab-add, .aster-tab-more
+):hover {
+  background: var(--shell-hover);
+  color: var(--fg);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(
+  .aster-icon-btn, .aster-tab-close, .aster-tab-add, .aster-tab-more,
+  .aster-btn:not(.primary), .aster-about-link
+):active:not(:disabled) {
+  background: var(--shell-pressed);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(
+  button, select, input, [role="tab"]
+):focus-visible {
+  outline: 2px solid var(--shell-focus);
+  outline-offset: 2px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-tab:focus-visible {
+  /* Tab scroll containers clip an outside focus ring. */
+  outline-offset: -2px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-icon-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--shell-radius);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-icon-btn.is-on {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-seg {
+  background: var(--shell-hover);
+  border-radius: var(--shell-radius);
+  padding: 2px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-seg button {
+  min-height: 22px;
+  border-radius: calc(var(--shell-radius) - 2px);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-seg button:hover:not(:disabled):not(.is-on) {
+  background: var(--shell-hover);
+  color: var(--fg);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-seg button.is-on {
+  background: var(--shell-control-bg);
+  box-shadow: 0 1px 3px var(--shell-shadow), inset 0 0 0 1px var(--shell-border);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(
+  .aster-menu, .aster-combo-pop, .aster-rail-tip, .aster-recovery
+) {
+  background: var(--shell-float-bg);
+  border-color: var(--shell-border);
+  border-radius: var(--shell-menu-radius);
+  -webkit-backdrop-filter: var(--shell-float-blur);
+  backdrop-filter: var(--shell-float-blur);
+  box-shadow: 0 12px 32px var(--shell-shadow), inset 0 1px 0 var(--shell-highlight);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(.aster-menu, .aster-combo-pop) {
+  padding: 6px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(.aster-menu-item, .aster-combo-opt) {
+  min-height: 32px;
+  border-radius: calc(var(--shell-menu-radius) - 4px);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-modal-backdrop {
+  background: color-mix(in srgb, black 28%, transparent);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-modal {
+  border-radius: var(--shell-dialog-radius);
+  border-color: var(--shell-border);
+  padding: 24px;
+  box-shadow: 0 24px 64px var(--shell-shadow), inset 0 1px 0 var(--shell-highlight);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-btn {
+  min-height: 32px;
+  border-radius: var(--shell-radius);
+  padding: 6px 15px;
+  border-color: var(--shell-border);
+  background: var(--shell-control-bg);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-btn.primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: transparent;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-btn.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 90%, var(--fg));
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-btn.primary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 80%, var(--fg));
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-settings {
+  background: transparent;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-nav {
+  background: var(--shell-nav-bg);
+  border-right-color: var(--shell-separator);
+  padding: 24px 12px;
+  gap: 4px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-scroll {
+  background: var(--bg);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-title {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--fg-muted);
+  padding: 0 12px 16px;
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-nav button {
+  position: relative;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: var(--shell-radius);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-nav button:hover {
+  background: var(--shell-hover);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-group {
+  border-color: var(--shell-border);
+  border-radius: var(--shell-dialog-radius);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-row + .aster-set-row {
+  border-top-color: var(--shell-separator);
+}
+
+:root:is([data-platform="macos"], [data-platform="windows"]) :is(
+  .aster-text, .aster-set-panel select, .aster-combo-button
+) {
+  min-height: 32px;
+  border-radius: var(--shell-radius);
+  background: var(--shell-control-bg);
+  border-color: var(--shell-border);
+}
+
+/* macOS: a compact glass toolbar, rounded controls and a pill selection. */
+:root[data-platform="macos"] .aster-tabs {
+  height: 46px;
+  padding-left: 10px;
+  box-shadow: inset 0 1px 0 var(--shell-highlight);
+}
+
+:root[data-platform="macos"] .aster-tabs.is-inset {
+  padding-left: 84px;
+}
+
+:root[data-platform="macos"] .aster-tab {
+  height: 32px;
+  border-radius: 999px;
+  padding-left: 14px;
+  padding-right: 7px;
+}
+
+:root[data-platform="macos"] .aster-tab:hover {
+  background: var(--shell-hover);
+}
+
+:root[data-platform="macos"] .aster-tab.is-active {
+  background: var(--shell-control-bg);
+  box-shadow: 0 2px 5px var(--shell-shadow), inset 0 0 0 1px var(--shell-border), inset 0 1px 0 var(--shell-highlight);
+  font-weight: 500;
+}
+
+:root[data-platform="macos"] .aster-tab-close {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+:root[data-platform="macos"] .aster-tab-new {
+  border-radius: 999px;
+}
+
+:root[data-platform="macos"] .aster-tab-new:hover {
+  background: var(--shell-hover);
+}
+
+:root[data-platform="macos"] .aster-tab-add {
+  height: 30px;
+  width: 30px;
+  border-radius: 999px 0 0 999px;
+}
+
+:root[data-platform="macos"] .aster-tab-more {
+  height: 30px;
+  border-radius: 0 999px 999px 0;
+}
+
+:root[data-platform="macos"] .aster-seg {
+  border-radius: 999px;
+}
+
+:root[data-platform="macos"] .aster-seg button {
+  border-radius: 999px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+:root[data-platform="macos"] .aster-menu-item:hover,
+:root[data-platform="macos"] .aster-menu-item:focus-visible {
+  background: var(--accent);
+  color: var(--accent-fg);
+  outline: none;
+}
+
+:root[data-platform="macos"] .aster-set-nav button.is-on {
+  background: var(--shell-control-bg);
+  color: var(--fg);
+  box-shadow: 0 1px 3px var(--shell-shadow), inset 0 0 0 1px var(--shell-border);
+  font-weight: 600;
+}
+
+:root[data-platform="macos"] .aster-set-panel h2 {
+  font-size: 22px;
+  letter-spacing: -0.025em;
+}
+
+:root[data-platform="macos"] .aster-set-group {
+  border-radius: 12px;
+}
+
+:root[data-platform="macos"] .aster-switch {
+  width: 38px;
+  height: 22px;
+  background: color-mix(in srgb, var(--fg) 20%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--shell-border);
+}
+
+:root[data-platform="macos"] .aster-switch-knob {
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 1px 3px var(--shell-shadow), 0 0 0 0.5px var(--shell-border);
+}
+
+:root[data-platform="macos"] .aster-switch[aria-checked="true"] {
+  background: var(--accent);
+}
+
+:root[data-platform="macos"] .aster-switch[aria-checked="true"] .aster-switch-knob {
+  transform: translateX(16px);
+}
+
+/* Windows: Mica remains at the base layer; Fluent controls use restrained
+   radii, tonal hover states and an accent indicator for the current item. */
+:root[data-platform="windows"] .aster-tabs {
+  height: 44px;
+  padding-left: 8px;
+}
+
+:root[data-platform="windows"] .aster-tab {
+  height: 34px;
+  border-radius: 8px;
+  padding-left: 12px;
+  padding-bottom: 2px;
+}
+
+:root[data-platform="windows"] .aster-tab:hover {
+  background: var(--shell-hover);
+}
+
+:root[data-platform="windows"] .aster-tab.is-active {
+  background: var(--shell-control-bg);
+  box-shadow: inset 0 0 0 1px var(--shell-border), 0 1px 2px var(--shell-shadow);
+  font-weight: 600;
+}
+
+:root[data-platform="windows"] .aster-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+:root[data-platform="windows"] .aster-tab-close {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+
+:root[data-platform="windows"] .aster-tab-new {
+  border-radius: 8px;
+}
+
+:root[data-platform="windows"] .aster-tab-new:hover {
+  background: var(--shell-hover);
+}
+
+:root[data-platform="windows"] .aster-tab-add,
+:root[data-platform="windows"] .aster-tab-more {
+  height: 32px;
+}
+
+:root[data-platform="windows"] .aster-tab-more {
+  opacity: 0.75;
+}
+
+:root[data-platform="windows"] .aster-menu-item:hover,
+:root[data-platform="windows"] .aster-menu-item:focus-visible {
+  background: var(--shell-hover);
+  color: var(--fg);
+  outline: none;
+}
+
+:root[data-platform="windows"] .aster-menu-item:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--shell-focus);
+}
+
+:root[data-platform="windows"] .aster-combo-opt[aria-selected="true"] {
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+}
+
+:root[data-platform="windows"] .aster-set-nav button {
+  padding-left: 16px;
+}
+
+:root[data-platform="windows"] .aster-set-nav button.is-on {
+  background: var(--shell-hover);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+:root[data-platform="windows"] .aster-set-nav button.is-on::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+:root[data-platform="windows"] .aster-set-panel h2 {
+  font-size: 24px;
+  letter-spacing: -0.015em;
+}
+
+:root[data-platform="windows"] .aster-set-panel h3 {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+:root[data-platform="windows"] :is(.aster-text, .aster-combo-button, .aster-set-panel select) {
+  border-bottom-color: color-mix(in srgb, var(--fg) 45%, var(--surface));
+  border-radius: 8px;
+}
+
+:root[data-platform="windows"] :is(.aster-text, .aster-combo-button, .aster-set-panel select):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--surface) 94%, var(--fg));
+}
+
+:root[data-platform="windows"] :is(.aster-text, .aster-combo-button, .aster-set-panel select):focus-visible {
+  border-bottom-color: var(--accent);
+  box-shadow: inset 0 -1px 0 var(--accent);
+}
+
+:root[data-platform="windows"] .aster-switch {
+  width: 40px;
+  height: 22px;
+  border: 1px solid var(--fg-muted);
+  background: transparent;
+}
+
+:root[data-platform="windows"] .aster-switch-knob {
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background: var(--fg-muted);
+  box-shadow: none;
+}
+
+:root[data-platform="windows"] .aster-switch[aria-checked="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+:root[data-platform="windows"] .aster-switch[aria-checked="true"] .aster-switch-knob {
+  background: var(--accent-fg);
+  transform: translateX(18px);
+}
+
+:root[data-window-active="false"]:is([data-platform="macos"], [data-platform="windows"]) .aster-tab.is-active {
+  color: var(--fg-muted);
+  box-shadow: inset 0 0 0 1px var(--shell-border);
+}
+
+:root[data-window-active="false"][data-platform="windows"] .aster-tab.is-active::after {
+  background: var(--fg-faint);
+}
+
+/* WKWebView can pause CSS transitions when its window is inactive, leaving
+   the previous theme or selection painted until the window gets focus.
+   Resolve control states immediately on blur; active windows keep motion. */
+:root[data-window-active="false"][data-platform] :is(
+  .aster-tab, .aster-tab-close, .aster-tab-add, .aster-tab-more,
+  .aster-icon-btn, .aster-seg button, .aster-set-nav button,
+  .aster-btn, .aster-menu-item, .aster-combo-button, .aster-combo-opt,
+  .aster-theme-card, .aster-about-link, .aster-switch, .aster-switch-knob,
+  .aster-rail, .aster-rail-bar
+) {
+  transition: none;
+}
+
+@media (max-width: 720px) {
+  :root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-nav {
+    padding: 8px;
+    border-bottom-color: var(--shell-separator);
+  }
+  :root:is([data-platform="macos"], [data-platform="windows"]) .aster-set-row.is-stacked {
+    /* A wrapping column would stretch each theme card to the row height. */
+    flex-wrap: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --shell-duration: 0ms !important; }
+  :root[data-platform] :is(.aster-switch, .aster-switch-knob, .aster-tab-more, .aster-rail, .aster-rail-bar) {
+    transition: none;
+  }
+}
+
+/* The OS preference also gets read by the native host. Apply an immediate
+   opaque web fallback while the native material is being reconfigured. */
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-platform] {
+    --shell-bg: var(--tab-bg) !important;
+    --shell-status-bg: var(--status-bg) !important;
+    --shell-nav-bg: var(--tab-bg) !important;
+    --shell-float-bg: var(--surface) !important;
+    --shell-float-blur: none !important;
+    --shell-highlight: transparent !important;
+  }
+  :root[data-platform] :is(body, .aster-app) { background: var(--bg) !important; }
+}
+
+@media (forced-colors: active) {
+  :root[data-platform] {
+    --bg: Canvas !important;
+    --fg: CanvasText !important;
+    --fg-muted: CanvasText !important;
+    --fg-faint: GrayText !important;
+    --surface: Canvas !important;
+    --surface-2: Canvas !important;
+    --tab-bg: Canvas !important;
+    --status-bg: Canvas !important;
+    --border: ButtonBorder !important;
+    --accent: Highlight !important;
+    --accent-fg: HighlightText !important;
+    --shell-bg: Canvas !important;
+    --shell-status-bg: Canvas !important;
+    --shell-nav-bg: Canvas !important;
+    --shell-float-bg: Canvas !important;
+    --shell-control-bg: ButtonFace !important;
+    --shell-border: ButtonBorder !important;
+    --shell-separator: ButtonBorder !important;
+    --shell-hover: ButtonFace !important;
+    --shell-pressed: ButtonFace !important;
+    --shell-focus: Highlight !important;
+    --shell-highlight: transparent !important;
+    --shell-shadow: transparent !important;
+    --shell-float-blur: none !important;
+  }
+  :root[data-platform] :is(body, .aster-app) { background: Canvas !important; }
+  :root[data-platform] :is(.aster-tab.is-active, .aster-seg button.is-on, .aster-set-nav button.is-on) {
+    outline: 1px solid Highlight;
+    outline-offset: -1px;
+  }
+  :root[data-platform] :is(.aster-btn, .aster-combo-button, .aster-switch, .aster-menu, .aster-modal) {
+    border: 1px solid ButtonBorder;
+  }
+  :root[data-platform] .aster-btn.primary {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+  :root[data-platform] .aster-switch-knob { background: ButtonText; }
+  :root[data-platform] .aster-switch[aria-checked="true"] { background: Highlight; }
+  :root[data-platform] .aster-switch[aria-checked="true"] .aster-switch-knob { background: HighlightText; }
+  :root[data-platform] .aster-menu-item:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  :root[data-platform] .aster-tab.is-active::after,
+  :root[data-platform] .aster-set-nav button.is-on::before {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+}

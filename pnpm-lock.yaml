@@ -14,25 +14,25 @@ importers:
         specifier: 6.20.3
         version: 6.20.3
       '@codemirror/commands':
-        specifier: ^6.8.1
+        specifier: 6.11.1
         version: 6.11.1
       '@codemirror/lang-markdown':
-        specifier: ^6.3.2
+        specifier: 6.5.2
         version: 6.5.2
       '@codemirror/language':
-        specifier: ^6.10.9
+        specifier: 6.13.1
         version: 6.13.1
       '@codemirror/language-data':
-        specifier: ^6.5.1
+        specifier: 6.5.2
         version: 6.5.2
       '@codemirror/search':
         specifier: 6.7.2
         version: 6.7.2
       '@codemirror/state':
-        specifier: ^6.5.2
+        specifier: 6.7.6
         version: 6.7.6
       '@codemirror/view':
-        specifier: ^6.36.5
+        specifier: 6.43.14
         version: 6.43.14
       '@lezer/common':
         specifier: 1.5.3
@@ -62,9 +62,18 @@ importers:
 
   packages/renderer:
     dependencies:
-      highlight.js:
-        specifier: ^11.11.1
-        version: 11.12.0
+      '@codemirror/language':
+        specifier: 6.13.1
+        version: 6.13.1
+      '@codemirror/language-data':
+        specifier: 6.5.2
+        version: 6.5.2
+      '@lezer/common':
+        specifier: 1.5.3
+        version: 1.5.3
+      '@lezer/highlight':
+        specifier: 1.2.5
+        version: 1.2.5
       markdown-it:
         specifier: ^14.1.0
         version: 14.3.2
@@ -1050,10 +1059,6 @@ packages:
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
-
-  highlight.js@11.12.0:
-    resolution: {integrity: sha512-nbfWpyRMcMrPMmDwJB+dhX/eiaPKtc2RB+0QZskqJ3WjRA/FDS0e9hZrx8EC/lbEv8gXy98FcDbNa/dspAaJMg==}
-    engines: {node: '>=12.0.0'}
 
   html-encoding-sniffer@4.0.0:
     resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
@@ -2450,8 +2455,6 @@ snapshots:
     optional: true
 
   gensync@1.0.0-beta.2: {}
-
-  highlight.js@11.12.0: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:

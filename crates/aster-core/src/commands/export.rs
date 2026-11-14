@@ -1,10 +1,9 @@
 use std::sync::Arc;
 use std::path::Path;
-use serde_json::{json, Value};
+use serde_json::json;
 use crate::{
     document::DocumentService,
     registry::{CommandRegistry, CommandSpec},
-    error::AsterResult,
 };
 
 pub fn register(registry: &mut CommandRegistry, doc: Arc<DocumentService>) {

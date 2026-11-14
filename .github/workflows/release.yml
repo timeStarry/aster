@@ -66,8 +66,7 @@ jobs:
               { platform: 'windows', os: 'windows-latest', target: 'x86_64-pc-windows-msvc', bundles: 'nsis,msi', extensions: ['.exe', '.msi'] },
               { platform: 'linux', os: 'ubuntu-22.04', target: 'x86_64-unknown-linux-gnu', bundles: 'deb', extensions: ['.deb'] },
             ];
-            const include = platforms.filter(row => platform === 'all' || row.platform === platform)
-              .flatMap(row => ['lite', 'full'].map(edition => ({ ...row, edition })));
+            const include = platforms.filter(row => platform === 'all' || row.platform === platform);
             core.setOutput('matrix', JSON.stringify({ include }));
             core.setOutput('checkout_ref', publish ? `refs/tags/${tag}` : context.sha);
             core.setOutput('tag', publish ? tag : '');
@@ -103,7 +102,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.target }}-${{ matrix.edition }}
+          key: ${{ matrix.target }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -131,50 +130,30 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Install WASM target (full edition only)
-        if: matrix.edition == 'full'
-        run: rustup target add wasm32-wasip2
-
-      - name: Stage bundled plugins (full edition only)
-        if: matrix.edition == 'full'
-        run: node scripts/stage-plugins.mjs
-
-      - name: Build Tauri app (${{ matrix.edition }} edition, Unix)
+      - name: Build Tauri app (Unix)
         if: runner.os != 'Windows'
         working-directory: crates/aster-app
         shell: bash
         env:
-          EDITION: ${{ matrix.edition }}
           TARGET: ${{ matrix.target }}
           BUNDLES: ${{ matrix.bundles }}
         run: |
-          args=(build --target "$TARGET" --bundles "$BUNDLES" --ci)
-          if [ "$EDITION" = full ]; then
-            args+=(--features bundled-plugins --config tauri.full.conf.json)
-          fi
-          pnpm dlx @tauri-apps/cli@2.12.1 "${args[@]}" -- --locked
+          pnpm dlx @tauri-apps/cli@2.12.1 build --target "$TARGET" --bundles "$BUNDLES" --ci -- --locked
 
-      - name: Build Tauri app (${{ matrix.edition }} edition, Windows)
+      - name: Build Tauri app (Windows)
         if: runner.os == 'Windows'
         working-directory: crates/aster-app
         shell: pwsh
         env:
-          EDITION: ${{ matrix.edition }}
           TARGET: ${{ matrix.target }}
           BUNDLES: ${{ matrix.bundles }}
         run: |
-          $buildArguments = @('build', '--target', $env:TARGET, '--bundles', $env:BUNDLES, '--ci')
-          if ($env:EDITION -eq 'full') {
-            $buildArguments += @('--features', 'bundled-plugins', '--config', 'tauri.full.conf.json')
-          }
-          $buildArguments += @('--', '--locked')
-          pnpm dlx '@tauri-apps/cli@2.12.1' @buildArguments
+          pnpm dlx '@tauri-apps/cli@2.12.1' build --target $env:TARGET --bundles $env:BUNDLES --ci -- --locked
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Collect installers with edition names and checksums
+      - name: Collect installers and checksums
         uses: actions/github-script@v7
         env:
-          EDITION: ${{ matrix.edition }}
           TARGET: ${{ matrix.target }}
           EXTENSIONS: ${{ toJSON(matrix.extensions) }}
         with:
@@ -194,7 +173,7 @@ jobs:
             const files = (await filesIn(directory)).filter(file => extensions.includes(path.extname(file)));
             for (const extension of extensions) {
               if (files.filter(file => path.extname(file) === extension).length !== 1) {
-                throw new Error(`Expected one ${extension} installer for ${process.env.EDITION}`);
+                throw new Error(`Expected one ${extension} installer for ${process.env.TARGET}`);
               }
             }
             await fs.mkdir('release-dist', { recursive: true });
@@ -202,18 +181,17 @@ jobs:
             for (const file of files.sort()) {
               const base = path.basename(file);
               if (!base.startsWith('Aster_')) throw new Error(`Unexpected installer name: ${base}`);
-              const name = base.replace(/^Aster_/, `Aster-${process.env.EDITION}_`);
               const bytes = await fs.readFile(file);
-              await fs.writeFile(path.join('release-dist', name), bytes, { flag: 'wx' });
-              checksums.push(`${crypto.createHash('sha256').update(bytes).digest('hex')}  ${name}`);
+              await fs.writeFile(path.join('release-dist', base), bytes, { flag: 'wx' });
+              checksums.push(`${crypto.createHash('sha256').update(bytes).digest('hex')}  ${base}`);
             }
-            const checksumName = `SHA256SUMS-${process.env.EDITION}-${process.env.TARGET}.txt`;
+            const checksumName = `SHA256SUMS-${process.env.TARGET}.txt`;
             await fs.writeFile(path.join('release-dist', checksumName), checksums.join('\n') + '\n');
 
       - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
-          name: aster-${{ matrix.edition }}-${{ matrix.target }}
+          name: aster-${{ matrix.target }}
           path: release-dist/*
           if-no-files-found: error
 
@@ -229,7 +207,7 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Create draft release without replacing existing assets
+      - name: Publish release without replacing existing assets
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -241,6 +219,6 @@ jobs:
             echo "::error::Release $RELEASE_TAG already exists; refusing to replace existing assets"
             exit 1
           fi
-          options=(--verify-tag --draft --generate-notes)
+          options=(--verify-tag --generate-notes)
           if [[ "$RELEASE_TAG" == *-* ]]; then options+=(--prerelease); fi
           gh release create "$RELEASE_TAG" "${options[@]}" artifacts/*

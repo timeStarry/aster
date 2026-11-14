@@ -192,8 +192,20 @@ async fn dispatch_line(line: &str, registry: &Arc<Mutex<CommandRegistry>>) -> Va
     };
     let params = req.get("params").cloned().unwrap_or(json!({}));
 
-    let mut reg = registry.lock().await;
-    match reg.dispatch(&method, params) {
+    let handler_res = {
+        let reg = registry.lock().await;
+        reg.handler(&method)
+    };
+    let dispatch_res = match handler_res {
+        Ok(handler) => match tokio::task::spawn_blocking(move || handler(params)).await {
+            Ok(res) => res,
+            Err(join_err) => Err(aster_core::error::AsterError::Io(format!(
+                "command handler panicked: {join_err}"
+            ))),
+        },
+        Err(e) => Err(e),
+    };
+    match dispatch_res {
         Ok(result) => json!({ "jsonrpc": "2.0", "id": id, "result": result }),
         Err(e) => {
             let rpc_code = if e.code() == "E_NOT_FOUND" {

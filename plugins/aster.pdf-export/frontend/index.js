@@ -1,80 +1,67 @@
-// PDF Export plugin — uses browser print dialog with print-optimised CSS.
-// The plugin injects a hidden iframe with rendered HTML, then calls window.print().
+// PDF Export plugin — uses browser print dialog with Aster's unified high-fidelity HTML renderer.
+// Injects a hidden print iframe with full KaTeX/Mermaid/Lezer/Callout styling, then invokes print().
 
 (function () {
-  const PRINT_CSS = `
-    @page { margin: 20mm; }
+  const FALLBACK_PRINT_CSS = `
+    @page { margin: 18mm; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 12pt;
-      line-height: 1.7;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.72;
       color: #111;
       max-width: 100%;
+      margin: 0;
     }
     pre, code {
-      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
-      font-size: 10pt;
-      background: #f6f8fa;
-      border-radius: 3px;
-      padding: 2px 4px;
+      font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+      font-size: 9.5pt;
+      background: #f6f7fa;
+      border-radius: 5px;
     }
-    pre { padding: 12px; overflow: visible; white-space: pre-wrap; }
-    blockquote {
-      border-left: 3px solid #ccc;
-      margin: 0;
-      padding-left: 1em;
-      color: #555;
+    pre { padding: 12px 14px; overflow: visible; white-space: pre-wrap; border: 1px solid #e4e7ee; }
+    blockquote, .aster-callout {
+      border-left: 3px solid #cbd5e1;
+      margin: 0 0 1em;
+      padding: 6px 14px;
     }
-    img { max-width: 100%; }
-    h1, h2, h3, h4 { page-break-after: avoid; }
-    table { border-collapse: collapse; width: 100%; }
-    td, th { border: 1px solid #ccc; padding: 6px 10px; }
-    a { color: #0969da; }
+    img, svg { max-width: 100%; height: auto; }
+    h1, h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+    pre, blockquote, .aster-callout, table, .aster-rendered-block, figure, img {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
+    td, th { border: 1px solid #d0d7de; padding: 6px 10px; }
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   `;
 
-  // Minimal Markdown → HTML (avoids pulling in a parser at print time;
-  // the existing reading-mode pipeline already produced rendered HTML if
-  // available, so we take that first).
-  function markdownToHtml(md) {
-    let html = md
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/^#{6}\s(.+)$/gm, '<h6>$1</h6>')
-      .replace(/^#{5}\s(.+)$/gm, '<h5>$1</h5>')
-      .replace(/^#{4}\s(.+)$/gm, '<h4>$1</h4>')
-      .replace(/^#{3}\s(.+)$/gm, '<h3>$1</h3>')
-      .replace(/^#{2}\s(.+)$/gm, '<h2>$1</h2>')
-      .replace(/^#{1}\s(.+)$/gm, '<h1>$1</h1>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-      .replace(/^---+$/gm, '<hr>')
-      .replace(/\n\n/g, '</p><p>');
-    return `<p>${html}</p>`;
-  }
-
-  function getDocumentHtml() {
-    // Prefer the host's renderer: it is the same pipeline the app uses.
+  async function buildPrintDocument(explicitContent) {
     const ed = window.__aster && window.__aster.editor;
-    if (ed) return ed.getHtml();
-    const cmContent = document.querySelector('.cm-content');
-    if (cmContent) return markdownToHtml(cmContent.innerText || '');
-    return '<p>No content found.</p>';
-  }
-
-  function printDocument(explicitContent) {
-    const bodyHtml = explicitContent
-      ? markdownToHtml(explicitContent)
-      : getDocumentHtml();
-
-    const ed = window.__aster && window.__aster.editor;
+    if (ed && typeof ed.getStandaloneHtml === 'function') {
+      return await ed.getStandaloneHtml(explicitContent || undefined);
+    }
     const title = (ed && ed.getTitle()) || document.title || 'Aster Document';
+    const bodyHtml = ed && typeof ed.getHtmlAsync === 'function'
+      ? await ed.getHtmlAsync()
+      : ed
+        ? ed.getHtml()
+        : '<p>No content found.</p>';
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${title}</title>
+<style>${FALLBACK_PRINT_CSS}</style>
+</head>
+<body>${bodyHtml}</body>
+</html>`;
+  }
+
+  async function printDocument(explicitContent) {
+    const fullHtml = await buildPrintDocument(explicitContent);
 
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:0';
@@ -82,39 +69,26 @@
 
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     doc.open();
-    doc.write(`<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>${title}</title>
-<style>${PRINT_CSS}</style>
-</head>
-<body>${bodyHtml}</body>
-</html>`);
+    doc.write(fullHtml);
     doc.close();
 
-    iframe.contentWindow.addEventListener('afterprint', () => {
-      document.body.removeChild(iframe);
-    });
+    const cleanup = () => {
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    };
+    iframe.contentWindow.addEventListener('afterprint', cleanup);
 
-    // Small delay so the iframe can finish layout before the print dialog opens.
+    // Give images and external font/KaTeX stylesheets in the iframe a brief beat to settle.
     setTimeout(() => {
+      if (!iframe.contentWindow) return;
       iframe.contentWindow.focus();
       iframe.contentWindow.print();
-    }, 120);
+      setTimeout(cleanup, 60000);
+    }, 180);
 
     return { status: 'printing' };
   }
 
   window.__aster.commands.register('pdf-export.print', async (params) => {
-    return printDocument(params.content || null);
+    return printDocument((params && params.content) || null);
   });
-
-  // Also wire up a keyboard shortcut: Cmd/Ctrl + Shift + P
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'KeyP') {
-      e.preventDefault();
-      printDocument(null);
-    }
-  }, { capture: true });
 })();

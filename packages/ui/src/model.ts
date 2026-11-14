@@ -3,12 +3,16 @@ import type { LangSetting } from './i18n';
 export const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 export const isWindows = typeof navigator !== 'undefined' && /Win/.test(navigator.platform);
 
-export type EditorMode = 'live' | 'source';
+export type EditorMode = 'live' | 'source' | 'read';
 
 export interface Tab {
   id: string;
   /** Absolute path, or null for an unsaved buffer. */
   path: string | null;
+  /** Stable draft directory id under ~/.aster/drafts/<draftId>/ when path is null. */
+  draftId?: string | null;
+  /** Absolute path to the draft directory on disk once persisted (for resolving draft images). */
+  draftDir?: string | null;
   title: string;
   content: string;
   /** Content as last loaded/saved; dirty = content !== saved. */
@@ -16,19 +20,21 @@ export interface Tab {
   /** Hash of the last successful save, used as an optimistic lock. */
   hash: string | null;
   dirty: boolean;
+  /** Forced read-only protection (e.g. non-UTF-8 files). */
+  encodingLossy?: boolean;
 }
 
 // ── Typography ───────────────────────────────────────────────
 
 /** Font stacks offered in the pickers. Labels are i18n keys. */
 export const FONT_STACKS = {
+  sans: {
+    label: 'font.sans',
+    css: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Segoe UI Variable Text', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Noto Sans CJK SC', sans-serif",
+  },
   serif: {
     label: 'font.serif',
     css: "'Iowan Old Style', 'Palatino Linotype', Palatino, 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', Georgia, serif",
-  },
-  sans: {
-    label: 'font.sans',
-    css: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif",
   },
   wenkai: {
     label: 'font.wenkai',
@@ -44,7 +50,7 @@ export type FontStackId = keyof typeof FONT_STACKS;
 /** A font choice: a known stack, or a family name the user typed. */
 export type FontChoice = { stack: FontStackId } | { family: string };
 
-export type FontPreset = 'serif' | 'sans' | 'custom';
+export type FontPreset = 'sans' | 'serif' | 'wenkai' | 'custom';
 
 export interface Typography {
   /** Use the active theme's fonts; when true, preset/body/code are ignored. */
@@ -56,8 +62,9 @@ export interface Typography {
 }
 
 export const PRESET_FONTS: Record<Exclude<FontPreset, 'custom'>, { body: FontChoice; code: FontChoice }> = {
-  serif: { body: { stack: 'serif' }, code: { stack: 'mono' } },
   sans: { body: { stack: 'sans' }, code: { stack: 'mono' } },
+  serif: { body: { stack: 'serif' }, code: { stack: 'mono' } },
+  wenkai: { body: { stack: 'wenkai' }, code: { stack: 'mono' } },
 };
 
 /** CSS font-family for a choice; a typed family falls back to the matching stack. */
@@ -71,14 +78,16 @@ export function fontCss(choice: FontChoice, fallback: FontStackId): string {
 export function resolveFonts(t: Typography): { body: string; code: string } | null {
   if (t.followTheme) return null;
   const pick = t.preset === 'custom' ? { body: t.body, code: t.code } : PRESET_FONTS[t.preset];
-  return { body: fontCss(pick.body, 'serif'), code: fontCss(pick.code, 'mono') };
+  return { body: fontCss(pick.body, 'sans'), code: fontCss(pick.code, 'mono') };
 }
 
 // ── Settings ─────────────────────────────────────────────────
 
+export const BUILTIN_THEME_IDS = new Set(['paper', 'light', 'dark', 'midnight']);
+
 export interface Settings {
   language: LangSetting;
-  /** 'system' | 'light' | 'dark', or a plugin theme id. */
+  /** 'system' | 'paper' | 'light' | 'dark' | 'midnight', or a plugin theme id. */
   theme: string;
   /** Windows native menu row; other platforms retain their native menu. */
   showMenuBar: boolean;
@@ -88,9 +97,14 @@ export interface Settings {
   proseWidth: number;
   lineNumbers: boolean;
   typewriter: boolean;
+  focusMode: boolean;
+  cjkSpacing: boolean;
   /** Heading navigator on the editor's right edge. */
   outlineRail: boolean;
+  slashCommands: boolean;
   autoSave: boolean;
+  updateCheckEnabled: boolean;
+  imageAssetsDir: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -99,8 +113,8 @@ export const DEFAULT_SETTINGS: Settings = {
   showMenuBar: !isWindows,
   typography: {
     followTheme: true,
-    preset: 'serif',
-    body: { stack: 'serif' },
+    preset: 'sans',
+    body: { stack: 'sans' },
     code: { stack: 'mono' },
   },
   fontSize: 16,
@@ -108,8 +122,13 @@ export const DEFAULT_SETTINGS: Settings = {
   proseWidth: 760,
   lineNumbers: false,
   typewriter: false,
+  focusMode: false,
+  cjkSpacing: true,
   outlineRail: true,
+  slashCommands: true,
   autoSave: true,
+  updateCheckEnabled: true,
+  imageAssetsDir: 'assets',
 };
 
 export const SETTINGS_KEY = 'aster.settings.v1';
@@ -131,13 +150,17 @@ export function normalizeSettings(raw: unknown): Settings {
   const d = DEFAULT_SETTINGS;
   const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, any>;
   const ty = (r.typography && typeof r.typography === 'object' ? r.typography : {}) as Record<string, unknown>;
+  const preset =
+    ty.preset === 'sans' || ty.preset === 'serif' || ty.preset === 'wenkai' || ty.preset === 'custom'
+      ? ty.preset
+      : d.typography.preset;
   return {
     language: r.language === 'zh' || r.language === 'en' ? r.language : 'system',
     theme: typeof r.theme === 'string' && r.theme ? r.theme : d.theme,
     showMenuBar: typeof r.showMenuBar === 'boolean' ? r.showMenuBar : d.showMenuBar,
     typography: {
       followTheme: typeof ty.followTheme === 'boolean' ? ty.followTheme : d.typography.followTheme,
-      preset: ty.preset === 'sans' || ty.preset === 'custom' || ty.preset === 'serif' ? ty.preset : d.typography.preset,
+      preset,
       body: validFont(ty.body, d.typography.body),
       code: validFont(ty.code, d.typography.code),
     },
@@ -146,8 +169,15 @@ export function normalizeSettings(raw: unknown): Settings {
     proseWidth: clamp(r.proseWidth, 480, 100000, d.proseWidth),
     lineNumbers: typeof r.lineNumbers === 'boolean' ? r.lineNumbers : d.lineNumbers,
     typewriter: typeof r.typewriter === 'boolean' ? r.typewriter : d.typewriter,
+    focusMode: typeof r.focusMode === 'boolean' ? r.focusMode : d.focusMode,
+    cjkSpacing: typeof r.cjkSpacing === 'boolean' ? r.cjkSpacing : d.cjkSpacing,
     outlineRail: typeof r.outlineRail === 'boolean' ? r.outlineRail : d.outlineRail,
+    slashCommands: typeof r.slashCommands === 'boolean' ? r.slashCommands : d.slashCommands,
     autoSave: typeof r.autoSave === 'boolean' ? r.autoSave : d.autoSave,
+    updateCheckEnabled: typeof r.updateCheckEnabled === 'boolean' ? r.updateCheckEnabled : d.updateCheckEnabled,
+    imageAssetsDir: typeof r.imageAssetsDir === 'string' && r.imageAssetsDir.trim() && !r.imageAssetsDir.includes('..')
+      ? r.imageAssetsDir.trim()
+      : d.imageAssetsDir,
   };
 }
 
@@ -198,7 +228,7 @@ export function applySettings(s: Settings, pluginThemes: PluginTheme[] = []): Pr
     link?.remove();
   }
   // A plugin theme id that isn't loaded (yet) falls back to the system theme.
-  if (s.theme === 'system' || (!pt && s.theme !== 'light' && s.theme !== 'dark')) root.removeAttribute('data-theme');
+  if (s.theme === 'system' || (!pt && !BUILTIN_THEME_IDS.has(s.theme))) root.removeAttribute('data-theme');
   else root.setAttribute('data-theme', s.theme);
 
   // Typography: inline vars override the theme's --theme-font-* defaults.
@@ -238,6 +268,11 @@ export function wordCount(s: string): number {
   return cjk + (rest ? rest.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length : 0);
 }
 
+/** Estimated reading time in minutes (~280 words/characters per minute). */
+export function readingMinutes(words: number): number {
+  return words <= 0 ? 0 : Math.max(1, Math.ceil(words / 280));
+}
+
 /**
  * file path → URL the webview can load, encoding each segment separately so
  * relative URLs inside the loaded file (`./vendor/x.js`, `theme.css`) resolve
@@ -273,19 +308,32 @@ export function untitledTitle(existing: Tab[], base = 'Untitled'): string {
 }
 
 export function makeTab(
-  init: { path?: string | null; content?: string; hash?: string | null },
+  init: {
+    id?: string;
+    path?: string | null;
+    draftId?: string | null;
+    draftDir?: string | null;
+    content?: string;
+    hash?: string | null;
+    encodingLossy?: boolean;
+  },
   existing: Tab[],
   untitledBase?: string,
 ): Tab {
+  const id = init.id ?? newTabId();
   const content = init.content ?? '';
   const path = init.path ?? null;
+  const draftId = path ? null : (init.draftId ?? `draft-${id}`);
   return {
-    id: newTabId(),
+    id,
     path,
+    draftId,
+    draftDir: init.draftDir ?? null,
     title: path ? basename(path) : untitledTitle(existing, untitledBase),
     content,
     saved: content,
     hash: init.hash ?? null,
     dirty: false,
+    encodingLossy: init.encodingLossy ?? false,
   };
 }

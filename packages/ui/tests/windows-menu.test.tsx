@@ -111,13 +111,13 @@ describe('Windows menu preferences', () => {
     expect(root.querySelectorAll('.aster-tab')).toHaveLength(1);
   });
 
-  it('omits PDF on the settings tab and restores it when returning to the document', () => {
+  it('keeps Settings as a modal overlay without polluting document tabs', () => {
     const root = mount();
     openSettings(root);
-    const settingsItems = moreItems(root);
-    expect(settingsItems.map((item) => item.querySelector('span')!.textContent)).toEqual(['New blank tab', 'Open file…', 'Settings']);
-    settingsItems[settingsItems.length - 1].click();
-    (root.querySelectorAll('.aster-tab')[0] as HTMLElement).click();
+    expect(root.querySelector('.aster-settings-sheet')).not.toBeNull();
+    expect(root.querySelectorAll('.aster-tab')).toHaveLength(1);
+    (root.querySelector('[aria-label="Close settings"]') as HTMLButtonElement).click();
+    expect(root.querySelector('.aster-settings-sheet')).toBeNull();
     expect(moreItems(root).map((item) => item.querySelector('span')!.textContent)).toContain('Export as PDF…');
   });
 });

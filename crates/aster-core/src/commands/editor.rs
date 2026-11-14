@@ -1,8 +1,5 @@
-use serde_json::{json, Value};
-use crate::{
-    registry::{CommandRegistry, CommandSpec},
-    error::AsterResult,
-};
+use serde_json::json;
+use crate::registry::{CommandRegistry, CommandSpec};
 
 /// Register editor.* command specs (no handlers — dispatched to GUI via RPC).
 /// These are spec-only: CLI/MCP sees them in tools/list, and forwarding to

@@ -159,6 +159,41 @@ export const insertCodeBlock: Cmd = (view) => {
   return true;
 };
 
+/** Insert a $$...$$ display math block. */
+export const insertMathBlock: Cmd = (view) => {
+  if (view.state.readOnly) return false;
+  const tr = view.state.changeByRange((range) => {
+    const text = view.state.sliceDoc(range.from, range.to);
+    const line = view.state.doc.lineAt(range.from);
+    const lead = range.from === line.from ? '' : '\n';
+    const insert = `${lead}$$\n${text}\n$$\n`;
+    const cursor = range.from + lead.length + 3 + text.length;
+    return { changes: { from: range.from, to: range.to, insert }, range: EditorSelection.cursor(cursor) };
+  });
+  view.dispatch(view.state.update(tr, { scrollIntoView: true, userEvent: 'input.format' }));
+  return true;
+};
+
+/** Insert a GitHub-style Callout block (> [!NOTE]). */
+export function insertCallout(kind: 'NOTE' | 'TIP' | 'IMPORTANT' | 'WARNING' | 'CAUTION' = 'NOTE'): Cmd {
+  return (view) => {
+    if (view.state.readOnly) return false;
+    const range = view.state.selection.main;
+    const line = view.state.doc.lineAt(range.from);
+    const lead = line.text.trim() === '' ? '' : '\n\n';
+    const at = line.text.trim() === '' ? line.from : line.to;
+    const to = line.text.trim() === '' ? line.to : at;
+    const insert = `${lead}> [!${kind}]\n> `;
+    view.dispatch({
+      changes: { from: at, to, insert },
+      selection: EditorSelection.cursor(at + insert.length),
+      scrollIntoView: true,
+      userEvent: 'input.format',
+    });
+    return true;
+  };
+}
+
 /** Insert a 3x2 table skeleton at the cursor. */
 export const insertTable: Cmd = insertTableCmd(3, 2);
 const LIST_RE = /^(\s*)([-*+]\s+\[[ xX]\]\s+|[-*+]\s+|(\d+)([.)])\s+|>\s?)/;
@@ -243,6 +278,8 @@ export const formattingKeymap: KeyBinding[] = [
   { key: 'Mod-i', run: toggleInline('*'), preventDefault: true },
   { key: 'Mod-e', run: toggleInline('`'), preventDefault: true },
   { key: 'Mod-Shift-x', run: toggleInline('~~'), preventDefault: true },
+  { key: 'Mod-Shift-h', run: toggleInline('=='), preventDefault: true },
+  { key: 'Mod-Shift-m', run: toggleInline('$'), preventDefault: true },
   { key: 'Mod-k', run: insertLink, preventDefault: true },
   { key: 'Mod-Alt-c', run: insertCodeBlock, preventDefault: true },
   { key: 'Mod-Alt-t', run: insertTable, preventDefault: true },

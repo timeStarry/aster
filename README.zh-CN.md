@@ -21,19 +21,15 @@ Aster 是一个跨平台 Markdown 编辑器，面向写作者和 AI 智能体：
 - **平台外观。** macOS 26 及以上使用 Liquid Glass，旧版使用 Vibrancy。Windows 使用 Fluent 风格，窗口优先采用 Mica，必要时回退到 Acrylic 或实色背景。两个平台共用编辑器和内核，正文保持实色阅读背景。外壳跟随所选主题，并遵循系统减少透明度的设置。
 - **默认安全。** 插件按 Ed25519 签名校验：被篡改的插件直接拒绝，未签名的会被标记出来。崩溃时未保存的内容不会丢，磁盘上已被改动的文件不会在未询问时被覆盖。
 
-## 两个版本
+## 安装与更新
 
-| | Lite | Full |
-|---|---|---|
-| 核心编辑器（实时预览、标签页、搜索） | ✓ | ✓ |
-| 数学公式、Mermaid、PDF 导出、额外主题 | — | ✓ |
-| 加密与文档库插件 | — | ✓ |
+Aster 采用单一完整旗舰版分发，开箱内置 KaTeX 数学公式、Mermaid 图表、原位可视化表格、自包含 HTML 与 PDF 导出，以及四套阅读主题（`纸感护眼 Paper`、`纯净浅色`、`深墨夜间`、`OLED 极夜`）。
 
-从 [Releases](https://github.com/timeStarry/aster/releases) 下载最新版。
+从 [Releases](https://github.com/timeStarry/aster/releases) 下载最新安装包，或在应用内 **「设置 → 关于」** 直接从 GitHub Releases 检查并一键更新。
 
-Windows 可使用 Lite 或 Full 的 `.exe` 安装器，也提供供管理员安装的 `.msi` 包。原生菜单栏默认隐藏，可在「设置 → 外观 → 显示菜单栏」开启。
+Windows 同时提供 `.exe` 与 `.msi` 安装包。原生菜单栏默认隐藏，可在「设置 → 外观 → 显示菜单栏」开启。
 
-macOS 上目前未做公证；复制到「应用程序」后，先运行一次 `xattr -cr /Applications/Aster.app`。
+macOS 版采用本地签名；若首次从浏览器下载打开受 Gatekeeper 拦截，运行一次 `xattr -cr /Applications/Aster.app` 即可。
 
 ## 使用
 
@@ -72,13 +68,10 @@ cargo test --workspace    # 核心、应用、CLI、插件
 桌面应用（需先 `cargo install tauri-cli --version '^2'`）：
 
 ```bash
-(cd crates/aster-app && cargo tauri dev)               # lite
-
-node scripts/stage-plugins.mjs                          # full：先准备插件
-(cd crates/aster-app && cargo tauri dev --features bundled-plugins --config tauri.full.conf.json)
+(cd crates/aster-app && cargo tauri dev)
 ```
 
-推送 `v*` 标签会运行 Release 工作流，构建 macOS、Linux 和 Windows 的 Lite / Full 包。Windows 同时产出 NSIS `.exe` 与 WiX `.msi` 安装器。选定构建全部成功后才创建草稿 Release；已有 Release 及其资产会保留。
+推送 `v*` 标签会运行 Release 工作流，构建 macOS、Linux 和 Windows 安装包并自动发布至 GitHub Releases（已有 Release 及其资产受保护不会被覆盖）。
 
 打新版本标签前，同步更新各 crate 的版本、`tauri.conf.json` 中的应用版本，以及用于 MSI 升级的数字版本 `bundle.windows.wix.version`。
 
@@ -88,26 +81,18 @@ node scripts/stage-plugins.mjs                          # full：先准备插件
 gh workflow run release.yml --ref main -f platforms=windows -F publish=false
 ```
 
-本地构建：macOS 在 `crates/aster-app` 运行 `cargo tauri build`，Linux 用 `docker/build-linux.sh`。Windows 先安装 Visual Studio C++ Build Tools 与 Tauri 所需组件，再从仓库根目录运行：
-
-```powershell
-pnpm install --frozen-lockfile
-rustup target add x86_64-pc-windows-msvc wasm32-wasip2
-node scripts/stage-plugins.mjs
-Set-Location crates/aster-app
-cargo tauri build --target x86_64-pc-windows-msvc --bundles nsis,msi --features bundled-plugins --config tauri.full.conf.json
-# Lite：省略 --features bundled-plugins 和 --config tauri.full.conf.json。
-```
+本地构建：macOS 在 `crates/aster-app` 运行 `cargo tauri build`，Linux 用 `docker/build-linux.sh`，Windows 在 `crates/aster-app` 运行 `cargo tauri build --target x86_64-pc-windows-msvc --bundles nsis,msi`。
 
 ### 目录
 
 ```
-crates/aster-core    核心：命令注册表、文档、工作区、插件、签名校验
-crates/aster-app     Tauri 桌面应用
+crates/aster-core    核心：命令注册表、文档、工作区、文件监听、插件、签名校验
+crates/aster-app     Tauri 桌面应用与 GitHub 自动更新
 crates/aster-cli     命令行（同一组命令）
 crates/aster-rpc     JSON-RPC 套接字与 MCP 服务器
-packages/editor      CodeMirror：实时预览、格式、表格、大纲
-packages/ui          应用外壳：标签页、设置、恢复、中英文
+packages/editor      CodeMirror：实时预览、格式、表格、查找替换、Diff
+packages/renderer    统一 Markdown/GFM/LaTeX/Shiki HTML 与打印管线
+packages/ui          应用外壳：标签页、工作区、命令面板、设置、中英文
 plugins/             前端插件（数学、Mermaid、PDF、主题）
 plugins-wasm/        WASM 后端插件（加密、文档库）
 assets/brand         图标与品牌源文件（用 tools/export_brand_icons.py 重新生成）

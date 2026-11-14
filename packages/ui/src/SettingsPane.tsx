@@ -1,9 +1,10 @@
 import { For, Show, createSignal, type JSX } from 'solid-js';
-import type { Settings, PluginTheme, FontChoice, FontStackId, FontPreset, Typography } from './model';
-import { MOD, ALT, SHIFT, FONT_STACKS, resolveFonts, isWindows } from './model';
+import type { Settings, PluginTheme, FontStackId, FontPreset, Typography } from './model';
+import { MOD, ALT, SHIFT, resolveFonts, isWindows } from './model';
 import { t, pick, type Key } from './i18n';
 import { FontCombobox, type InstalledFont } from './FontCombobox';
 import { BrandMark } from './BrandMark';
+import { formatBytes, type UpdaterController } from './updater-client';
 
 export interface PluginRow {
   id: string;
@@ -26,9 +27,12 @@ interface Props {
   onImport: () => void;
   onReset: () => void;
   onOpenRepo: () => void;
+  onClose?: () => void;
+  updater?: UpdaterController;
+  initialSection?: Section;
 }
 
-type Section = 'general' | 'appearance' | 'editor' | 'plugins' | 'shortcuts' | 'about';
+export type Section = 'general' | 'appearance' | 'editor' | 'plugins' | 'shortcuts' | 'about';
 
 const SECTIONS: { id: Section; label: Key }[] = [
   { id: 'general', label: 'set.general' },
@@ -63,7 +67,7 @@ const SHORTCUT_GROUPS: { title: Key; rows: [Key, string][] }[] = [
     rows: [
       ['sc.find', `${MOD}F`],
       ['sc.toggleMode', `${MOD}/`],
-      ['sc.toggleLock', `${MOD}${ALT}L`],
+      ['sc.toggleSidebar', `${MOD}\\`],
       ['sc.indent', `Tab / ${SHIFT}Tab`],
     ],
   },
@@ -88,13 +92,15 @@ const WIDTHS: { value: number; label: Key }[] = [
   { value: 100000, label: 'width.full' },
 ];
 
-const TEXT_PRESETS: FontStackId[] = ['serif', 'sans', 'wenkai'];
+const TEXT_PRESETS: FontStackId[] = ['sans', 'serif', 'wenkai'];
 const MONO_PRESETS: FontStackId[] = ['mono'];
 
-// Static previews; the real colors live in theme.css / plugin CSS.
+// Static previews matching Aster's 4 built-in themes.
 const SWATCHES: Record<string, { bg: string; fg: string; accent: string }> = {
-  light: { bg: '#fbfbfa', fg: '#1c1917', accent: '#4f46e5' },
-  dark: { bg: '#22272e', fg: '#adbac7', accent: '#539bf5' },
+  paper: { bg: '#fcfbf8', fg: '#191c26', accent: '#4250dc' },
+  light: { bg: '#ffffff', fg: '#191c26', accent: '#4250dc' },
+  dark: { bg: '#191c26', fg: '#eae8e1', accent: '#7b88ff' },
+  midnight: { bg: '#0b0c10', fg: '#e6e7ec', accent: '#7b88ff' },
 };
 
 function Swatch(p: { id: string }) {
@@ -108,7 +114,7 @@ function Swatch(p: { id: string }) {
   );
   return (
     <span class="aster-swatch" aria-hidden="true">
-      {p.id === 'system' ? <>{half('light')}{half('dark')}</> : half(p.id)}
+      {p.id === 'system' ? <>{half('paper')}{half('dark')}</> : half(p.id)}
     </span>
   );
 }
@@ -190,16 +196,20 @@ function Range(p: {
 }
 
 export function SettingsPane(props: Props) {
-  const [section, setSection] = createSignal<Section>('general');
+  const [section, setSection] = createSignal<Section>(props.initialSection ?? 'general');
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => props.onChange({ ...props.settings, [k]: v });
   const setType = (patch: Partial<Typography>) => set('typography', { ...props.settings.typography, ...patch });
   const ty = () => props.settings.typography;
 
   const themes = () => [
     { id: 'system', name: t('theme.system') },
+    { id: 'paper', name: t('theme.paper') },
     { id: 'light', name: t('theme.light') },
     { id: 'dark', name: t('theme.dark') },
-    ...props.themes.map((th) => ({ id: th.id, name: pick(th.i18n, th.name) })),
+    { id: 'midnight', name: t('theme.midnight') },
+    ...props.themes
+      .filter((th) => th.id !== 'aster.theme-dark')
+      .map((th) => ({ id: th.id, name: pick(th.i18n, th.name) })),
   ];
 
   // Preview reflects the effective fonts, including "use theme fonts".
@@ -216,6 +226,19 @@ export function SettingsPane(props: Props) {
 
   return (
     <div class="aster-settings">
+      <Show when={props.onClose}>
+        <button
+          type="button"
+          class="aster-set-close"
+          aria-label={t('set.close')}
+          title={`${t('set.close')} (Esc)`}
+          onClick={() => props.onClose?.()}
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path d="M4 4l8 8M12 4l-8 8" />
+          </svg>
+        </button>
+      </Show>
       <nav class="aster-set-nav" aria-label={t('set.title')} role="tablist" aria-orientation="vertical" onKeyDown={onNavKey}>
         <h1 class="aster-set-title">{t('set.title')}</h1>
         <For each={SECTIONS}>
@@ -228,7 +251,12 @@ export function SettingsPane(props: Props) {
               tabIndex={section() === s.id ? 0 : -1}
               classList={{ 'is-on': section() === s.id }}
               onClick={() => setSection(s.id)}
-            >{t(s.label)}</button>
+            >
+              <span>{t(s.label)}</span>
+              <Show when={s.id === 'about' && props.updater?.hasUpdate()}>
+                <span class="aster-nav-dot" aria-hidden="true" />
+              </Show>
+            </button>
           )}
         </For>
       </nav>
@@ -255,6 +283,19 @@ export function SettingsPane(props: Props) {
             <div class="aster-set-group">
               <Row id="set-as" label={t('set.autoSave')} hint={t('set.autoSaveHint')}>
                 <Toggle id="set-as" labelledBy="set-as-label" checked={props.settings.autoSave} onChange={(v) => set('autoSave', v)} />
+              </Row>
+              <Row id="set-assets-dir" label={t('set.imageAssetsDir')} hint={t('set.imageAssetsDirHint')}>
+                <input
+                  id="set-assets-dir"
+                  class="aster-text"
+                  type="text"
+                  aria-labelledby="set-assets-dir-label"
+                  value={props.settings.imageAssetsDir}
+                  onChange={(e) => {
+                    const next = e.currentTarget.value.trim();
+                    if (next && !next.includes('..')) set('imageAssetsDir', next);
+                  }}
+                />
               </Row>
             </div>
             <h3>{t('set.backup')}</h3>
@@ -318,8 +359,9 @@ export function SettingsPane(props: Props) {
                   value={ty().preset}
                   disabled={ty().followTheme}
                   options={[
-                    { value: 'serif', label: t('preset.serif') },
                     { value: 'sans', label: t('preset.sans') },
+                    { value: 'serif', label: t('preset.serif') },
+                    { value: 'wenkai', label: t('preset.wenkai') },
                     { value: 'custom', label: t('preset.custom') },
                   ]}
                   onChange={(v) => setType({ preset: v })}
@@ -387,14 +429,23 @@ export function SettingsPane(props: Props) {
 
             <h3>{t('set.behavior')}</h3>
             <div class="aster-set-group">
-              <Row id="set-ln" label={t('set.lineNumbers')} hint={t('set.lineNumbersHint')}>
-                <Toggle id="set-ln" labelledBy="set-ln-label" checked={props.settings.lineNumbers} onChange={(v) => set('lineNumbers', v)} />
+              <Row id="set-cjk" label={t('set.cjkSpacing')} hint={t('set.cjkSpacingHint')}>
+                <Toggle id="set-cjk" labelledBy="set-cjk-label" checked={props.settings.cjkSpacing} onChange={(v) => set('cjkSpacing', v)} />
+              </Row>
+              <Row id="set-focus" label={t('set.focusMode')} hint={t('set.focusModeHint')}>
+                <Toggle id="set-focus" labelledBy="set-focus-label" checked={props.settings.focusMode} onChange={(v) => set('focusMode', v)} />
               </Row>
               <Row id="set-tw" label={t('set.typewriter')} hint={t('set.typewriterHint')}>
                 <Toggle id="set-tw" labelledBy="set-tw-label" checked={props.settings.typewriter} onChange={(v) => set('typewriter', v)} />
               </Row>
               <Row id="set-rail" label={t('set.outlineRail')} hint={t('set.outlineRailHint')}>
                 <Toggle id="set-rail" labelledBy="set-rail-label" checked={props.settings.outlineRail} onChange={(v) => set('outlineRail', v)} />
+              </Row>
+              <Row id="set-slash" label={t('set.slashCommands')} hint={t('set.slashCommandsHint')}>
+                <Toggle id="set-slash" labelledBy="set-slash-label" checked={props.settings.slashCommands} onChange={(v) => set('slashCommands', v)} />
+              </Row>
+              <Row id="set-ln" label={t('set.lineNumbers')} hint={t('set.lineNumbersHint')}>
+                <Toggle id="set-ln" labelledBy="set-ln-label" checked={props.settings.lineNumbers} onChange={(v) => set('lineNumbers', v)} />
               </Row>
             </div>
           </Show>
@@ -447,18 +498,122 @@ export function SettingsPane(props: Props) {
           <Show when={section() === 'about'}>
             <h2>{t('set.about')}</h2>
             <div class="aster-about">
-              <BrandMark size={72} class="aster-about-mark" title="Aster" />
+              <BrandMark size={68} class="aster-about-mark" title="Aster" />
               <div class="aster-about-name">Aster</div>
               <div class="aster-about-tag">{t('set.tagline')}</div>
               <div class="aster-set-ver aster-about-ver">{t('about.edition', { v: props.version || '—' })}</div>
-              <button class="aster-about-link" onClick={() => props.onOpenRepo()}>
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-                </svg>
-                <span>{t('about.github')}</span>
-              </button>
-              <div class="aster-about-url aster-selectable">github.com/timeStarry/aster</div>
-              <div class="aster-about-lic">{t('about.license')}</div>
+
+              <div class="aster-set-group aster-about-prefs">
+                <Show when={props.updater}>
+                  {(upd) => {
+                    const stageLabel = () => {
+                      const st = upd().progress()?.stage;
+                      if (st === 'verifying') return t('about.verifying');
+                      if (st === 'installing') return t('about.installing');
+                      return t('about.downloading', { pct: upd().progress()?.percent ?? 0 });
+                    };
+                    const sizeLabel = () => formatBytes(upd().info()?.assetSize);
+                    const statusText = () => {
+                      const res = upd().installResult();
+                      if (res) return res.action === 'relaunch' ? t('about.readyRestart') : t('about.installerOpened');
+                      if (upd().installing()) return stageLabel();
+                      if (upd().checking()) return t('about.checking');
+                      if (upd().error()) return upd().error()!;
+                      if (upd().info()?.hasUpdate) return t('about.updateAvailable', { v: upd().info()!.latestVersion });
+                      if (upd().info()) return t('about.upToDate');
+                      return t('about.softwareUpdateHint');
+                    };
+                    const isAccent = () => !upd().installResult() && !upd().installing() && !upd().error() && Boolean(upd().info()?.hasUpdate);
+                    const isErr = () => !upd().installing() && Boolean(upd().error());
+
+                    return (
+                      <div class="aster-set-row aster-update-row">
+                        <div class="aster-update-row-head">
+                          <div class="aster-set-text">
+                            <div class="aster-set-label">{t('about.softwareUpdate')}</div>
+                            <div
+                              class="aster-set-hint"
+                              classList={{ 'is-accent': isAccent(), 'is-error': isErr() }}
+                            >
+                              {statusText()}
+                            </div>
+                          </div>
+                          <div class="aster-set-control">
+                            <Show
+                              when={!upd().installResult()}
+                              fallback={
+                                <Show when={upd().installResult()?.action === 'relaunch'}>
+                                  <button type="button" class="aster-btn primary" onClick={() => upd().relaunchNow()}>
+                                    {t('about.restartNow')}
+                                  </button>
+                                </Show>
+                              }
+                            >
+                              <Show when={!upd().installing()}>
+                                <Show
+                                  when={upd().info()?.hasUpdate}
+                                  fallback={
+                                    <button
+                                      type="button"
+                                      class="aster-btn"
+                                      disabled={upd().checking()}
+                                      onClick={() => upd().checkForUpdates(false)}
+                                    >
+                                      {t('about.checkUpdate')}
+                                    </button>
+                                  }
+                                >
+                                  <button type="button" class="aster-btn primary" onClick={() => upd().downloadAndInstall()}>
+                                    {sizeLabel()
+                                      ? t('about.downloadAndInstall', { size: sizeLabel() })
+                                      : t('about.downloadAndInstallNoSize')}
+                                  </button>
+                                </Show>
+                              </Show>
+                            </Show>
+                          </div>
+                        </div>
+
+                        <Show when={upd().installing()}>
+                          <div class="aster-update-bar" role="progressbar" aria-valuenow={upd().progress()?.percent ?? 0} aria-valuemin={0} aria-valuemax={100}>
+                            <div class="aster-update-bar-fill" style={{ width: `${upd().progress()?.percent ?? 15}%` }} />
+                          </div>
+                        </Show>
+
+                        <Show when={!upd().installing() && !upd().installResult() && upd().info()?.hasUpdate}>
+                          <Show when={upd().info()?.releaseNotes?.trim()}>
+                            <pre class="aster-update-notes aster-selectable">{upd().info()!.releaseNotes.trim()}</pre>
+                          </Show>
+                          <div class="aster-update-sublink">
+                            <button type="button" class="aster-link-inline" onClick={() => upd().openReleaseUrl()}>
+                              {t('about.openReleasePage')} ↗
+                            </button>
+                          </div>
+                        </Show>
+                      </div>
+                    );
+                  }}
+                </Show>
+
+                <Row id="set-auto-update" label={t('about.autoCheck')} hint={t('about.autoCheckHint')}>
+                  <Toggle
+                    id="set-auto-update"
+                    checked={props.settings.updateCheckEnabled}
+                    labelledBy="set-auto-update-label"
+                    onChange={(v) => set('updateCheckEnabled', v)}
+                  />
+                </Row>
+              </div>
+
+              <div class="aster-about-footer">
+                <button class="aster-about-link" onClick={() => props.onOpenRepo()}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                  </svg>
+                  <span>github.com/timeStarry/aster</span>
+                </button>
+                <span class="aster-about-lic">{t('about.license')}</span>
+              </div>
             </div>
           </Show>
         </section>

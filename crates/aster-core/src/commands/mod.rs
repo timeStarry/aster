@@ -1,3 +1,4 @@
+pub mod config;
 pub mod doc;
 pub mod workspace;
 pub mod export;
@@ -18,6 +19,7 @@ pub fn register_core_commands(
     ws: Arc<WorkspaceService>,
     host: Arc<Mutex<PluginHost>>,
 ) {
+    config::register(registry);
     doc::register(registry, Arc::clone(&doc));
     workspace::register(registry, Arc::clone(&ws));
     export::register(registry, Arc::clone(&doc));

@@ -21,19 +21,15 @@ Aster is a cross-platform Markdown editor for people and agents: a desktop app w
 - **Platform appearance.** macOS uses Liquid Glass on macOS 26 and newer, with Vibrancy on older versions. Windows uses Fluent styling over Mica, with Acrylic or an opaque background as fallbacks. Both share the same editor and core; document content stays on an opaque reading surface. The shell follows the selected light, dark, or plugin theme and respects reduced transparency.
 - **Safe by default.** Plugins are checked against an Ed25519 signature: tampered plugins are refused, unsigned ones are marked as such. Unsaved work survives a crash, and a file changed on disk is never overwritten without asking.
 
-## Two editions
+## Installation & Updates
 
-| | Lite | Full |
-|---|---|---|
-| Core editor (live preview, tabs, search) | ✓ | ✓ |
-| Math (KaTeX), Mermaid, PDF export, extra theme | — | ✓ |
-| Encryption and document library plugins | — | ✓ |
+Aster ships as a single unified Flagship edition with built-in KaTeX math, Mermaid diagrams, visual tables, standalone HTML & PDF export, and four reading themes (`Paper`, `Pure Light`, `Ink Dark`, `OLED Midnight`).
 
-Download the latest from [Releases](https://github.com/timeStarry/aster/releases).
+Download the latest installer from [Releases](https://github.com/timeStarry/aster/releases), or check and install updates directly inside **Settings → About**.
 
-On Windows, use the Lite or Full `.exe` installer. `.msi` packages are also available for administrator installation. The native menu bar is hidden by default; enable it in Settings → Appearance → Show menu bar.
+On Windows, both `.exe` and `.msi` installers are provided. The native menu bar is hidden by default; enable it in Settings → Appearance → Show menu bar.
 
-On macOS the app is not yet notarized; after copying it to Applications, run `xattr -cr /Applications/Aster.app` once.
+On macOS the app is ad-hoc signed; if Gatekeeper blocks first launch after downloading from a browser, run `xattr -cr /Applications/Aster.app` once.
 
 ## Using Aster
 
@@ -72,13 +68,10 @@ cargo test --workspace    # core, app, cli, plugins
 Desktop app (needs `cargo install tauri-cli --version '^2'`):
 
 ```bash
-(cd crates/aster-app && cargo tauri dev)               # lite
-
-node scripts/stage-plugins.mjs                          # full: stage plugins first
-(cd crates/aster-app && cargo tauri dev --features bundled-plugins --config tauri.full.conf.json)
+(cd crates/aster-app && cargo tauri dev)
 ```
 
-Pushing a `v*` tag runs the Release workflow for Lite and Full on macOS, Linux, and Windows. Windows produces both NSIS `.exe` and WiX `.msi` installers. All selected builds must succeed before the workflow creates a draft release; it preserves existing releases and their assets.
+Pushing a `v*` tag runs the Release workflow for macOS, Linux, and Windows, publishing installers directly to GitHub Releases. Windows produces both NSIS `.exe` and WiX `.msi` installers. All selected builds must succeed before the release is published; existing releases and their assets are preserved.
 
 Before tagging a new version, update the crate versions, the application version in `tauri.conf.json`, and its numeric `bundle.windows.wix.version` for MSI upgrades.
 
@@ -95,19 +88,19 @@ pnpm install --frozen-lockfile
 rustup target add x86_64-pc-windows-msvc wasm32-wasip2
 node scripts/stage-plugins.mjs
 Set-Location crates/aster-app
-cargo tauri build --target x86_64-pc-windows-msvc --bundles nsis,msi --features bundled-plugins --config tauri.full.conf.json
-# Lite: omit --features bundled-plugins and --config tauri.full.conf.json.
+cargo tauri build --target x86_64-pc-windows-msvc --bundles nsis,msi
 ```
 
 ### Project layout
 
 ```
-crates/aster-core    core: registry, documents, workspace, plugins, signatures
-crates/aster-app     Tauri desktop app
+crates/aster-core    core: registry, documents, workspace, watcher, plugins, signatures
+crates/aster-app     Tauri desktop app + GitHub auto-updater
 crates/aster-cli     command-line interface (same commands)
 crates/aster-rpc     JSON-RPC socket + MCP server
-packages/editor      CodeMirror: live preview, formatting, tables, outline
-packages/ui          app shell: tabs, settings, recovery, i18n
+packages/editor      CodeMirror: live preview, formatting, tables, search, diff
+packages/renderer    unified Markdown/GFM/LaTeX/Shiki HTML & print pipeline
+packages/ui          app shell: tabs, workspace, command palette, settings, i18n
 plugins/             frontend plugins (math, Mermaid, PDF, themes)
 plugins-wasm/        WASM backend plugins (encryption, document library)
 assets/brand         icons and brand sources (regenerate with tools/export_brand_icons.py)

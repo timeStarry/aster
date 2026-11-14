@@ -41,11 +41,16 @@ export const SETTING_LABELS: Record<keyof Settings, Key> = {
   proseWidth: 'set.lineWidth',
   lineNumbers: 'set.lineNumbers',
   typewriter: 'set.typewriter',
+  focusMode: 'set.focusMode',
+  cjkSpacing: 'set.cjkSpacing',
   outlineRail: 'set.outlineRail',
+  slashCommands: 'set.slashCommands',
   autoSave: 'set.autoSave',
+  updateCheckEnabled: 'about.autoCheck',
+  imageAssetsDir: 'set.imageAssetsDir',
 };
 
-const BUILTIN_THEMES = new Set(['system', 'light', 'dark']);
+const BUILTIN_THEMES = new Set(['system', 'light', 'dark', 'paper', 'midnight']);
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 export function buildBackup(settings: Settings, plugins: PluginRef[], appVersion: string, now = new Date()): string {

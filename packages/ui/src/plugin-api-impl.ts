@@ -6,6 +6,10 @@ export interface EditorAccess {
   getContent(): string;
   /** Active document rendered to HTML by the host's markdown pipeline. */
   getHtml(): string;
+  /** Async high-fidelity HTML render (including KaTeX math, Mermaid SVG, Lezer code highlighting). */
+  getHtmlAsync?(): Promise<string>;
+  /** Complete self-contained HTML5 document ready for print or standalone export. */
+  getStandaloneHtml?(explicitContent?: string): Promise<string>;
   getTitle(): string;
 }
 

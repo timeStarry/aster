@@ -21,6 +21,9 @@ pub enum AsterError {
     #[error("invalid params: {0}")]
     InvalidParams(String),
 
+    #[error("unsupported file encoding (non-UTF-8): {0}")]
+    InvalidEncoding(String),
+
     #[error("plugin failed: {0}")]
     PluginFailed(String),
 
@@ -37,6 +40,7 @@ impl AsterError {
             Self::NotFound(_)           => "E_NOT_FOUND",
             Self::AnchorNotFound(_)     => "E_ANCHOR_NOT_FOUND",
             Self::InvalidParams(_)      => "E_INVALID_PARAMS",
+            Self::InvalidEncoding(_)    => "E_ENCODING",
             Self::PluginFailed(_)       => "E_PLUGIN_FAILED",
             Self::Io(_)                 => "E_IO",
         }

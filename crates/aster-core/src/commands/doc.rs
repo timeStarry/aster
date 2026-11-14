@@ -23,7 +23,12 @@ pub fn register(registry: &mut CommandRegistry, doc: Arc<DocumentService>) {
             move |params| {
                 let path = get_str(&params, "path")?;
                 let doc_content = d.read(Path::new(&path))?;
-                Ok(json!({"content": doc_content.content, "hash": doc_content.hash}))
+                Ok(json!({
+                    "content": doc_content.content,
+                    "hash": doc_content.hash,
+                    "readOnly": doc_content.read_only,
+                    "encodingLossy": doc_content.encoding_lossy,
+                }))
             },
         );
     }

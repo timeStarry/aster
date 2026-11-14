@@ -75,8 +75,8 @@ describe('tables', () => {
   });
 });
 
-describe('table rendering', () => {
-  it('renders a table as a grid away from the cursor and as source on it', async () => {
+describe('table rendering & in-place visual editing', () => {
+  it('keeps table as an interactive visual grid, edits cells in-place, adds rows/cols, and toggles source panel', async () => {
     const { createEditor } = await import('../src/index');
     const el = document.createElement('div');
     document.body.appendChild(el);
@@ -87,8 +87,28 @@ describe('table rendering', () => {
     expect(th[1].querySelector('strong')).not.toBeNull();
     expect((th[0] as HTMLElement).style.textAlign).toBe('center');
     expect(el.querySelector('.aster-lp-table td code')?.textContent).toBe('1');
+
+    // Moving cursor onto table keeps steady-state visual grid instead of collapsing into pipes
     ed.view.dispatch({ selection: { anchor: doc.indexOf('| A') + 2 } });
-    expect(el.querySelector('.aster-lp-table')).toBeNull();
+    expect(el.querySelector('.aster-lp-table')).not.toBeNull();
+
+    // In-place cell editing writes aligned GFM Markdown back to the document
+    const firstTd = el.querySelector<HTMLTableCellElement>('.aster-lp-table td[data-row="1"][data-col="0"]')!;
+    firstTd.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(firstTd.contentEditable).toBe('true');
+    expect(firstTd.textContent).toBe('`1`');
+    firstTd.textContent = '中文Cell';
+    firstTd.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(ed.getContent()).toContain('中文Cell');
+
+    // Add row via bottom '+' handle
+    el.querySelector<HTMLButtonElement>('.aster-lp-table-add-row')!.click();
+    expect(el.querySelectorAll('.aster-lp-table tbody tr')).toHaveLength(2);
+
+    // Clicking '</>' opens inline raw Markdown + live table preview micro-panel
+    el.querySelector<HTMLButtonElement>('.aster-lp-tbtn[data-action="edit-source"]')!.click();
+    expect(el.querySelector('.aster-lp-micro-panel')).not.toBeNull();
+    expect(el.querySelector('.cm-content')?.textContent).toContain(':------:');
     ed.destroy();
   });
 });

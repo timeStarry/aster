@@ -18,7 +18,7 @@ fn test_register_and_list() {
 
 #[test]
 fn test_dispatch_unknown_returns_not_found() {
-    let mut reg = CommandRegistry::new();
+    let reg = CommandRegistry::new();
     let err = reg.dispatch("nonexistent", serde_json::Value::Null).unwrap_err();
     assert_eq!(err.code(), "E_NOT_FOUND");
 }

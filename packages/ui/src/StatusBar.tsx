@@ -1,92 +1,64 @@
 import { Show } from 'solid-js';
 import type { EditorMode } from './model';
-import { MOD, ALT } from './model';
+import { MOD, readingMinutes } from './model';
 import { t } from './i18n';
 
 interface Props {
-  path: string | null;
   words: number;
-  line: number;
-  col: number;
   mode: EditorMode;
-  readOnly: boolean;
+  encodingLossy: boolean;
+  /** True while the user is actively typing so the footer gently fades into the background. */
+  typing: boolean;
   notice: { text: string; error?: boolean } | null;
-  /** False while a non-document tab (Settings) is active. */
-  editorActive: boolean;
-  settingsActive: boolean;
   onModeChange: (m: EditorMode) => void;
-  onToggleLock: () => void;
-  onSettings: () => void;
-  onCopyPath: () => void;
 }
 
-const LockIcon = (p: { locked: boolean }) => (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-    <rect x="3" y="7" width="10" height="7" rx="1.5" />
-    {p.locked ? <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" /> : <path d="M5.5 7V5a2.5 2.5 0 0 1 4.9-.7" />}
-  </svg>
-);
-
-const GearIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-    <circle cx="8" cy="8" r="2.2" />
-    <path d="M8 1.5v1.8M8 12.7v1.8M14.5 8h-1.8M3.3 8H1.5M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3M12.6 12.6l-1.3-1.3M4.7 4.7 3.4 3.4" />
-  </svg>
-);
-
 export function StatusBar(props: Props) {
+  const mins = () => readingMinutes(props.words);
+
   return (
-    <div class="aster-status" role="status">
-      <span class="aster-status-path" title={props.path ?? ''}>
-        <Show when={props.notice} fallback={props.editorActive ? (props.path ?? t('status.notSaved')) : t('tab.settings')}>
-          <span style={{ color: props.notice?.error ? 'var(--danger)' : 'var(--fg)' }}>{props.notice?.text}</span>
+    <div class="aster-status" classList={{ 'is-typing': props.typing && !props.notice }} role="status">
+      <div class="aster-status-meta">
+        <span>{props.words === 1 ? t('status.word') : t('status.words', { n: props.words })}</span>
+        <Show when={mins() > 0}>
+          <span class="aster-status-sep" aria-hidden="true">·</span>
+          <span>{t('status.readTime', { m: mins() })}</span>
         </Show>
-      </span>
-      <Show when={props.editorActive && props.path && !props.notice}>
-        <button class="aster-icon-btn aster-copy-path" aria-label={t('status.copyPath')} title={t('status.copyPath')} onClick={() => props.onCopyPath()}>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <rect x="5" y="5" width="8.5" height="9" rx="1.5" /><path d="M10.5 5V3.5A1.5 1.5 0 0 0 9 2H4A1.5 1.5 0 0 0 2.5 3.5V10A1.5 1.5 0 0 0 4 11.5h1" />
-          </svg>
-        </button>
-      </Show>
-      <Show when={props.editorActive}>
-      <span>{props.words === 1 ? t('status.word') : t('status.words', { n: props.words })}</span>
-      <span>{t('status.lnCol', { line: props.line, col: props.col })}</span>
+        <Show when={props.encodingLossy}>
+          <span class="aster-status-badge">{t('status.encodingBadge')}</span>
+        </Show>
+        <Show when={props.notice}>
+          {(n) => (
+            <>
+              <span class="aster-status-sep" aria-hidden="true">·</span>
+              <span class="aster-status-notice" classList={{ 'is-error': !!n().error }}>{n().text}</span>
+            </>
+          )}
+        </Show>
+      </div>
       <div class="aster-seg" role="group" aria-label={t('status.modeGroup')}>
         <button
+          type="button"
           classList={{ 'is-on': props.mode === 'live' }}
           aria-pressed={props.mode === 'live'}
           title={t('status.liveTip', { key: `${MOD}/` })}
           onClick={() => props.onModeChange('live')}
         >{t('status.live')}</button>
         <button
+          type="button"
           classList={{ 'is-on': props.mode === 'source' }}
           aria-pressed={props.mode === 'source'}
           title={t('status.sourceTip', { key: `${MOD}/` })}
           onClick={() => props.onModeChange('source')}
         >{t('status.source')}</button>
+        <button
+          type="button"
+          classList={{ 'is-on': props.mode === 'read' }}
+          aria-pressed={props.mode === 'read'}
+          title={t('status.readTip')}
+          onClick={() => props.onModeChange('read')}
+        >{t('status.read')}</button>
       </div>
-      <button
-        class="aster-icon-btn"
-        classList={{ 'is-on': props.readOnly }}
-        aria-pressed={props.readOnly}
-        aria-label={t('status.readOnly')}
-        title={props.readOnly ? t('status.lockOnTip', { key: `${MOD}${ALT}L` }) : t('status.lockOffTip', { key: `${MOD}${ALT}L` })}
-        onClick={() => props.onToggleLock()}
-      >
-        <LockIcon locked={props.readOnly} />
-      </button>
-      </Show>
-      <button
-        class="aster-icon-btn"
-        classList={{ 'is-on': props.settingsActive }}
-        aria-label={t('tab.settings')}
-        aria-pressed={props.settingsActive}
-        title={`${t('tab.settings')} (${MOD},)`}
-        onClick={() => props.onSettings()}
-      >
-        <GearIcon />
-      </button>
     </div>
   );
 }

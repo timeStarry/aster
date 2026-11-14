@@ -22,3 +22,12 @@ window.__aster.renderers.register('math', async (source) => {
     output: 'htmlAndMathml',
   });
 });
+
+window.__aster.renderers.register('math-inline', async (source) => {
+  const katex = await loadKatex();
+  return katex.renderToString(source.trim(), {
+    displayMode: false,
+    throwOnError: false,
+    output: 'htmlAndMathml',
+  });
+});

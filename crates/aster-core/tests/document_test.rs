@@ -76,11 +76,51 @@ fn test_bom_and_crlf_combined() {
 fn test_atomic_write_no_tmp_left() {
     let dir = TempDir::new().unwrap();
     let path = dir.path().join("d.md");
+    let sibling_tmp = dir.path().join("d.tmp");
+    fs::write(&sibling_tmp, "keep-me").unwrap();
     fs::write(&path, "orig\n").unwrap();
     let doc = svc().read(&path).unwrap();
     svc().write(&path, "updated\n", Some(&doc.hash)).unwrap();
     assert!(path.exists());
-    assert!(!path.with_extension("tmp").exists(), ".tmp must be cleaned up after rename");
+    assert_eq!(fs::read_to_string(&sibling_tmp).unwrap(), "keep-me", "sibling .tmp must never be clobbered");
+    for entry in fs::read_dir(dir.path()).unwrap().flatten() {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        assert!(!name.contains(".aster-"), "hidden atomic temp file must be cleaned up: {name}");
+    }
+}
+
+#[test]
+fn test_non_utf8_files_open_readonly_and_block_overwrite() {
+    let dir = TempDir::new().unwrap();
+
+    // 1. GBK bytes ("你好" in GBK: 0xC4 0xE3 0xBA 0xC3)
+    let gbk_path = dir.path().join("gbk.md");
+    let gbk_bytes = vec![0xC4u8, 0xE3, 0xBA, 0xC3, b'\n'];
+    fs::write(&gbk_path, &gbk_bytes).unwrap();
+
+    let doc = svc().read(&gbk_path).unwrap();
+    assert!(doc.encoding_lossy, "GBK bytes must be flagged as encoding_lossy");
+    assert!(doc.read_only, "non-UTF-8 file must be marked read_only");
+
+    let write_err = svc().write(&gbk_path, "corrupted", Some(&doc.hash)).unwrap_err();
+    assert_eq!(write_err.code(), "E_ENCODING");
+    assert_eq!(fs::read(&gbk_path).unwrap(), gbk_bytes, "original GBK bytes must remain intact");
+
+    let patch_err = svc().patch(&gbk_path, &[
+        PatchEdit::Range { range: LineRange { start_line: 1, end_line: 1 }, text: "x\n".into() },
+    ], None).unwrap_err();
+    assert_eq!(patch_err.code(), "E_ENCODING");
+    assert_eq!(fs::read(&gbk_path).unwrap(), gbk_bytes, "original GBK bytes must survive failed patch");
+
+    // 2. UTF-16 LE BOM + ASCII ("Hi")
+    let utf16_path = dir.path().join("utf16.md");
+    let utf16_bytes = vec![0xFFu8, 0xFE, b'H', 0x00, b'i', 0x00];
+    fs::write(&utf16_path, &utf16_bytes).unwrap();
+    let utf16_doc = svc().read(&utf16_path).unwrap();
+    assert!(utf16_doc.encoding_lossy);
+    assert!(utf16_doc.read_only);
+    assert_eq!(svc().write(&utf16_path, "overwrite", None).unwrap_err().code(), "E_ENCODING");
+    assert_eq!(fs::read(&utf16_path).unwrap(), utf16_bytes);
 }
 
 // ── patch tests ──────────────────────────────────────────────────────────────

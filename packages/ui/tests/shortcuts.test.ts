@@ -10,8 +10,8 @@ const event = (overrides: Partial<ShortcutEvent> = {}): ShortcutEvent => ({
 
 describe('global shortcuts', () => {
   it.each([
-    ['KeyN', 'n', 'new'], ['KeyO', 'o', 'open'], ['KeyS', 's', 'save'],
-    ['KeyW', 'w', 'close'], ['Slash', '/', 'toggleMode'],
+    ['KeyN', 'n', 'new'], ['KeyO', 'o', 'open'], ['KeyP', 'p', 'quickOpen'], ['KeyS', 's', 'save'],
+    ['KeyW', 'w', 'close'], ['Slash', '/', 'toggleMode'], ['Backslash', '\\', 'toggleSidebar'],
     ['Comma', ',', 'settings'], ['KeyF', 'f', 'find'],
   ])('matches %s by code and by key when code is unavailable', (code, key, action) => {
     for (const isMac of [false, true]) {
@@ -22,14 +22,17 @@ describe('global shortcuts', () => {
     }
   });
 
-  it('keeps shifted save, lock and Ctrl+Tab on both platforms', () => {
+  it('keeps shifted save and Ctrl+Tab on both platforms', () => {
     for (const isMac of [false, true]) {
       const mod = isMac ? { metaKey: true } : { ctrlKey: true };
       for (const code of ['', 'KeyS']) {
         expect(shortcutAction(event({ code, key: 'S', shiftKey: true, ...mod }), isMac)).toBe('saveAs');
       }
-      for (const code of ['', 'KeyL']) {
-        expect(shortcutAction(event({ code, key: 'l', altKey: true, ...mod }), isMac)).toBe('toggleLock');
+      for (const code of ['', 'KeyP']) {
+        expect(shortcutAction(event({ code, key: 'P', shiftKey: true, ...mod }), isMac)).toBe('commandPalette');
+      }
+      for (const code of ['', 'KeyO']) {
+        expect(shortcutAction(event({ code, key: 'O', shiftKey: true, ...mod }), isMac)).toBe('openFolder');
       }
       for (const code of ['', 'Tab']) {
         expect(shortcutAction(event({ code, key: 'Tab', ctrlKey: true }), isMac)).toBe('nextTab');

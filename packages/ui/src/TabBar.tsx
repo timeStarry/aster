@@ -6,10 +6,12 @@ import { t } from './i18n';
 interface Props {
   tabs: Tab[];
   activeId: string;
-  /** Id of the settings tab, or null when it is not open. */
-  settingsId: string | null;
   /** Leave room for the macOS traffic lights (overlay title bar). */
   inset: boolean;
+  sidebarOpen: boolean;
+  settingsOpen: boolean;
+  hasUpdate?: boolean;
+  onToggleSidebar: () => void;
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
   onNew: () => void;
@@ -19,8 +21,15 @@ interface Props {
   onExportPdf?: () => void;
 }
 
+const SidebarIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+    <rect x="2" y="2.5" width="12" height="11" rx="2" />
+    <path d="M6 2.5v11" />
+  </svg>
+);
+
 const GearIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+  <svg width="13.5" height="13.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.45" aria-hidden="true">
     <circle cx="8" cy="8" r="2.2" />
     <path d="M8 1.5v1.8M8 12.7v1.8M14.5 8h-1.8M3.3 8H1.5M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3M12.6 12.6l-1.3-1.3M4.7 4.7 3.4 3.4" />
   </svg>
@@ -36,8 +45,7 @@ function findTab(root: ParentNode | undefined, id: string): HTMLElement | undefi
 
 /**
  * "+" opens a blank tab in one click; the chevron next to it opens a menu with
- * other actions (open a file, PDF export, settings). A click-to-open menu rather
- * than hover: hover menus pop up on fly-overs and can't be reached by keyboard.
+ * other actions (open a file, PDF export, settings).
  */
 function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: () => void; onExportPdf?: () => void }) {
   const [open, setOpen] = createSignal(false);
@@ -55,8 +63,6 @@ function NewTabButton(p: { onNew: () => void; onOpen: () => void; onSettings: ()
     if (!open() || !menu) return;
     const anchor = root.getBoundingClientRect();
     const width = menu.getBoundingClientRect().width;
-    // Many tabs push the split button to the right edge. Keep its menu
-    // inside the viewport, including after resizing an open menu.
     const left = Math.max(8, Math.min(anchor.left, window.innerWidth - width - 8));
     setMenuLeft(left - anchor.left);
   };
@@ -144,11 +150,12 @@ export function TabBar(props: Props) {
     });
   });
 
-  const order = () => [...props.tabs.map((t) => t.id), ...(props.settingsId ? [props.settingsId] : [])];
+  const order = () => props.tabs.map((tb) => tb.id);
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
     const ids = order();
+    if (ids.length === 0) return;
     const i = ids.indexOf(props.activeId);
     const next =
       e.key === 'Home' ? 0 :
@@ -166,45 +173,19 @@ export function TabBar(props: Props) {
     if (!isMac && e.target === e.currentTarget) props.onNew();
   };
 
-  // Props are accessors so title/dirty stay reactive inside <Index>.
-  const tabEl = (
-    id: () => string,
-    title: () => string,
-    tooltip: () => string,
-    dirty: () => boolean,
-    icon?: () => any,
-  ) => (
-    <div
-      class="aster-tab"
-      classList={{ 'is-active': id() === props.activeId, 'aster-tab-settings': id() === props.settingsId }}
-      data-tab-id={id()}
-      role="tab"
-      aria-selected={id() === props.activeId}
-      tabIndex={id() === props.activeId ? 0 : -1}
-      title={tooltip()}
-      onMouseDown={(e) => {
-        if (e.button === 1) { e.preventDefault(); props.onClose(id()); }
-      }}
-      onClick={() => props.onSelect(id())}
-    >
-      <Show when={icon}>{icon!()}</Show>
-      <span class="aster-tab-title">{title()}</span>
-      <button
-        class="aster-tab-close"
-        classList={{ 'is-dirty': dirty() }}
-        tabIndex={-1}
-        aria-label={t('tab.closeLabel', { name: title() }) + (dirty() ? t('tab.unsaved') : '')}
-        title={t('tab.close', { key: `${MOD}W` })}
-        onClick={(e) => { e.stopPropagation(); props.onClose(id()); }}
-      >
-        <span class="dot" />
-        <span class="x">✕</span>
-      </button>
-    </div>
-  );
-
   return (
     <div class="aster-tabs" classList={{ 'is-inset': props.inset }} {...drag} onDblClick={onEmptyDblClick}>
+      <button
+        type="button"
+        class="aster-sidebar-btn"
+        classList={{ 'is-on': props.sidebarOpen }}
+        aria-label={t('sidebar.toggle')}
+        aria-pressed={props.sidebarOpen}
+        title={t('sidebar.toggleTip', { key: `${MOD}\\` })}
+        onClick={() => props.onToggleSidebar()}
+      >
+        <SidebarIcon />
+      </button>
       <div
         class="aster-tabs-scroll"
         ref={scroller}
@@ -212,21 +193,60 @@ export function TabBar(props: Props) {
         aria-label={t('tab.list')}
         onKeyDown={onKeyDown}
         onWheel={(e) => {
-          // Let a vertical mouse wheel scroll the strip horizontally.
           if (scroller && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
             scroller.scrollLeft += e.deltaY;
           }
         }}
       >
         <Index each={props.tabs}>
-          {(tab) => tabEl(() => tab().id, () => tab().title, () => tab().path ?? tab().title, () => tab().dirty)}
+          {(tab) => (
+            <div
+              class="aster-tab"
+              classList={{ 'is-active': tab().id === props.activeId }}
+              data-tab-id={tab().id}
+              role="tab"
+              aria-selected={tab().id === props.activeId}
+              tabIndex={tab().id === props.activeId ? 0 : -1}
+              title={tab().path ?? tab().title}
+              onMouseDown={(e) => {
+                if (e.button === 1) { e.preventDefault(); props.onClose(tab().id); }
+              }}
+              onClick={() => props.onSelect(tab().id)}
+            >
+              <span class="aster-tab-title">{tab().title}</span>
+              <button
+                class="aster-tab-close"
+                classList={{ 'is-dirty': tab().dirty }}
+                tabIndex={-1}
+                aria-label={t('tab.closeLabel', { name: tab().title }) + (tab().dirty ? t('tab.unsaved') : '')}
+                title={t('tab.close', { key: `${MOD}W` })}
+                onClick={(e) => { e.stopPropagation(); props.onClose(tab().id); }}
+              >
+                <span class="dot" />
+                <span class="x">✕</span>
+              </button>
+            </div>
+          )}
         </Index>
-        <Show when={props.settingsId}>
-          {(id) => tabEl(id, () => t('tab.settings'), () => `${t('tab.settings')} (${MOD},)`, () => false, GearIcon)}
-        </Show>
       </div>
       <NewTabButton onNew={props.onNew} onOpen={props.onOpen} onSettings={props.onSettings} onExportPdf={props.onExportPdf} />
       <div class="aster-tabs-spacer" {...drag} onDblClick={() => { if (!isMac) props.onNew(); }} />
+      <div class="aster-top-actions">
+        <button
+          type="button"
+          class="aster-icon-btn aster-gear-btn"
+          classList={{ 'is-on': props.settingsOpen }}
+          aria-label={t('tab.settings')}
+          aria-pressed={props.settingsOpen}
+          title={`${t('tab.settings')} (${MOD},)`}
+          onClick={() => props.onSettings()}
+        >
+          <GearIcon />
+          <Show when={props.hasUpdate}>
+            <span class="aster-btn-dot" aria-hidden="true" />
+          </Show>
+        </button>
+      </div>
     </div>
   );
 }

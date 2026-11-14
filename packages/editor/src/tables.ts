@@ -110,10 +110,53 @@ export function displayWidth(s: string): number {
   return w;
 }
 
-interface Model { header: string[]; align: Align[]; body: string[][] }
+export interface TableModel {
+  header: string[];
+  align: Align[];
+  body: string[][];
+}
+
+/** Parse raw GFM table text into a normalized rectangular TableModel. */
+export function parseTableSrc(src: string): TableModel {
+  const lines = src.split('\n').filter((l) => l.trim() !== '');
+  const header = splitRow(lines[0] ?? '');
+  const align = splitRow(lines[1] ?? '').map(alignOf);
+  const body = lines.slice(2).map(splitRow);
+  const cols = Math.max(1, header.length, align.length, ...body.map((r) => r.length));
+  const pad = (r: string[]) => {
+    while (r.length < cols) r.push('');
+    return r.slice(0, cols);
+  };
+  const paddedHeader = pad(header);
+  while (align.length < cols) align.push(null);
+  return {
+    header: paddedHeader,
+    align: align.slice(0, cols),
+    body: body.map(pad),
+  };
+}
+
+/** Sanitize inline cell text edited visually so raw pipes or newlines don't break GFM table structure. */
+export function sanitizeCellInput(raw: string): string {
+  const singleLine = raw.replace(/\r?\n+/g, ' ').trim();
+  let out = '';
+  for (let i = 0; i < singleLine.length; i++) {
+    if (singleLine[i] === '\\' && singleLine[i + 1] === '|') {
+      out += '\\|';
+      i++;
+      continue;
+    }
+    if (singleLine[i] === '|') {
+      out += '\\|';
+      continue;
+    }
+    out += singleLine[i];
+  }
+  return out;
+}
 
 /** Lines of the aligned table plus, per line, the string offset where each cell's content starts. */
-function render(m: Model): { lines: string[]; starts: number[][]; ends: number[][] } {
+export function renderTableModel(m: TableModel): { lines: string[]; starts: number[][]; ends: number[][] } {
   const cols = m.header.length;
   const widths = Array.from({ length: cols }, (_, c) =>
     Math.max(3, displayWidth(m.header[c]), ...m.body.map((r) => displayWidth(r[c] ?? ''))));
@@ -147,8 +190,8 @@ function render(m: Model): { lines: string[]; starts: number[][]; ends: number[]
 }
 
 /** Replace `table` with model `m`; put the cursor in (or select) cell `at`. */
-function write(view: EditorView, table: Table, m: Model, at: CellPos, selectCell = false) {
-  const r = render(m);
+function write(view: EditorView, table: Table, m: TableModel, at: CellPos, selectCell = false) {
+  const r = renderTableModel(m);
   const row = Math.max(0, Math.min(at.row, m.body.length));
   const col = Math.max(0, Math.min(at.col, m.header.length - 1));
   // Line offset within the new text: header line 0, delimiter line 1, body row k on line k+1.
@@ -165,7 +208,7 @@ function write(view: EditorView, table: Table, m: Model, at: CellPos, selectCell
   });
 }
 
-const clone = (t: Table): Model => ({ header: [...t.header], align: [...t.align], body: t.body.map((r) => [...r]) });
+const clone = (t: Table): TableModel => ({ header: [...t.header], align: [...t.align], body: t.body.map((r) => [...r]) });
 
 // ── Commands ─────────────────────────────────────────────────
 
@@ -291,12 +334,12 @@ export function insertTableCmd(cols = 3, rows = 2): Cmd {
   return (view) => {
     const { state } = view;
     if (state.readOnly) return false;
-    const m: Model = {
+    const m: TableModel = {
       header: Array(cols).fill(''),
       align: Array(cols).fill(null),
       body: Array.from({ length: rows }, () => Array(cols).fill('')),
     };
-    const r = render(m);
+    const r = renderTableModel(m);
     const line = state.doc.lineAt(state.selection.main.head);
     const empty = line.text.trim() === '';
     const next = line.number < state.doc.lines ? state.doc.line(line.number + 1) : null;

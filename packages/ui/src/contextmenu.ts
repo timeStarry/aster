@@ -60,7 +60,9 @@ export async function showEditorContextMenu(o: ContextMenuOptions): Promise<void
       item(t('sc.bold'), toggleInline('**'), K('B')),
       item(t('sc.italic'), toggleInline('*'), K('I')),
       item(t('sc.strike'), toggleInline('~~'), K('Shift+X')),
+      item(t('sc.highlight'), toggleInline('=='), K('Shift+H')),
       item(t('sc.code'), toggleInline('`'), K('E')),
+      item(t('sc.inlineMath'), toggleInline('$'), K('Shift+M')),
       item(t('sc.link'), insertLink, K('K')),
     ]),
   });

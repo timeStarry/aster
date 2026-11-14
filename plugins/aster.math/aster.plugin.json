@@ -3,10 +3,11 @@
   "name": "Math",
   "version": "1.1.0",
   "apiVersion": "1",
-  "description": "Render ```math blocks with KaTeX",
+  "description": "Render inline $...$ and block $$...$$ / ```math equations with KaTeX",
   "permissions": [],
   "activation": [
-    "onCodeBlock:math"
+    "onCodeBlock:math",
+    "onCodeBlock:math-inline"
   ],
   "frontend": "frontend/index.js",
   "backend": null,
@@ -14,13 +15,16 @@
     "renderers": [
       {
         "codeBlock": "math"
+      },
+      {
+        "codeBlock": "math-inline"
       }
     ]
   },
   "i18n": {
     "zh": {
       "name": "数学公式",
-      "description": "用 KaTeX 渲染 ```math 代码块"
+      "description": "用 KaTeX 渲染行内 $...$ 与块级 $$...$$ / ```math 公式"
     }
   }
 }

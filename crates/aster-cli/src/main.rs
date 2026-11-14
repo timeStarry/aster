@@ -1,18 +1,28 @@
 mod commands;
 mod mcp;
 
-use clap::{Parser, Subcommand};
 use anyhow::Result;
+use clap::{Parser, Subcommand};
 
-#[derive(Parser)]
-#[command(name = "aster", about = "Aster Markdown editor CLI")]
+#[derive(Parser, Debug)]
+#[command(
+    name = "aster",
+    about = "Aster Markdown editor CLI — pass a file (`aster notes.md`) to open in Aster, or run a subcommand",
+    args_conflicts_with_subcommands = true
+)]
 pub(crate) struct Cli {
+    /// Open a Markdown file directly in the Aster GUI (`aster notes.md`)
+    #[arg(value_name = "FILE")]
+    pub file: Option<String>,
+
     #[command(subcommand)]
-    pub command: Cmd,
+    pub command: Option<Cmd>,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug, PartialEq, Eq)]
 pub(crate) enum Cmd {
+    /// Open a Markdown file in the Aster GUI
+    Open { path: String },
     /// Read a Markdown file and print JSON {content, hash}
     Read { path: String },
     /// Write content to a Markdown file (reads stdin)
@@ -42,7 +52,7 @@ pub(crate) enum Cmd {
     Mcp,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug, PartialEq, Eq)]
 pub(crate) enum WorkspaceCmd {
     /// List Markdown files in a directory
     List {
@@ -51,7 +61,7 @@ pub(crate) enum WorkspaceCmd {
     },
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug, PartialEq, Eq)]
 pub(crate) enum ExportCmd {
     /// Export Markdown to HTML
     Html {
@@ -61,13 +71,45 @@ pub(crate) enum ExportCmd {
     },
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug, PartialEq, Eq)]
 pub(crate) enum PluginCmd {
-    /// List installed plugins (M3)
+    /// List installed plugins
     List,
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    commands::dispatch(cli.command)
+    match (cli.command, cli.file) {
+        (Some(cmd), _) => commands::dispatch(cmd),
+        (None, Some(path)) => commands::dispatch(Cmd::Open { path }),
+        (None, None) => commands::launch_gui(None),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_shorthand_file_and_subcommands() {
+        let shorthand = Cli::try_parse_from(["aster", "README.md"]).unwrap();
+        assert_eq!(shorthand.file.as_deref(), Some("README.md"));
+        assert!(shorthand.command.is_none());
+
+        let explicit = Cli::try_parse_from(["aster", "open", "docs/guide.md"]).unwrap();
+        assert_eq!(
+            explicit.command,
+            Some(Cmd::Open {
+                path: "docs/guide.md".into()
+            })
+        );
+
+        let read = Cli::try_parse_from(["aster", "read", "notes.md"]).unwrap();
+        assert_eq!(
+            read.command,
+            Some(Cmd::Read {
+                path: "notes.md".into()
+            })
+        );
+    }
 }

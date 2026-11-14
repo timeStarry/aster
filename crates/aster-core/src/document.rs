@@ -1,7 +1,25 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use sha2::{Sha256, Digest};
 use serde::{Serialize, Deserialize};
 use crate::error::{AsterError, AsterResult};
+
+static TMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+/// Generate a hidden, collision-free sibling temp path: `.{name}.aster-{pid}-{seq}.tmp`.
+pub fn atomic_temp_path(path: &Path) -> PathBuf {
+    let parent = path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("document");
+    let seq = TMP_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let pid = std::process::id();
+    parent.join(format!(".{name}.aster-{pid}-{seq}.tmp"))
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,6 +56,7 @@ pub enum LineEnding { Lf, Crlf }
 pub enum Bom { Utf8 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DocContent {
     /// LF-normalised content (used for editing/display)
     pub content: String,
@@ -45,6 +64,20 @@ pub struct DocContent {
     pub hash: String,
     pub bom: Option<Bom>,
     pub line_ending: LineEnding,
+    /// True when the file cannot be safely edited (e.g. non-UTF-8 encoding).
+    #[serde(default)]
+    pub read_only: bool,
+    /// True when raw bytes were not valid UTF-8 and replacement characters were substituted for preview.
+    #[serde(default)]
+    pub encoding_lossy: bool,
+}
+
+fn decode_strict_utf8<'a>(raw: &'a [u8], body: &'a [u8]) -> Option<&'a str> {
+    // Reject UTF-16 LE/BE BOMs and binary/UTF-16 NUL bytes before UTF-8 decoding.
+    if raw.starts_with(&[0xFF, 0xFE]) || raw.starts_with(&[0xFE, 0xFF]) || body.contains(&0) {
+        return None;
+    }
+    std::str::from_utf8(body).ok()
 }
 
 pub struct DocumentService;
@@ -64,18 +97,34 @@ impl DocumentService {
             (None, raw.as_slice())
         };
 
-        let text = String::from_utf8_lossy(body).into_owned();
+        let (text, encoding_lossy, read_only) = match decode_strict_utf8(&raw, body) {
+            Some(valid) => (valid.to_owned(), false, false),
+            None => (String::from_utf8_lossy(body).into_owned(), true, true),
+        };
 
         // Line ending detection and normalisation
         let line_ending = if text.contains("\r\n") { LineEnding::Crlf } else { LineEnding::Lf };
         let content = text.replace("\r\n", "\n");
 
-        Ok(DocContent { content, hash, bom, line_ending })
+        Ok(DocContent {
+            content,
+            hash,
+            bom,
+            line_ending,
+            read_only,
+            encoding_lossy,
+        })
     }
 
     /// Apply `edits` atomically. All edits are resolved first; any failure aborts the whole patch.
     pub fn patch(&self, path: &Path, edits: &[PatchEdit], expected_hash: Option<&str>) -> AsterResult<String> {
         let doc = self.read(path)?;
+        if doc.encoding_lossy {
+            return Err(AsterError::InvalidEncoding(format!(
+                "refusing to patch non-UTF-8 file: {}",
+                path.display()
+            )));
+        }
 
         // Conflict check
         if let Some(expected) = expected_hash {
@@ -87,33 +136,27 @@ impl DocumentService {
             }
         }
 
-        // Build line vec (each entry is the line without trailing \n, except we
-        // keep things simple: split preserving empty last element if content ends \n)
         let lines: Vec<&str> = doc.content.split('\n').collect();
-        // If content ends with \n the split produces a trailing empty string; drop it
-        // for line-number math but remember whether to re-add it.
         let trailing_newline = doc.content.ends_with('\n');
         let effective: Vec<&str> = if trailing_newline && lines.last() == Some(&"") {
             lines[..lines.len() - 1].to_vec()
         } else {
             lines
         };
-        let n = effective.len(); // number of "real" lines
+        let n = effective.len();
 
-        // Resolve all edits → list of (from_idx, to_idx_exclusive, replacement_lines)
-        // Indices are 0-based into `effective`.
         struct Resolved {
-            from: usize,    // inclusive, 0-based
-            to: usize,      // exclusive, 0-based
-            text: String,   // replacement text (may be multi-line, LF-normalised)
+            from: usize,
+            to: usize,
+            text: String,
         }
 
         let mut resolved: Vec<Resolved> = Vec::with_capacity(edits.len());
         for edit in edits {
             match edit {
                 PatchEdit::Range { range, text } => {
-                    let s = range.start_line.saturating_sub(1); // to 0-based
-                    let e = range.end_line; // exclusive 0-based
+                    let s = range.start_line.saturating_sub(1);
+                    let e = range.end_line;
                     if range.start_line == 0 || range.start_line > n + 1 {
                         return Err(AsterError::AnchorNotFound(
                             format!("line {} out of range (file has {} lines)", range.start_line, n)
@@ -153,7 +196,6 @@ impl DocumentService {
             let replacement: Vec<String> = if r.text.is_empty() {
                 vec![]
             } else {
-                // Strip trailing \n from text before splitting so we don't get a spurious empty line
                 let t = r.text.trim_end_matches('\n');
                 t.split('\n').map(|s| s.to_string()).collect()
             };
@@ -165,7 +207,7 @@ impl DocumentService {
             new_content.push('\n');
         }
 
-        self.write(path, &new_content, None)
+        self.write(path, &new_content, Some(&doc.hash))
     }
 
     pub fn hash_of(&self, path: &Path) -> AsterResult<String> {
@@ -175,27 +217,26 @@ impl DocumentService {
 
     /// `content` is LF-normalised.
     /// If `expected_hash` is Some, it is checked against the current on-disk hash (optimistic lock).
+    /// Refuses to overwrite existing non-UTF-8 files to prevent silent encoding corruption.
     /// Returns the new on-disk hash after a successful write.
     pub fn write(&self, path: &Path, content: &str, expected_hash: Option<&str>) -> AsterResult<String> {
-        // Conflict check
-        if let Some(expected) = expected_hash {
-            if path.exists() {
-                let actual = self.hash_of(path)?;
-                if actual != expected {
+        let (bom, line_ending) = if path.exists() {
+            let existing = self.read(path)?;
+            if existing.encoding_lossy {
+                return Err(AsterError::InvalidEncoding(format!(
+                    "refusing to overwrite non-UTF-8 file: {}",
+                    path.display()
+                )));
+            }
+            if let Some(expected) = expected_hash {
+                if existing.hash != expected {
                     return Err(AsterError::Conflict {
                         expected: expected.to_owned(),
-                        actual,
+                        actual: existing.hash,
                     });
                 }
             }
-        }
-
-        // Restore BOM / line ending from existing file
-        let (bom, line_ending) = if path.exists() {
-            match self.read(path) {
-                Ok(doc) => (doc.bom, doc.line_ending),
-                Err(_)  => (None, LineEnding::Lf),
-            }
+            (existing.bom, existing.line_ending)
         } else {
             (None, LineEnding::Lf)
         };
@@ -212,21 +253,30 @@ impl DocumentService {
         }
         bytes.extend_from_slice(body.as_bytes());
 
-        // Atomic write: tmp → fsync → rename
-        if let Some(parent) = path.parent() {
+        // Atomic write: hidden unique tmp → fsync → rename
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
             std::fs::create_dir_all(parent)?;
         }
-        let tmp = path.with_extension("tmp");
+        let tmp = atomic_temp_path(path);
         {
             use std::io::Write;
             let mut f = std::fs::File::create(&tmp)?;
-            f.write_all(&bytes)?;
-            f.sync_all()?; // fsync: flush tmp to disk before rename
+            if let Err(e) = f.write_all(&bytes).and_then(|_| f.sync_all()) {
+                let _ = std::fs::remove_file(&tmp);
+                return Err(AsterError::Io(e.to_string()));
+            }
         }
-        std::fs::rename(&tmp, path)?;
+        if let Err(e) = std::fs::rename(&tmp, path) {
+            let _ = std::fs::remove_file(&tmp);
+            return Err(AsterError::Io(e.to_string()));
+        }
 
         Ok(sha256_hex(&bytes))
     }
+}
+
+impl Default for DocumentService {
+    fn default() -> Self { Self::new() }
 }
 
 fn sha256_hex(data: &[u8]) -> String {

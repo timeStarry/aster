@@ -9,12 +9,15 @@
     "build": "tsc --noEmit"
   },
   "dependencies": {
-    "markdown-it": "^14.1.0",
-    "highlight.js": "^11.11.1"
+    "@codemirror/language": "6.13.1",
+    "@codemirror/language-data": "6.5.2",
+    "@lezer/common": "1.5.3",
+    "@lezer/highlight": "1.2.5",
+    "markdown-it": "^14.1.0"
   },
   "devDependencies": {
-    "vitest": "^3.2.4",
     "@types/markdown-it": "^14.1.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }

@@ -4,7 +4,7 @@ use crate::{
     plugin::PluginHost,
     plugin_sig::{verify_plugin_signature, SignatureStatus},
     registry::{CommandRegistry, CommandSpec},
-    error::{AsterError, AsterResult},
+    error::AsterError,
 };
 
 pub fn register(registry: &mut CommandRegistry, host: Arc<Mutex<PluginHost>>) {

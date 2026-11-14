@@ -14,22 +14,12 @@ cargo install tauri-cli --version "2.12.1" --locked
 echo "=== Installing pnpm dependencies ==="
 CI=true pnpm install --frozen-lockfile
 
-echo "=== Staging bundled plugins for full edition ==="
-node scripts/stage-plugins.mjs
-
-echo "=== Building lite edition .deb ==="
+echo "=== Building Aster Flagship .deb ==="
 cd crates/aster-app
 cargo tauri build --target x86_64-unknown-linux-gnu --bundles deb -- --locked 2>&1
 cd ../..
-cp "$deb" "/out/Aster-lite_${version}_amd64.deb"
-echo "Lite .deb: $(du -sh "/out/Aster-lite_${version}_amd64.deb" | cut -f1)"
-
-echo "=== Building full edition .deb ==="
-cd crates/aster-app
-cargo tauri build --target x86_64-unknown-linux-gnu --bundles deb --features bundled-plugins --config tauri.full.conf.json -- --locked 2>&1
-cd ../..
-cp "$deb" "/out/Aster-full_${version}_amd64.deb"
-echo "Full .deb: $(du -sh "/out/Aster-full_${version}_amd64.deb" | cut -f1)"
+cp "$deb" "/out/Aster_${version}_amd64.deb"
+echo "Flagship .deb: $(du -sh "/out/Aster_${version}_amd64.deb" | cut -f1)"
 
 echo "=== Done ==="
 ls -la /out/

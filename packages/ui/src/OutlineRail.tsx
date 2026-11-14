@@ -14,19 +14,23 @@ interface Props {
   onJump: (from: number) => void;
 }
 
-/** Dash length per heading level. */
-const WIDTH: Record<number, number> = { 1: 22, 2: 15, 3: 9 };
+/** Dash length per heading level (H1–H6). */
+const WIDTH: Record<number, number> = { 1: 24, 2: 19, 3: 15, 4: 11, 5: 8, 6: 6 };
 
 /**
- * Heading navigator: H1–H3 as right-aligned dashes of different lengths.
- * Sections in view are darker; the current section is near-black. Hovering
- * magnifies the dash and its neighbours (fisheye) and shows the title, with
- * the adjacent titles in muted type. Click or Enter jumps to the heading.
+ * Heading navigator: H1–H6 as right-aligned dashes of different lengths with
+ * adaptive vertical density for long documents.
  */
 export function OutlineRail(props: Props) {
   const [hovered, setHovered] = createSignal(-1);
   const [tipTop, setTipTop] = createSignal(0);
   let track!: HTMLDivElement;
+
+  const dashHeight = createMemo(() => {
+    const n = props.items.length;
+    if (n <= 40) return 9;
+    return Math.max(4, Math.min(9, Math.floor(420 / n)));
+  });
 
   const current = createMemo(() => {
     let i = -1;
@@ -69,7 +73,12 @@ export function OutlineRail(props: Props) {
       classList={{ 'is-hidden': props.hidden && hovered() < 0 }}
       aria-label={t('rail.label')}
     >
-      <div class="aster-rail-track" ref={track} onMouseLeave={() => setHovered(-1)}>
+      <div
+        class="aster-rail-track"
+        ref={track}
+        style={{ '--rail-h': `${dashHeight()}px` }}
+        onMouseLeave={() => setHovered(-1)}
+      >
         <For each={props.items}>
           {(h, i) => {
             const dist = () => (hovered() < 0 ? 99 : Math.abs(i() - hovered()));
@@ -84,7 +93,7 @@ export function OutlineRail(props: Props) {
                   'is-near': dist() === 1,
                   'is-near2': dist() === 2,
                 }}
-                style={{ '--w': `${WIDTH[h.level] ?? 9}px` }}
+                style={{ '--w': `${WIDTH[h.level] ?? 6}px` }}
                 aria-label={h.text}
                 aria-current={i() === current() ? 'location' : undefined}
                 onMouseEnter={(e) => hover(i(), e.currentTarget)}

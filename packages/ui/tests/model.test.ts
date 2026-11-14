@@ -33,8 +33,8 @@ describe('settings', () => {
     expect(s.fontSize).toBe(28);
     expect(s.lineHeight).toBe(DEFAULT_SETTINGS.lineHeight);
     expect(s.language).toBe('system');
-    expect(s.typography.preset).toBe('serif');
-    expect(s.typography.body).toEqual({ stack: 'serif' });
+    expect(s.typography.preset).toBe('sans');
+    expect(s.typography.body).toEqual({ stack: 'sans' });
   });
 
   it('migrates v1 settings without typography', () => {

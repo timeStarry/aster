@@ -20,33 +20,66 @@ export const asterEditorTheme = EditorView.theme({
     fontFamily: 'var(--font-prose)',
     lineHeight: 'var(--editor-line-height, 1.75)',
     overflow: 'auto',
+    paddingInline: '32px',
   },
-  // The text column is centered. Its width is the line width plus fixed
-  // padding, so text never touches the window edge on narrow windows.
+  // The text column is centered with zero horizontal padding on .cm-content so
+  // CodeMirror's drawSelection rectangles start flush at character column 0
+  // instead of overhanging into left/right padding on multi-line selections.
   '.cm-content': {
-    flex: '0 1 calc(var(--prose-width, 760px) + 64px)',
-    maxWidth: 'calc(var(--prose-width, 760px) + 64px)',
+    flex: '0 1 var(--prose-width, 760px)',
+    maxWidth: 'var(--prose-width, 760px)',
     minWidth: '0',
     margin: '0 auto',
-    padding: '40px 32px 40vh',
+    padding: '40px 0 40vh',
     caretColor: 'var(--accent)',
   },
   // With line numbers on, the gutter and the column are centered as one unit,
-  // so numbers sit right before the start of each line instead of at the
-  // window edge. The text width stays the same.
+  // keeping .cm-content horizontal padding at 0 so selection stays flush.
   '.cm-gutters + .cm-content': {
     marginInlineStart: '0',
-    paddingInlineStart: '12px',
-    flexBasis: 'calc(var(--prose-width, 760px) + 44px)',
-    maxWidth: 'calc(var(--prose-width, 760px) + 44px)',
+    flexBasis: 'var(--prose-width, 760px)',
+    maxWidth: 'var(--prose-width, 760px)',
   },
   '.cm-line': { padding: '0' },
+  '&.cm-aster-prose .cm-line:not(.aster-lp-codeline):not(.aster-lp-heading)': {
+    paddingBlock: '0.09em',
+  },
+  '&.cm-aster-prose .cm-line.aster-lp-h1': {
+    paddingTop: '0.62em',
+    paddingBottom: '0.22em',
+  },
+  '&.cm-aster-prose .cm-line.aster-lp-h2': {
+    paddingTop: '0.56em',
+    paddingBottom: '0.18em',
+  },
+  '&.cm-aster-prose .cm-line.aster-lp-h3': {
+    paddingTop: '0.46em',
+    paddingBottom: '0.14em',
+  },
+  '&.cm-aster-prose .cm-line.aster-lp-h4, &.cm-aster-prose .cm-line.aster-lp-h5, &.cm-aster-prose .cm-line.aster-lp-h6': {
+    paddingTop: '0.34em',
+    paddingBottom: '0.1em',
+  },
+  '&.cm-aster-prose .cm-content > .cm-line:first-child': {
+    paddingTop: '0',
+  },
+  '.aster-cjk-gap-after': {
+    paddingInlineEnd: '0.12em',
+  },
+  '.cm-line.aster-focus-dim': {
+    opacity: '0.32',
+    transition: 'opacity 140ms ease',
+  },
+  '&.cm-aster-read .cm-cursor, &.cm-aster-read .cm-dropCursor': {
+    display: 'none !important',
+  },
   '&.cm-focused .cm-cursor': { borderLeftColor: 'var(--accent)', borderLeftWidth: '2px' },
   '.cm-selectionBackground, ::selection': { backgroundColor: 'var(--selection) !important' },
   '&.cm-focused .cm-selectionBackground': { backgroundColor: 'var(--selection) !important' },
   '.cm-activeLine': { backgroundColor: 'transparent' },
   '.cm-gutters': {
     marginInlineStart: 'auto',
+    paddingInlineEnd: '12px',
     backgroundColor: 'transparent',
     border: 'none',
     color: 'var(--fg-faint)',
@@ -68,7 +101,7 @@ export const asterEditorTheme = EditorView.theme({
     justifyContent: 'flex-end',
   },
   '.cm-panels': { backgroundColor: 'var(--surface)', color: 'var(--fg)' },
-  '.cm-panels.cm-panels-top': { borderBottom: '1px solid var(--border)' },
+  '.cm-panels.cm-panels-top': { borderBottom: 'none' },
   '.cm-panels.cm-panels-bottom': { borderTop: '1px solid var(--border)' },
   '.cm-search': { fontFamily: 'var(--font-ui)', fontSize: '13px', padding: '6px 10px' },
   '.cm-search input, .cm-search button': { fontFamily: 'inherit', fontSize: '12px' },

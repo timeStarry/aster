@@ -88,6 +88,7 @@ describe('live preview', () => {
 
     const on = makeView(doc, 3);
     expect(visibleText(on)).toBe('# Title\n\nSub\n\nbody');
+    expect(classesAt(on, 0)).toContain('aster-lp-hash-hang');
   });
 
   it('shows link label and hides the url', () => {
@@ -295,14 +296,111 @@ describe('code block renderers', () => {
     ed.destroy();
   });
 
-  it('shows source while the cursor is inside the block', () => {
+  it('keeps math/mermaid steady-state on cursor pass-through and opens stacked micro-panel on Edit Source', async () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
-    const doc = '```math\na^2\n```';
+    const doc = '```math\na^2\n```\n\nafter';
     const ed = createEditor(el, { initialContent: doc, renderCodeBlock: () => Promise.resolve('<b>r</b>') });
+    await tick();
+    // Passing cursor onto the math block keeps it steady-state rendered (no jank collapse)
     ed.view.dispatch({ selection: { anchor: doc.indexOf('a^2') } });
-    expect(el.querySelector('.aster-lp-rendered')).toBeNull();
+    expect(el.querySelector('.aster-lp-rendered.is-selected')).not.toBeNull();
+    expect(el.querySelector('.aster-lp-rendered-body b')?.textContent).toBe('r');
+
+    // Clicking "编辑源码" opens native source lines + live preview micro-panel below
+    (el.querySelector('.aster-lp-edit-btn') as HTMLButtonElement).click();
+    await tick();
     expect(el.querySelector('.cm-content')?.textContent).toContain('```math');
+    expect(el.querySelector('.aster-lp-micro-panel .aster-lp-micro-preview b')?.textContent).toBe('r');
+
+    // Clicking "完成 (Esc)" folds back into steady-state rendered view
+    (el.querySelector('.aster-lp-done-btn') as HTMLButtonElement).click();
+    await tick();
+    expect(el.querySelector('.aster-lp-micro-panel')).toBeNull();
+    expect(el.querySelector('.aster-lp-rendered')).not.toBeNull();
+    ed.destroy();
+  });
+
+  it('renders a copy button on plain code blocks', async () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const ed = createEditor(el, { initialContent: 'x\n\n```ts\nconst x = 1;\n```\n', renderCodeBlock: () => null });
+    await tick();
+    expect(el.querySelector('.aster-lp-codeblock .aster-lp-codelang')?.textContent).toBe('ts');
+    expect(el.querySelector('.aster-lp-codeblock .aster-lp-copy-btn')).not.toBeNull();
+    ed.destroy();
+  });
+});
+
+describe('extended markdown syntax (math, frontmatter, callouts, highlight, footnotes)', () => {
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+
+  it('renders inline $...$ and block $$...$$ math while ignoring currency like $100 and $200', async () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const seen: [string, string][] = [];
+    const doc = 'Intro\n\nPrice is $100 and $200, while $E=mc^2$ is inline.\n\n$$\n\\int_0^1 x\\,dx\n$$\n';
+    const ed = createEditor(el, {
+      initialContent: doc,
+      renderCodeBlock: (lang, body) => {
+        seen.push([lang, body]);
+        return Promise.resolve(`<span class="k-${lang}">${body}</span>`);
+      },
+    });
+    await tick();
+    expect(seen).toContainEqual(['math', '\\int_0^1 x\\,dx']);
+    expect(seen).toContainEqual(['math-inline', 'E=mc^2']);
+    expect(el.querySelector('.aster-lp-math-inline .k-math-inline')?.textContent).toBe('E=mc^2');
+    // Currency $100 and $200 must NOT be turned into math widgets
+    expect(seen.some(([, b]) => b.includes('100'))).toBe(false);
+    ed.destroy();
+  });
+
+  it('folds YAML frontmatter at line 1 into a metadata card when cursor is away', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const doc = '---\ntitle: Aster v2\ntags:\n  - markdown\n  - rust\n---\n\n# Heading\n';
+    const ed = createEditor(el, { initialContent: doc });
+    // Move cursor to `# Heading`
+    ed.view.dispatch({ selection: { anchor: doc.indexOf('# Heading') + 2 } });
+    const fm = el.querySelector('.aster-lp-frontmatter');
+    expect(fm).not.toBeNull();
+    expect(fm?.textContent).toContain('title');
+    expect(fm?.textContent).toContain('Aster v2');
+    expect(fm?.textContent).toContain('markdown, rust');
+    ed.destroy();
+  });
+
+  it('renders GitHub Callouts, ==highlight==, and [^1] footnotes', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const doc = 'Cursor line\n\n> [!WARNING] Careful\n> Watch out\n\nVery ==important== note[^1].\n\n[^1]: Footnote body\n';
+    const ed = createEditor(el, { initialContent: doc });
+    expect(el.querySelector('.aster-lp-callout-title.aster-lp-callout-warning')?.textContent).toContain('Careful');
+    expect(classesAt(ed.view, doc.indexOf('important') + 2)).toContain('aster-lp-highlight');
+    expect(visibleText(ed.view)).not.toContain('==important==');
+    expect(el.querySelector('sup.aster-lp-fnref')?.textContent).toBe('[1]');
+    expect(el.querySelector('.aster-lp-fndef-badge')?.textContent).toBe('[1]');
+    ed.destroy();
+  });
+});
+
+describe('programmatic search & replace controller', () => {
+  it('counts matches, navigates, and replaces cleanly', async () => {
+    const {
+      applyEditorSearch, findNextMatch, replaceCurrentMatch, replaceAllMatches, clearEditorSearch,
+    } = await import('../src/search-ctrl');
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const ed = createEditor(el, { initialContent: 'foo bar foo baz foo' });
+    const stats = applyEditorSearch(ed.view, { search: 'foo', replace: 'qux' });
+    expect(stats).toEqual({ total: 3, current: 1, valid: true });
+    findNextMatch(ed.view);
+    replaceCurrentMatch(ed.view);
+    expect(ed.getContent()).toBe('qux bar foo baz foo');
+    replaceAllMatches(ed.view);
+    expect(ed.getContent()).toBe('qux bar qux baz qux');
+    clearEditorSearch(ed.view);
     ed.destroy();
   });
 });
@@ -397,12 +495,119 @@ describe('highlight colors', () => {
 });
 
 describe('outline', () => {
-  it('lists h1-h3 with markup stripped and ignores code blocks', async () => {
+  it('lists h1-h3 with markup stripped and ignores code blocks, and supports h1-h6 when requested', async () => {
     const { outline } = await import('../src/outline');
     const doc = '# One **b**\n\ntext\n\n## Two `c`\n\n```\n# not a heading\n```\n\n### Three\n\n#### Four\n\nSet\n===\n';
     const view = makeView(doc, 0);
     expect(outline(view.state).map((h) => [h.level, h.text])).toEqual([
       [1, 'One b'], [2, 'Two c'], [3, 'Three'], [1, 'Set'],
     ]);
+    expect(outline(view.state, 6).map((h) => [h.level, h.text])).toEqual([
+      [1, 'One b'], [2, 'Two c'], [3, 'Three'], [4, 'Four'], [1, 'Set'],
+    ]);
+  });
+});
+
+describe('read mode, CJK autospace and paragraph focus', () => {
+  it('freezes all markdown syntax expansion in read mode even when selection touches constructs', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const doc = '# Title\n\nsome **bold** and [Aster](https://example.com) text';
+    const ed = createEditor(el, { initialContent: doc, mode: 'read' });
+    expect(ed.view.state.readOnly).toBe(true);
+    // Move selection right onto heading and bold text
+    ed.view.dispatch({ selection: { anchor: 2, head: doc.indexOf('bold') + 3 } });
+    expect(visibleText(ed.view)).toBe('Title\n\nsome bold and Aster text');
+    // Switching back to live mode reveals touched construct
+    ed.setMode('live');
+    expect(ed.view.state.readOnly).toBe(false);
+    ed.view.dispatch({ selection: { anchor: doc.indexOf('bold') + 1 } });
+    expect(visibleText(ed.view)).toContain('**bold**');
+    ed.destroy();
+  });
+
+  it('adds non-destructive CJK–Latin visual autospace outside code and URLs', async () => {
+    const { __computeCjkDecorations } = await import('../src/immersive');
+    const doc = '使用Aster在2026年写 `中文Code` 和 [链接Text](https://example.com/中A文)';
+    const view = makeView(doc, 0);
+    const set = __computeCjkDecorations(view.state);
+    const gapPositions: number[] = [];
+    set.between(0, doc.length, (from) => { gapPositions.push(from); });
+    // Boundaries in prose: 用|A, r|在, 在|2, 6|年, 接|T
+    expect(gapPositions).toContain(doc.indexOf('用Aster'));
+    expect(gapPositions).toContain(doc.indexOf('r在'));
+    expect(gapPositions).toContain(doc.indexOf('在2026'));
+    expect(gapPositions).toContain(doc.indexOf('6年'));
+    // Must NOT add gaps inside `中文Code` or inside URL `https://example.com/中A文`
+    expect(gapPositions).not.toContain(doc.indexOf('文Code'));
+    expect(gapPositions).not.toContain(doc.indexOf('中A文'));
+    // Underlying document text is untouched
+    expect(view.state.doc.toString()).toBe(doc);
+  });
+
+  it('dims non-active paragraphs in focus mode', async () => {
+    const { __computeFocusDecorations } = await import('../src/immersive');
+    const doc = 'First paragraph\n\nSecond paragraph\nline two\n\nThird paragraph';
+    const view = makeView(doc, doc.indexOf('Second') + 2);
+    const set = __computeFocusDecorations(view.state);
+    const dimmedLines: number[] = [];
+    set.between(0, doc.length, (from) => { dimmedLines.push(view.state.doc.lineAt(from).number); });
+    expect(dimmedLines).toContain(1); // First paragraph dimmed
+    expect(dimmedLines).not.toContain(3); // Second paragraph active
+    expect(dimmedLines).not.toContain(4); // Second paragraph line 2 active
+    expect(dimmedLines).toContain(6); // Third paragraph dimmed
+  });
+
+  it('wraps selected text on URL paste and forwards pasted images to onPasteImage', () => {
+    const pastedFiles: File[] = [];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const ed = createEditor(container, {
+      initialContent: 'Visit Aster today',
+      onPasteImage: (f) => { pastedFiles.push(f); },
+    });
+
+    // Select `Aster` (offset 6..11) and paste an HTTPS URL
+    ed.view.dispatch({ selection: { anchor: 6, head: 11 } });
+    const urlEvent = new Event('paste', { bubbles: true, cancelable: true }) as ClipboardEvent;
+    Object.defineProperty(urlEvent, 'clipboardData', {
+      value: {
+        files: [],
+        items: [],
+        getData: (t: string) => (t === 'text/plain' ? 'https://aster.app/docs' : ''),
+      },
+    });
+    ed.view.contentDOM.dispatchEvent(urlEvent);
+    expect(ed.getContent()).toBe('Visit [Aster](https://aster.app/docs) today');
+
+    // Paste an image File
+    const mockFile = new File([new Uint8Array([137, 80, 78, 71])], 'shot.png', { type: 'image/png' });
+    const imgEvent = new Event('paste', { bubbles: true, cancelable: true }) as ClipboardEvent;
+    Object.defineProperty(imgEvent, 'clipboardData', {
+      value: {
+        files: [mockFile],
+        items: [],
+        getData: () => '',
+      },
+    });
+    ed.view.contentDOM.dispatchEvent(imgEvent);
+    expect(pastedFiles).toHaveLength(1);
+    expect(pastedFiles[0].name).toBe('shot.png');
+
+    ed.destroy();
+    container.remove();
+  });
+
+  it('keeps horizontal padding on .cm-scroller instead of .cm-content so drawSelection starts flush at column 0', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const ed = createEditor(container, { initialContent: '# Title\n\nBody text', lineNumbers: true });
+    const contentStyle = window.getComputedStyle(ed.view.contentDOM);
+    const scrollerStyle = window.getComputedStyle(ed.view.scrollDOM);
+    expect(contentStyle.paddingLeft).toBe('0px');
+    expect(contentStyle.paddingRight).toBe('0px');
+    expect(scrollerStyle.paddingInline).toBe('32px');
+    ed.destroy();
+    container.remove();
   });
 });
